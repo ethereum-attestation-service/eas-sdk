@@ -96,21 +96,21 @@ var Proxy = /** @class */ (function () {
             }
         };
     };
-    Proxy.prototype.getAttestationTypedDataRequest = function (params, signMessage) {
+    Proxy.prototype.getAttestationTypedDataRequest = function (params, signTypedData) {
         return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var digest, _a, v, r, s;
+            var data, _a, v, r, s;
             return tslib_1.__generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
-                        digest = this.getAttestationDigest(params);
-                        return [4 /*yield*/, signMessage(Buffer.from(digest.slice(2), "hex"))];
+                        data = this.getAttestationTypedData(params);
+                        return [4 /*yield*/, signTypedData(JSON.stringify(data))];
                     case 1:
                         _a = _b.sent(), v = _a.v, r = _a.r, s = _a.s;
                         return [2 /*return*/, {
                                 v: v,
                                 r: r,
                                 s: s,
-                                data: this.getAttestationTypedData(params)
+                                data: data
                             }];
                 }
             });
@@ -180,21 +180,21 @@ var Proxy = /** @class */ (function () {
             }
         };
     };
-    Proxy.prototype.getRevocationTypedDataRequest = function (params, signMessage) {
+    Proxy.prototype.getRevocationTypedDataRequest = function (params, signTypedData) {
         return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var digest, _a, v, r, s;
+            var data, _a, v, r, s;
             return tslib_1.__generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
-                        digest = this.getRevocationDigest(params);
-                        return [4 /*yield*/, signMessage(Buffer.from(digest.slice(2), "hex"))];
+                        data = this.getRevocationTypedData(params);
+                        return [4 /*yield*/, signTypedData(JSON.stringify(data))];
                     case 1:
                         _a = _b.sent(), v = _a.v, r = _a.r, s = _a.s;
                         return [2 /*return*/, {
                                 v: v,
                                 r: r,
                                 s: s,
-                                data: this.getRevocationTypedData(params)
+                                data: data
                             }];
                 }
             });

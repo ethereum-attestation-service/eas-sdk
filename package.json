@@ -1,6 +1,6 @@
 {
   "name": "@ethereum-attestation-service/sdk",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Ethereum Attestation Service SDK",
   "repository": "git@github.com:ethereum-attestation-service/sdk.git",
   "author": "Leonid Beder <leonid.beder@gmail.com>",
