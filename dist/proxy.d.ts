@@ -25,7 +25,6 @@ export interface EIP712Request {
     v: number;
     r: string;
     s: string;
-    digest: string;
 }
 export interface EIP712AttestationRequest extends EIP712Request {
     params: EIP712AttestationParams;
@@ -73,17 +72,27 @@ export interface EIP712RevocationTypedData {
     };
     message: EIP712RevocationParams;
 }
+export interface EIP712AttestationTypedDataRequest extends EIP712Request {
+    data: EIP712AttestationTypedData;
+}
+export interface EIP712RevocationTypedDataRequest extends EIP712Request {
+    data: EIP712RevocationTypedData;
+}
 export declare class Proxy {
     private eip712Config;
     constructor(eip712Config: EIP712Config);
     getDomainSeparator(): string;
     getDomainTypedData(): EIP712DomainTypedData;
     getAttestationRequest(params: EIP712AttestationParams, signMessage: SignMessage): Promise<EIP712AttestationRequest>;
-    verifyAttestationRequest(attester: string, params: EIP712AttestationRequest, verifyMessage: VerifyMessage): Promise<boolean>;
+    verifyAttestationRequest(attester: string, request: EIP712AttestationRequest, verifyMessage: VerifyMessage): Promise<boolean>;
     getAttestationTypedData(params: EIP712AttestationParams): EIP712AttestationTypedData;
+    getAttestationTypedDataRequest(params: EIP712AttestationParams, signMessage: SignMessage): Promise<EIP712AttestationTypedDataRequest>;
+    verifyAttestationTypedDataRequest(attester: string, request: EIP712AttestationTypedDataRequest, verifyMessage: VerifyMessage): Promise<boolean>;
     getRevocationRequest(params: EIP712RevocationParams, signMessage: SignMessage): Promise<EIP712RevocationRequest>;
-    verifyRevocationRequest(attester: string, params: EIP712RevocationRequest, verifyMessage: VerifyMessage): Promise<boolean>;
+    verifyRevocationRequest(attester: string, request: EIP712RevocationRequest, verifyMessage: VerifyMessage): Promise<boolean>;
     getRevocationTypedData(params: EIP712RevocationParams): EIP712RevocationTypedData;
+    getRevocationTypedDataRequest(params: EIP712RevocationParams, signMessage: SignMessage): Promise<EIP712RevocationTypedDataRequest>;
+    verifyRevocationTypedDataRequest(attester: string, request: EIP712RevocationTypedDataRequest, verifyMessage: VerifyMessage): Promise<boolean>;
     private getAttestationDigest;
     private getRevocationDigest;
 }

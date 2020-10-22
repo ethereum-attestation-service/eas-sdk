@@ -35,7 +35,6 @@ export interface EIP712Request {
   v: number;
   r: string;
   s: string;
-  digest: string;
 }
 
 export interface EIP712AttestationRequest extends EIP712Request {
@@ -114,6 +113,14 @@ export interface EIP712RevocationTypedData {
   message: EIP712RevocationParams;
 }
 
+export interface EIP712AttestationTypedDataRequest extends EIP712Request {
+  data: EIP712AttestationTypedData;
+}
+
+export interface EIP712RevocationTypedDataRequest extends EIP712Request {
+  data: EIP712RevocationTypedData;
+}
+
 export class Proxy {
   private eip712Config: EIP712Config;
 
@@ -152,23 +159,19 @@ export class Proxy {
     const digest = this.getAttestationDigest(params);
     const { v, r, s } = await signMessage(Buffer.from(digest.slice(2), "hex"));
 
-    return { v, r, s, digest, params };
+    return { v, r, s, params };
   }
 
   public async verifyAttestationRequest(
     attester: string,
-    params: EIP712AttestationRequest,
+    request: EIP712AttestationRequest,
     verifyMessage: VerifyMessage
   ): Promise<boolean> {
-    const digest = this.getAttestationDigest(params.params);
-    if (digest !== params.digest) {
-      return false;
-    }
-
+    const digest = this.getAttestationDigest(request.params);
     const recoveredAddress = await verifyMessage(Buffer.from(digest.slice(2), "hex"), {
-      v: params.v,
-      s: params.s,
-      r: params.r
+      v: request.v,
+      s: request.s,
+      r: request.r
     });
 
     return attester === recoveredAddress;
@@ -186,6 +189,36 @@ export class Proxy {
     };
   }
 
+  public async getAttestationTypedDataRequest(
+    params: EIP712AttestationParams,
+    signMessage: SignMessage
+  ): Promise<EIP712AttestationTypedDataRequest> {
+    const digest = this.getAttestationDigest(params);
+    const { v, r, s } = await signMessage(Buffer.from(digest.slice(2), "hex"));
+
+    return {
+      v,
+      r,
+      s,
+      data: this.getAttestationTypedData(params)
+    };
+  }
+
+  public async verifyAttestationTypedDataRequest(
+    attester: string,
+    request: EIP712AttestationTypedDataRequest,
+    verifyMessage: VerifyMessage
+  ): Promise<boolean> {
+    const digest = this.getAttestationDigest(request.data.message);
+    const recoveredAddress = await verifyMessage(Buffer.from(digest.slice(2), "hex"), {
+      v: request.v,
+      s: request.s,
+      r: request.r
+    });
+
+    return attester === recoveredAddress;
+  }
+
   public async getRevocationRequest(
     params: EIP712RevocationParams,
     signMessage: SignMessage
@@ -193,23 +226,19 @@ export class Proxy {
     const digest = this.getRevocationDigest(params);
     const { v, r, s } = await signMessage(Buffer.from(digest.slice(2), "hex"));
 
-    return { v, r, s, digest, params };
+    return { v, r, s, params };
   }
 
   public async verifyRevocationRequest(
     attester: string,
-    params: EIP712RevocationRequest,
+    request: EIP712RevocationRequest,
     verifyMessage: VerifyMessage
   ): Promise<boolean> {
-    const digest = this.getRevocationDigest(params.params);
-    if (digest !== params.digest) {
-      return false;
-    }
-
+    const digest = this.getRevocationDigest(request.params);
     const recoveredAddress = await verifyMessage(Buffer.from(digest.slice(2), "hex"), {
-      v: params.v,
-      s: params.s,
-      r: params.r
+      v: request.v,
+      s: request.s,
+      r: request.r
     });
 
     return attester === recoveredAddress;
@@ -225,6 +254,36 @@ export class Proxy {
         Revoke: REVOKE_TYPE
       }
     };
+  }
+
+  public async getRevocationTypedDataRequest(
+    params: EIP712RevocationParams,
+    signMessage: SignMessage
+  ): Promise<EIP712RevocationTypedDataRequest> {
+    const digest = this.getRevocationDigest(params);
+    const { v, r, s } = await signMessage(Buffer.from(digest.slice(2), "hex"));
+
+    return {
+      v,
+      r,
+      s,
+      data: this.getRevocationTypedData(params)
+    };
+  }
+
+  public async verifyRevocationTypedDataRequest(
+    attester: string,
+    request: EIP712RevocationTypedDataRequest,
+    verifyMessage: VerifyMessage
+  ): Promise<boolean> {
+    const digest = this.getRevocationDigest(request.data.message);
+    const recoveredAddress = await verifyMessage(Buffer.from(digest.slice(2), "hex"), {
+      v: request.v,
+      s: request.s,
+      r: request.r
+    });
+
+    return attester === recoveredAddress;
   }
 
   private getAttestationDigest(params: EIP712AttestationParams): string {

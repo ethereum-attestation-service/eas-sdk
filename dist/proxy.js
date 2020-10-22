@@ -61,25 +61,22 @@ var Proxy = /** @class */ (function () {
                         return [4 /*yield*/, signMessage(Buffer.from(digest.slice(2), "hex"))];
                     case 1:
                         _a = _b.sent(), v = _a.v, r = _a.r, s = _a.s;
-                        return [2 /*return*/, { v: v, r: r, s: s, digest: digest, params: params }];
+                        return [2 /*return*/, { v: v, r: r, s: s, params: params }];
                 }
             });
         });
     };
-    Proxy.prototype.verifyAttestationRequest = function (attester, params, verifyMessage) {
+    Proxy.prototype.verifyAttestationRequest = function (attester, request, verifyMessage) {
         return tslib_1.__awaiter(this, void 0, void 0, function () {
             var digest, recoveredAddress;
             return tslib_1.__generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        digest = this.getAttestationDigest(params.params);
-                        if (digest !== params.digest) {
-                            return [2 /*return*/, false];
-                        }
+                        digest = this.getAttestationDigest(request.params);
                         return [4 /*yield*/, verifyMessage(Buffer.from(digest.slice(2), "hex"), {
-                                v: params.v,
-                                s: params.s,
-                                r: params.r
+                                v: request.v,
+                                s: request.s,
+                                r: request.r
                             })];
                     case 1:
                         recoveredAddress = _a.sent();
@@ -99,6 +96,45 @@ var Proxy = /** @class */ (function () {
             }
         };
     };
+    Proxy.prototype.getAttestationTypedDataRequest = function (params, signMessage) {
+        return tslib_1.__awaiter(this, void 0, void 0, function () {
+            var digest, _a, v, r, s;
+            return tslib_1.__generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        digest = this.getAttestationDigest(params);
+                        return [4 /*yield*/, signMessage(Buffer.from(digest.slice(2), "hex"))];
+                    case 1:
+                        _a = _b.sent(), v = _a.v, r = _a.r, s = _a.s;
+                        return [2 /*return*/, {
+                                v: v,
+                                r: r,
+                                s: s,
+                                data: this.getAttestationTypedData(params)
+                            }];
+                }
+            });
+        });
+    };
+    Proxy.prototype.verifyAttestationTypedDataRequest = function (attester, request, verifyMessage) {
+        return tslib_1.__awaiter(this, void 0, void 0, function () {
+            var digest, recoveredAddress;
+            return tslib_1.__generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        digest = this.getAttestationDigest(request.data.message);
+                        return [4 /*yield*/, verifyMessage(Buffer.from(digest.slice(2), "hex"), {
+                                v: request.v,
+                                s: request.s,
+                                r: request.r
+                            })];
+                    case 1:
+                        recoveredAddress = _a.sent();
+                        return [2 /*return*/, attester === recoveredAddress];
+                }
+            });
+        });
+    };
     Proxy.prototype.getRevocationRequest = function (params, signMessage) {
         return tslib_1.__awaiter(this, void 0, void 0, function () {
             var digest, _a, v, r, s;
@@ -109,25 +145,22 @@ var Proxy = /** @class */ (function () {
                         return [4 /*yield*/, signMessage(Buffer.from(digest.slice(2), "hex"))];
                     case 1:
                         _a = _b.sent(), v = _a.v, r = _a.r, s = _a.s;
-                        return [2 /*return*/, { v: v, r: r, s: s, digest: digest, params: params }];
+                        return [2 /*return*/, { v: v, r: r, s: s, params: params }];
                 }
             });
         });
     };
-    Proxy.prototype.verifyRevocationRequest = function (attester, params, verifyMessage) {
+    Proxy.prototype.verifyRevocationRequest = function (attester, request, verifyMessage) {
         return tslib_1.__awaiter(this, void 0, void 0, function () {
             var digest, recoveredAddress;
             return tslib_1.__generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        digest = this.getRevocationDigest(params.params);
-                        if (digest !== params.digest) {
-                            return [2 /*return*/, false];
-                        }
+                        digest = this.getRevocationDigest(request.params);
                         return [4 /*yield*/, verifyMessage(Buffer.from(digest.slice(2), "hex"), {
-                                v: params.v,
-                                s: params.s,
-                                r: params.r
+                                v: request.v,
+                                s: request.s,
+                                r: request.r
                             })];
                     case 1:
                         recoveredAddress = _a.sent();
@@ -146,6 +179,45 @@ var Proxy = /** @class */ (function () {
                 Revoke: exports.REVOKE_TYPE
             }
         };
+    };
+    Proxy.prototype.getRevocationTypedDataRequest = function (params, signMessage) {
+        return tslib_1.__awaiter(this, void 0, void 0, function () {
+            var digest, _a, v, r, s;
+            return tslib_1.__generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        digest = this.getRevocationDigest(params);
+                        return [4 /*yield*/, signMessage(Buffer.from(digest.slice(2), "hex"))];
+                    case 1:
+                        _a = _b.sent(), v = _a.v, r = _a.r, s = _a.s;
+                        return [2 /*return*/, {
+                                v: v,
+                                r: r,
+                                s: s,
+                                data: this.getRevocationTypedData(params)
+                            }];
+                }
+            });
+        });
+    };
+    Proxy.prototype.verifyRevocationTypedDataRequest = function (attester, request, verifyMessage) {
+        return tslib_1.__awaiter(this, void 0, void 0, function () {
+            var digest, recoveredAddress;
+            return tslib_1.__generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        digest = this.getRevocationDigest(request.data.message);
+                        return [4 /*yield*/, verifyMessage(Buffer.from(digest.slice(2), "hex"), {
+                                v: request.v,
+                                s: request.s,
+                                r: request.r
+                            })];
+                    case 1:
+                        recoveredAddress = _a.sent();
+                        return [2 /*return*/, attester === recoveredAddress];
+                }
+            });
+        });
     };
     Proxy.prototype.getAttestationDigest = function (params) {
         return keccak256_1.keccak256(solidity_1.pack(["bytes1", "bytes1", "bytes32", "bytes32"], [

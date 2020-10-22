@@ -88,6 +88,34 @@ describe("attest", () => {
     });
   });
 
+  it("should create a proper EIP712 attestation typed data request", async () => {
+    const params = {
+      recipient: ZERO_ADDRESS,
+      ao: 555,
+      expirationTime: 12,
+      refUUID: ZERO_BYTES32,
+      data: Buffer.alloc(0),
+      nonce: 500
+    };
+
+    const wallet = Wallet.createRandom();
+    const request = await proxy.getAttestationTypedDataRequest(params, async (message: Buffer) => {
+      const { v, r, s } = splitSignature(await wallet.signMessage(message));
+      return { v, r, s };
+    });
+
+    expect(
+      await proxy.verifyAttestationTypedDataRequest(
+        await wallet.getAddress(),
+        request,
+        async (message: Buffer, signature: Signature) => {
+          const sig = joinSignature(signature);
+          return verifyMessage(message, sig);
+        }
+      )
+    ).toBeTruthy();
+  });
+
   it("should create a proper EIP712 revocation request", async () => {
     const params = {
       uuid: ZERO_BYTES32,
@@ -127,5 +155,29 @@ describe("attest", () => {
         Revoke: REVOKE_TYPE
       }
     });
+  });
+
+  it("should create a proper EIP712 revocation typed data request", async () => {
+    const params = {
+      uuid: ZERO_BYTES32,
+      nonce: 0
+    };
+
+    const wallet = Wallet.createRandom();
+    const request = await proxy.getRevocationTypedDataRequest(params, async (message: Buffer) => {
+      const { v, r, s } = splitSignature(await wallet.signMessage(message));
+      return { v, r, s };
+    });
+
+    expect(
+      await proxy.verifyRevocationTypedDataRequest(
+        await wallet.getAddress(),
+        request,
+        async (message: Buffer, signature: Signature) => {
+          const sig = joinSignature(signature);
+          return verifyMessage(message, sig);
+        }
+      )
+    ).toBeTruthy();
   });
 });
