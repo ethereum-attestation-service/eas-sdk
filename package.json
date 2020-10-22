@@ -1,0 +1,9 @@
+{
+  "name": "@ethereum-attestation-service/sdk",
+  "version": "0.0.1",
+  "description": "Ethereum Attestation Service SDK",
+  "main": "index.js",
+  "repository": "git@github.com:ethereum-attestation-service/sdk.git",
+  "author": "Leonid Beder <leonid.beder@gmail.com>",
+  "license": "MIT"
+}

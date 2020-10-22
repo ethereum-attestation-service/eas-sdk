@@ -1,2 +1,1 @@
-# eas-sdk
-Ethereum Attestation Services SDK
+# Ethereum Attestation Service SDK
