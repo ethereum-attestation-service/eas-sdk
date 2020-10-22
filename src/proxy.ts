@@ -47,7 +47,9 @@ export interface EIP712RevocationRequest extends EIP712Request {
 
 export type Signature = { v: number; r: string; s: string };
 export type SignMessage = (message: Buffer) => Promise<Signature>;
+export type SignTypedData = (data: string) => Promise<Signature>;
 export type VerifyMessage = (message: Buffer, signature: Signature) => Promise<string>;
+export type VerifyTypedData = (data: string, signature: Signature) => Promise<string>;
 
 export interface Attribute {
   name: string;
@@ -191,26 +193,25 @@ export class Proxy {
 
   public async getAttestationTypedDataRequest(
     params: EIP712AttestationParams,
-    signMessage: SignMessage
+    signTypedData: SignTypedData
   ): Promise<EIP712AttestationTypedDataRequest> {
-    const digest = this.getAttestationDigest(params);
-    const { v, r, s } = await signMessage(Buffer.from(digest.slice(2), "hex"));
+    const data = this.getAttestationTypedData(params);
+    const { v, r, s } = await signTypedData(JSON.stringify(data));
 
     return {
       v,
       r,
       s,
-      data: this.getAttestationTypedData(params)
+      data
     };
   }
 
   public async verifyAttestationTypedDataRequest(
     attester: string,
     request: EIP712AttestationTypedDataRequest,
-    verifyMessage: VerifyMessage
+    verifyTypedData: VerifyTypedData
   ): Promise<boolean> {
-    const digest = this.getAttestationDigest(request.data.message);
-    const recoveredAddress = await verifyMessage(Buffer.from(digest.slice(2), "hex"), {
+    const recoveredAddress = await verifyTypedData(JSON.stringify(request.data), {
       v: request.v,
       s: request.s,
       r: request.r
@@ -258,26 +259,25 @@ export class Proxy {
 
   public async getRevocationTypedDataRequest(
     params: EIP712RevocationParams,
-    signMessage: SignMessage
+    signTypedData: SignTypedData
   ): Promise<EIP712RevocationTypedDataRequest> {
-    const digest = this.getRevocationDigest(params);
-    const { v, r, s } = await signMessage(Buffer.from(digest.slice(2), "hex"));
+    const data = this.getRevocationTypedData(params);
+    const { v, r, s } = await signTypedData(JSON.stringify(data));
 
     return {
       v,
       r,
       s,
-      data: this.getRevocationTypedData(params)
+      data
     };
   }
 
   public async verifyRevocationTypedDataRequest(
     attester: string,
     request: EIP712RevocationTypedDataRequest,
-    verifyMessage: VerifyMessage
+    verifyTypedData: VerifyTypedData
   ): Promise<boolean> {
-    const digest = this.getRevocationDigest(request.data.message);
-    const recoveredAddress = await verifyMessage(Buffer.from(digest.slice(2), "hex"), {
+    const recoveredAddress = await verifyTypedData(JSON.stringify(request.data), {
       v: request.v,
       s: request.s,
       r: request.r

@@ -99,8 +99,8 @@ describe("attest", () => {
     };
 
     const wallet = Wallet.createRandom();
-    const request = await proxy.getAttestationTypedDataRequest(params, async (message: Buffer) => {
-      const { v, r, s } = splitSignature(await wallet.signMessage(message));
+    const request = await proxy.getAttestationTypedDataRequest(params, async (data: string) => {
+      const { v, r, s } = splitSignature(await wallet.signMessage(data));
       return { v, r, s };
     });
 
@@ -108,9 +108,9 @@ describe("attest", () => {
       await proxy.verifyAttestationTypedDataRequest(
         await wallet.getAddress(),
         request,
-        async (message: Buffer, signature: Signature) => {
+        async (data: string, signature: Signature) => {
           const sig = joinSignature(signature);
-          return verifyMessage(message, sig);
+          return verifyMessage(data, sig);
         }
       )
     ).toBeTruthy();
@@ -164,8 +164,8 @@ describe("attest", () => {
     };
 
     const wallet = Wallet.createRandom();
-    const request = await proxy.getRevocationTypedDataRequest(params, async (message: Buffer) => {
-      const { v, r, s } = splitSignature(await wallet.signMessage(message));
+    const request = await proxy.getRevocationTypedDataRequest(params, async (data: string) => {
+      const { v, r, s } = splitSignature(await wallet.signMessage(data));
       return { v, r, s };
     });
 
@@ -173,9 +173,9 @@ describe("attest", () => {
       await proxy.verifyRevocationTypedDataRequest(
         await wallet.getAddress(),
         request,
-        async (message: Buffer, signature: Signature) => {
+        async (data: string, signature: Signature) => {
           const sig = joinSignature(signature);
-          return verifyMessage(message, sig);
+          return verifyMessage(data, sig);
         }
       )
     ).toBeTruthy();
