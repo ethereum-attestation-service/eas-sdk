@@ -1,15 +1,35 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Proxy = exports.EIP712_NAME = exports.EIP712_DOMAIN = exports.REVOKE_TYPE = exports.ATTEST_TYPE = void 0;
+exports.Proxy = exports.REVOKE_TYPE = exports.ATTEST_TYPE = exports.DOMAIN_TYPE = exports.REVOKE_PRIMARY_TYPE = exports.ATTEST_PRIMARY_TYPE = exports.EIP712_NAME = exports.EIP712_DOMAIN = exports.REVOKE_TYPED_SIGNATURE = exports.ATTEST_TYPED_SIGNATURE = void 0;
 var tslib_1 = require("tslib");
 var keccak256_1 = require("@ethersproject/keccak256");
 var abi_1 = require("@ethersproject/abi");
 var strings_1 = require("@ethersproject/strings");
 var solidity_1 = require("@ethersproject/solidity");
-exports.ATTEST_TYPE = "Attest(address recipient,uint256 ao,uint256 expirationTime,bytes32 refUUID,bytes data,uint256 nonce)";
-exports.REVOKE_TYPE = "Revoke(byte32 uuid,uint256 nonce)";
+exports.ATTEST_TYPED_SIGNATURE = "Attest(address recipient,uint256 ao,uint256 expirationTime,bytes32 refUUID,bytes data,uint256 nonce)";
+exports.REVOKE_TYPED_SIGNATURE = "Revoke(byte32 uuid,uint256 nonce)";
 exports.EIP712_DOMAIN = "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)";
 exports.EIP712_NAME = "EAS";
+exports.ATTEST_PRIMARY_TYPE = "Attest";
+exports.REVOKE_PRIMARY_TYPE = "Revoke";
+exports.DOMAIN_TYPE = [
+    { name: "name", type: "string" },
+    { name: "version", type: "string" },
+    { name: "chainId", type: "uint256" },
+    { name: "verifyingContract", type: "address" }
+];
+exports.ATTEST_TYPE = [
+    { name: "recipient", type: "address" },
+    { name: "ao", type: "uint256" },
+    { name: "expirationTime", type: "uint256" },
+    { name: "refUUID", type: "bytes32" },
+    { name: "data", type: "bytes" },
+    { name: "nonce", type: "uint256" }
+];
+exports.REVOKE_TYPE = [
+    { name: "uuid", type: "bytes32" },
+    { name: "nonce", type: "uint256" }
+];
 var Proxy = /** @class */ (function () {
     function Proxy(eip712Config) {
         this.eip712Config = eip712Config;
@@ -22,6 +42,14 @@ var Proxy = /** @class */ (function () {
             this.eip712Config.chainId,
             this.eip712Config.address
         ]));
+    };
+    Proxy.prototype.getDomainTypedData = function () {
+        return {
+            chainId: this.eip712Config.chainId,
+            name: exports.EIP712_NAME,
+            verifyingContract: this.eip712Config.address,
+            version: this.eip712Config.version
+        };
     };
     Proxy.prototype.getAttestationRequest = function (params, signMessage) {
         return tslib_1.__awaiter(this, void 0, void 0, function () {
@@ -60,6 +88,17 @@ var Proxy = /** @class */ (function () {
             });
         });
     };
+    Proxy.prototype.getAttestationTypedData = function (params) {
+        return {
+            domain: this.getDomainTypedData(),
+            primaryType: exports.ATTEST_PRIMARY_TYPE,
+            message: params,
+            types: {
+                EIP712Domain: exports.DOMAIN_TYPE,
+                Attest: exports.ATTEST_TYPE
+            }
+        };
+    };
     Proxy.prototype.getRevocationRequest = function (params, signMessage) {
         return tslib_1.__awaiter(this, void 0, void 0, function () {
             var digest, _a, v, r, s;
@@ -97,13 +136,24 @@ var Proxy = /** @class */ (function () {
             });
         });
     };
+    Proxy.prototype.getRevocationTypedData = function (params) {
+        return {
+            domain: this.getDomainTypedData(),
+            primaryType: exports.REVOKE_PRIMARY_TYPE,
+            message: params,
+            types: {
+                EIP712Domain: exports.DOMAIN_TYPE,
+                Revoke: exports.REVOKE_TYPE
+            }
+        };
+    };
     Proxy.prototype.getAttestationDigest = function (params) {
         return keccak256_1.keccak256(solidity_1.pack(["bytes1", "bytes1", "bytes32", "bytes32"], [
             "0x19",
             "0x01",
             this.getDomainSeparator(),
             keccak256_1.keccak256(abi_1.defaultAbiCoder.encode(["bytes32", "address", "uint256", "uint256", "bytes32", "bytes", "uint256"], [
-                keccak256_1.keccak256(strings_1.toUtf8Bytes(exports.ATTEST_TYPE)),
+                keccak256_1.keccak256(strings_1.toUtf8Bytes(exports.ATTEST_TYPED_SIGNATURE)),
                 params.recipient,
                 params.ao,
                 params.expirationTime,
@@ -118,7 +168,7 @@ var Proxy = /** @class */ (function () {
             "0x19",
             "0x01",
             this.getDomainSeparator(),
-            keccak256_1.keccak256(abi_1.defaultAbiCoder.encode(["bytes32", "bytes32", "uint256"], [keccak256_1.keccak256(strings_1.toUtf8Bytes(exports.REVOKE_TYPE)), params.uuid, params.nonce]))
+            keccak256_1.keccak256(abi_1.defaultAbiCoder.encode(["bytes32", "bytes32", "uint256"], [keccak256_1.keccak256(strings_1.toUtf8Bytes(exports.REVOKE_TYPED_SIGNATURE)), params.uuid, params.nonce]))
         ]));
     };
     return Proxy;
