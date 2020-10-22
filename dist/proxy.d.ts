@@ -16,7 +16,7 @@ export interface EIP712AttestationParams extends EIP712Params {
     ao: number;
     expirationTime: number;
     refUUID: string;
-    data: string;
+    data: Buffer;
 }
 export interface EIP712RevocationParams extends EIP712Params {
     uuid: string;

@@ -7,7 +7,6 @@ import { Proxy, Signature, ATTEST_TYPE, REVOKE_TYPE } from "../src/proxy";
 
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 const ZERO_BYTES32 = "0x0000000000000000000000000000000000000000000000000000000000000000";
-const ZERO_BYTES = "0x00";
 
 describe("type hashes", () => {
   it("should have matching ATTEST_TYPE to the contract's ATTEST_TYPEHASH", () => {
@@ -36,7 +35,7 @@ describe("attest", () => {
       ao: 123,
       expirationTime: 100000,
       refUUID: ZERO_BYTES32,
-      data: ZERO_BYTES,
+      data: Buffer.alloc(0),
       nonce: 0
     };
 

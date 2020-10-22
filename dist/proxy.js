@@ -108,7 +108,7 @@ var Proxy = /** @class */ (function () {
                 params.ao,
                 params.expirationTime,
                 params.refUUID,
-                Buffer.from(params.data.slice(2), "hex"),
+                params.data,
                 params.nonce
             ]))
         ]));
