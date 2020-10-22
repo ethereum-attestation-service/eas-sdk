@@ -1,0 +1,24 @@
+# Dependencies.
+/node_modules
+/.pnp
+.pnp.js
+
+# Testing.
+/coverage
+
+# Production.
+/build
+
+# Ignore all .env files.
+.env*
+!.env
+!.env.template
+
+# Misc.
+.DS_Store
+.vscode/
+
+# Debug logs.
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

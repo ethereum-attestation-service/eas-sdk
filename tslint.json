@@ -1,0 +1,13 @@
+{
+  "rules": {
+    "object-literal-sort-keys": false,
+    "ordered-imports": false,
+    "import-name": false,
+    "member-ordering": true,
+    "member-access": true,
+    "variable-name": [true, "ban-keywords", "check-format", "allow-leading-underscore", "allow-pascal-case"],
+    "semicolon": true,
+    "quotemark": [true, "double"]
+  },
+  "extends": ["tslint:recommended", "tslint-config-airbnb", "tslint-config-prettier"]
+}
