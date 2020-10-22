@@ -116,18 +116,16 @@ var Proxy = /** @class */ (function () {
             });
         });
     };
-    Proxy.prototype.verifyAttestationTypedDataRequest = function (attester, request, verifyMessage) {
+    Proxy.prototype.verifyAttestationTypedDataRequest = function (attester, request, verifyTypedData) {
         return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var digest, recoveredAddress;
+            var recoveredAddress;
             return tslib_1.__generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0:
-                        digest = this.getAttestationDigest(request.data.message);
-                        return [4 /*yield*/, verifyMessage(Buffer.from(digest.slice(2), "hex"), {
-                                v: request.v,
-                                s: request.s,
-                                r: request.r
-                            })];
+                    case 0: return [4 /*yield*/, verifyTypedData(JSON.stringify(request.data), {
+                            v: request.v,
+                            s: request.s,
+                            r: request.r
+                        })];
                     case 1:
                         recoveredAddress = _a.sent();
                         return [2 /*return*/, attester === recoveredAddress];
@@ -200,18 +198,16 @@ var Proxy = /** @class */ (function () {
             });
         });
     };
-    Proxy.prototype.verifyRevocationTypedDataRequest = function (attester, request, verifyMessage) {
+    Proxy.prototype.verifyRevocationTypedDataRequest = function (attester, request, verifyTypedData) {
         return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var digest, recoveredAddress;
+            var recoveredAddress;
             return tslib_1.__generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0:
-                        digest = this.getRevocationDigest(request.data.message);
-                        return [4 /*yield*/, verifyMessage(Buffer.from(digest.slice(2), "hex"), {
-                                v: request.v,
-                                s: request.s,
-                                r: request.r
-                            })];
+                    case 0: return [4 /*yield*/, verifyTypedData(JSON.stringify(request.data), {
+                            v: request.v,
+                            s: request.s,
+                            r: request.r
+                        })];
                     case 1:
                         recoveredAddress = _a.sent();
                         return [2 /*return*/, attester === recoveredAddress];
