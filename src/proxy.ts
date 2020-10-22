@@ -57,6 +57,21 @@ export class Proxy {
     this.eip712Config = eip712Config;
   }
 
+  public getDomainSeparator() {
+    return keccak256(
+      defaultAbiCoder.encode(
+        ["bytes32", "bytes32", "bytes32", "uint256", "address"],
+        [
+          keccak256(toUtf8Bytes(EIP712_DOMAIN)),
+          keccak256(toUtf8Bytes(EIP712_NAME)),
+          keccak256(toUtf8Bytes(this.eip712Config.version)),
+          this.eip712Config.chainId,
+          this.eip712Config.address
+        ]
+      )
+    );
+  }
+
   public async getAttestationRequest(
     params: EIP712AttestationParams,
     signMessage: SignMessage
@@ -113,21 +128,6 @@ export class Proxy {
     });
 
     return attester === recoveredAddress;
-  }
-
-  private getDomainSeparator() {
-    return keccak256(
-      defaultAbiCoder.encode(
-        ["bytes32", "bytes32", "bytes32", "uint256", "address"],
-        [
-          keccak256(toUtf8Bytes(EIP712_DOMAIN)),
-          keccak256(toUtf8Bytes(EIP712_NAME)),
-          keccak256(toUtf8Bytes(this.eip712Config.version)),
-          this.eip712Config.chainId,
-          this.eip712Config.address
-        ]
-      )
-    );
   }
 
   private getAttestationDigest(params: EIP712AttestationParams): string {
