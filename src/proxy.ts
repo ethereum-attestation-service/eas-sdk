@@ -24,7 +24,7 @@ export interface EIP712AttestationParams extends EIP712Params {
   ao: number;
   expirationTime: number;
   refUUID: string;
-  data: string;
+  data: Buffer;
 }
 
 export interface EIP712RevocationParams extends EIP712Params {
@@ -147,7 +147,7 @@ export class Proxy {
                 params.ao,
                 params.expirationTime,
                 params.refUUID,
-                Buffer.from(params.data.slice(2), "hex"),
+                params.data,
                 params.nonce
               ]
             )
