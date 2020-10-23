@@ -1,8 +1,10 @@
 import { keccak256 } from "@ethersproject/keccak256";
-import { Wallet, verifyMessage } from "@ethersproject/wallet";
+import { Wallet } from "@ethersproject/wallet";
 import { toUtf8Bytes } from "@ethersproject/strings";
-import { splitSignature, joinSignature } from "@ethersproject/bytes";
+import { splitSignature, joinSignature, hexlify } from "@ethersproject/bytes";
+import { recoverAddress } from "@ethersproject/transactions";
 import { signTypedData_v4, recoverTypedSignature_v4 } from "eth-sig-util";
+import { ecsign } from "ethereumjs-util";
 
 import {
   Proxy,
@@ -25,7 +27,7 @@ describe("type hashes", () => {
 
   it("should have matching REVOKE_TYPE to the contract's REVOKE_TYPEHASH", () => {
     expect(keccak256(toUtf8Bytes(REVOKE_TYPED_SIGNATURE))).toEqual(
-      "0x75d496468bcca1c327d9bccd1482359dcf755ab9af99c9a010c7a787c747c385"
+      "0xbae0931f3a99efd1b97c2f5b6b6e79d16418246b5055d64757e16de5ad11a8ab"
     );
   });
 });
@@ -49,7 +51,7 @@ describe("attest", () => {
 
     const wallet = Wallet.createRandom();
     const request = await proxy.getAttestationRequest(params, async (message: Buffer) => {
-      const { v, r, s } = splitSignature(await wallet.signMessage(message));
+      const { v, r, s } = ecsign(message, Buffer.from(wallet._signingKey().privateKey.slice(2), "hex"));
       return { v, r, s };
     });
 
@@ -58,8 +60,8 @@ describe("attest", () => {
         await wallet.getAddress(),
         request,
         async (message: Buffer, signature: Signature) => {
-          const sig = joinSignature(signature);
-          return verifyMessage(message, sig);
+          const sig = joinSignature({ v: signature.v, r: hexlify(signature.r), s: hexlify(signature.s) });
+          return recoverAddress(message, sig);
         }
       )
     ).toBeTruthy();
@@ -71,7 +73,7 @@ describe("attest", () => {
       ao: 555,
       expirationTime: 12,
       refUUID: ZERO_BYTES32,
-      data: Buffer.alloc(0),
+      data: Buffer.from("1234", "hex"),
       nonce: 500
     };
 
@@ -80,6 +82,11 @@ describe("attest", () => {
       const { v, r, s } = splitSignature(
         await signTypedData_v4(Buffer.from(wallet._signingKey().privateKey.slice(2), "hex"), { data })
       );
+      return { v, r: Buffer.from(r.slice(2), "hex"), s: Buffer.from(s.slice(2), "hex") };
+    });
+
+    await proxy.getAttestationRequest(params, async (message: Buffer) => {
+      const { v, r, s } = ecsign(message, Buffer.from(wallet._signingKey().privateKey.slice(2), "hex"));
       return { v, r, s };
     });
 
@@ -88,7 +95,22 @@ describe("attest", () => {
         await wallet.getAddress(),
         request,
         async (data: EIP712AttestationTypedData, signature: Signature) => {
-          return recoverTypedSignature_v4({ data, sig: joinSignature(signature) });
+          return recoverTypedSignature_v4({
+            data,
+            sig: joinSignature({ v: signature.v, r: hexlify(signature.r), s: hexlify(signature.s) })
+          });
+        }
+      )
+    ).toBeTruthy();
+
+    const request2 = { params, v: request.v, r: request.r, s: request.s };
+    expect(
+      await proxy.verifyAttestationRequest(
+        await wallet.getAddress(),
+        request2,
+        async (message: Buffer, signature: Signature) => {
+          const sig = joinSignature({ v: signature.v, r: hexlify(signature.r), s: hexlify(signature.s) });
+          return recoverAddress(message, sig);
         }
       )
     ).toBeTruthy();
@@ -102,7 +124,7 @@ describe("attest", () => {
 
     const wallet = Wallet.createRandom();
     const request = await proxy.getRevocationRequest(params, async (message: Buffer) => {
-      const { v, r, s } = splitSignature(await wallet.signMessage(message));
+      const { v, r, s } = ecsign(message, Buffer.from(wallet._signingKey().privateKey.slice(2), "hex"));
       return { v, r, s };
     });
 
@@ -111,8 +133,8 @@ describe("attest", () => {
         await wallet.getAddress(),
         request,
         async (message: Buffer, signature: Signature) => {
-          const sig = joinSignature(signature);
-          return verifyMessage(message, sig);
+          const sig = joinSignature({ v: signature.v, r: hexlify(signature.r), s: hexlify(signature.s) });
+          return recoverAddress(message, sig);
         }
       )
     ).toBeTruthy();
@@ -121,7 +143,7 @@ describe("attest", () => {
   it("should create a proper EIP712 revocation typed data request", async () => {
     const params = {
       uuid: ZERO_BYTES32,
-      nonce: 0
+      nonce: 10
     };
 
     const wallet = Wallet.createRandom();
@@ -129,7 +151,8 @@ describe("attest", () => {
       const { v, r, s } = splitSignature(
         await signTypedData_v4(Buffer.from(wallet._signingKey().privateKey.slice(2), "hex"), { data })
       );
-      return { v, r, s };
+
+      return { v, r: Buffer.from(r.slice(2), "hex"), s: Buffer.from(s.slice(2), "hex") };
     });
 
     expect(
@@ -137,7 +160,22 @@ describe("attest", () => {
         await wallet.getAddress(),
         request,
         async (data: EIP712RevocationTypedData, signature: Signature) => {
-          return recoverTypedSignature_v4({ data, sig: joinSignature(signature) });
+          return recoverTypedSignature_v4({
+            data,
+            sig: joinSignature({ v: signature.v, r: hexlify(signature.r), s: hexlify(signature.s) })
+          });
+        }
+      )
+    ).toBeTruthy();
+
+    const request2 = { params, v: request.v, r: request.r, s: request.s };
+    expect(
+      await proxy.verifyRevocationRequest(
+        await wallet.getAddress(),
+        request2,
+        async (message: Buffer, signature: Signature) => {
+          const sig = joinSignature({ v: signature.v, r: hexlify(signature.r), s: hexlify(signature.s) });
+          return recoverAddress(message, sig);
         }
       )
     ).toBeTruthy();

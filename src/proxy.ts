@@ -6,7 +6,7 @@ import { getAddress } from "@ethersproject/address";
 
 export const ATTEST_TYPED_SIGNATURE =
   "Attest(address recipient,uint256 ao,uint256 expirationTime,bytes32 refUUID,bytes data,uint256 nonce)";
-export const REVOKE_TYPED_SIGNATURE = "Revoke(byte32 uuid,uint256 nonce)";
+export const REVOKE_TYPED_SIGNATURE = "Revoke(bytes32 uuid,uint256 nonce)";
 export const EIP712_DOMAIN = "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)";
 export const EIP712_NAME = "EAS";
 
@@ -34,8 +34,8 @@ export interface EIP712RevocationParams extends EIP712Params {
 
 export interface EIP712Request {
   v: number;
-  r: string;
-  s: string;
+  r: Buffer;
+  s: Buffer;
 }
 
 export interface EIP712AttestationRequest extends EIP712Request {
@@ -46,9 +46,9 @@ export interface EIP712RevocationRequest extends EIP712Request {
   params: EIP712RevocationParams;
 }
 
-export type Signature = { v: number; r: string; s: string };
-export type SignMessage = (message: Buffer) => Promise<Signature>;
-export type VerifyMessage = (message: Buffer, signature: Signature) => Promise<string>;
+export type Signature = { v: number; r: Buffer; s: Buffer };
+export type SignData = (message: Buffer) => Promise<Signature>;
+export type VerifyData = (message: Buffer, signature: Signature) => Promise<string>;
 
 export interface TypedData {
   name: string;
@@ -74,6 +74,7 @@ export const DOMAIN_TYPE: TypedData[] = [
   { name: "chainId", type: "uint256" },
   { name: "verifyingContract", type: "address" }
 ];
+
 export const ATTEST_TYPE: TypedData[] = [
   { name: "recipient", type: "address" },
   { name: "ao", type: "uint256" },
@@ -82,6 +83,7 @@ export const ATTEST_TYPE: TypedData[] = [
   { name: "data", type: "bytes" },
   { name: "nonce", type: "uint256" }
 ];
+
 export const REVOKE_TYPE: TypedData[] = [
   { name: "uuid", type: "bytes32" },
   { name: "nonce", type: "uint256" }
@@ -160,19 +162,19 @@ export class Proxy {
 
   public getDomainTypedData(): EIP712DomainTypedData {
     return {
-      chainId: this.eip712Config.chainId,
       name: EIP712_NAME,
-      verifyingContract: this.eip712Config.address,
-      version: this.eip712Config.version
+      version: this.eip712Config.version,
+      chainId: this.eip712Config.chainId,
+      verifyingContract: this.eip712Config.address
     };
   }
 
   public async getAttestationRequest(
     params: EIP712AttestationParams,
-    signMessage: SignMessage
+    signData: SignData
   ): Promise<EIP712AttestationRequest> {
     const digest = this.getAttestationDigest(params);
-    const { v, r, s } = await signMessage(Buffer.from(digest.slice(2), "hex"));
+    const { v, r, s } = await signData(Buffer.from(digest.slice(2), "hex"));
 
     return { v, r, s, params };
   }
@@ -180,10 +182,10 @@ export class Proxy {
   public async verifyAttestationRequest(
     attester: string,
     request: EIP712AttestationRequest,
-    verifyMessage: VerifyMessage
+    verifyData: VerifyData
   ): Promise<boolean> {
     const digest = this.getAttestationDigest(request.params);
-    const recoveredAddress = await verifyMessage(Buffer.from(digest.slice(2), "hex"), {
+    const recoveredAddress = await verifyData(Buffer.from(digest.slice(2), "hex"), {
       v: request.v,
       s: request.s,
       r: request.r
@@ -223,10 +225,10 @@ export class Proxy {
 
   public async getRevocationRequest(
     params: EIP712RevocationParams,
-    signMessage: SignMessage
+    signData: SignData
   ): Promise<EIP712RevocationRequest> {
     const digest = this.getRevocationDigest(params);
-    const { v, r, s } = await signMessage(Buffer.from(digest.slice(2), "hex"));
+    const { v, r, s } = await signData(Buffer.from(digest.slice(2), "hex"));
 
     return { v, r, s, params };
   }
@@ -234,10 +236,10 @@ export class Proxy {
   public async verifyRevocationRequest(
     attester: string,
     request: EIP712RevocationRequest,
-    verifyMessage: VerifyMessage
+    verifyData: VerifyData
   ): Promise<boolean> {
     const digest = this.getRevocationDigest(request.params);
-    const recoveredAddress = await verifyMessage(Buffer.from(digest.slice(2), "hex"), {
+    const recoveredAddress = await verifyData(Buffer.from(digest.slice(2), "hex"), {
       v: request.v,
       s: request.s,
       r: request.r
@@ -285,14 +287,14 @@ export class Proxy {
           this.getDomainSeparator(),
           keccak256(
             defaultAbiCoder.encode(
-              ["bytes32", "address", "uint256", "uint256", "bytes32", "bytes", "uint256"],
+              ["bytes32", "address", "uint256", "uint256", "bytes32", "bytes32", "uint256"],
               [
                 keccak256(toUtf8Bytes(ATTEST_TYPED_SIGNATURE)),
                 params.recipient,
                 params.ao,
                 params.expirationTime,
                 params.refUUID,
-                params.data,
+                keccak256(params.data),
                 params.nonce
               ]
             )
