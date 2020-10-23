@@ -1,6 +1,6 @@
 {
   "name": "@ethereum-attestation-service/sdk",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Ethereum Attestation Service SDK",
   "repository": "git@github.com:ethereum-attestation-service/sdk.git",
   "author": "Leonid Beder <leonid.beder@gmail.com>",
@@ -16,6 +16,7 @@
   "devDependencies": {
     "@types/jest": "^26.0.15",
     "@types/node": "^14.14.2",
+    "eth-sig-util": "^2.5.3",
     "jest": "^26.6.0",
     "prettier": "^2.1.2",
     "prettier-package-json": "^2.1.3",
