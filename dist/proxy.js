@@ -8,7 +8,7 @@ var strings_1 = require("@ethersproject/strings");
 var solidity_1 = require("@ethersproject/solidity");
 var address_1 = require("@ethersproject/address");
 exports.ATTEST_TYPED_SIGNATURE = "Attest(address recipient,uint256 ao,uint256 expirationTime,bytes32 refUUID,bytes data,uint256 nonce)";
-exports.REVOKE_TYPED_SIGNATURE = "Revoke(byte32 uuid,uint256 nonce)";
+exports.REVOKE_TYPED_SIGNATURE = "Revoke(bytes32 uuid,uint256 nonce)";
 exports.EIP712_DOMAIN = "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)";
 exports.EIP712_NAME = "EAS";
 exports.ATTEST_PRIMARY_TYPE = "Attest";
@@ -46,20 +46,20 @@ var Proxy = /** @class */ (function () {
     };
     Proxy.prototype.getDomainTypedData = function () {
         return {
-            chainId: this.eip712Config.chainId,
             name: exports.EIP712_NAME,
-            verifyingContract: this.eip712Config.address,
-            version: this.eip712Config.version
+            version: this.eip712Config.version,
+            chainId: this.eip712Config.chainId,
+            verifyingContract: this.eip712Config.address
         };
     };
-    Proxy.prototype.getAttestationRequest = function (params, signMessage) {
+    Proxy.prototype.getAttestationRequest = function (params, signData) {
         return tslib_1.__awaiter(this, void 0, void 0, function () {
             var digest, _a, v, r, s;
             return tslib_1.__generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
                         digest = this.getAttestationDigest(params);
-                        return [4 /*yield*/, signMessage(Buffer.from(digest.slice(2), "hex"))];
+                        return [4 /*yield*/, signData(Buffer.from(digest.slice(2), "hex"))];
                     case 1:
                         _a = _b.sent(), v = _a.v, r = _a.r, s = _a.s;
                         return [2 /*return*/, { v: v, r: r, s: s, params: params }];
@@ -67,14 +67,14 @@ var Proxy = /** @class */ (function () {
             });
         });
     };
-    Proxy.prototype.verifyAttestationRequest = function (attester, request, verifyMessage) {
+    Proxy.prototype.verifyAttestationRequest = function (attester, request, verifyData) {
         return tslib_1.__awaiter(this, void 0, void 0, function () {
             var digest, recoveredAddress;
             return tslib_1.__generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         digest = this.getAttestationDigest(request.params);
-                        return [4 /*yield*/, verifyMessage(Buffer.from(digest.slice(2), "hex"), {
+                        return [4 /*yield*/, verifyData(Buffer.from(digest.slice(2), "hex"), {
                                 v: request.v,
                                 s: request.s,
                                 r: request.r
@@ -123,14 +123,14 @@ var Proxy = /** @class */ (function () {
             });
         });
     };
-    Proxy.prototype.getRevocationRequest = function (params, signMessage) {
+    Proxy.prototype.getRevocationRequest = function (params, signData) {
         return tslib_1.__awaiter(this, void 0, void 0, function () {
             var digest, _a, v, r, s;
             return tslib_1.__generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
                         digest = this.getRevocationDigest(params);
-                        return [4 /*yield*/, signMessage(Buffer.from(digest.slice(2), "hex"))];
+                        return [4 /*yield*/, signData(Buffer.from(digest.slice(2), "hex"))];
                     case 1:
                         _a = _b.sent(), v = _a.v, r = _a.r, s = _a.s;
                         return [2 /*return*/, { v: v, r: r, s: s, params: params }];
@@ -138,14 +138,14 @@ var Proxy = /** @class */ (function () {
             });
         });
     };
-    Proxy.prototype.verifyRevocationRequest = function (attester, request, verifyMessage) {
+    Proxy.prototype.verifyRevocationRequest = function (attester, request, verifyData) {
         return tslib_1.__awaiter(this, void 0, void 0, function () {
             var digest, recoveredAddress;
             return tslib_1.__generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         digest = this.getRevocationDigest(request.params);
-                        return [4 /*yield*/, verifyMessage(Buffer.from(digest.slice(2), "hex"), {
+                        return [4 /*yield*/, verifyData(Buffer.from(digest.slice(2), "hex"), {
                                 v: request.v,
                                 s: request.s,
                                 r: request.r
@@ -199,13 +199,13 @@ var Proxy = /** @class */ (function () {
             "0x19",
             "0x01",
             this.getDomainSeparator(),
-            keccak256_1.keccak256(abi_1.defaultAbiCoder.encode(["bytes32", "address", "uint256", "uint256", "bytes32", "bytes", "uint256"], [
+            keccak256_1.keccak256(abi_1.defaultAbiCoder.encode(["bytes32", "address", "uint256", "uint256", "bytes32", "bytes32", "uint256"], [
                 keccak256_1.keccak256(strings_1.toUtf8Bytes(exports.ATTEST_TYPED_SIGNATURE)),
                 params.recipient,
                 params.ao,
                 params.expirationTime,
                 params.refUUID,
-                params.data,
+                keccak256_1.keccak256(params.data),
                 params.nonce
             ]))
         ]));
