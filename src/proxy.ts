@@ -2,6 +2,7 @@ import { keccak256 } from "@ethersproject/keccak256";
 import { defaultAbiCoder } from "@ethersproject/abi";
 import { toUtf8Bytes } from "@ethersproject/strings";
 import { pack } from "@ethersproject/solidity";
+import { getAddress } from "@ethersproject/address";
 
 export const ATTEST_TYPED_SIGNATURE =
   "Attest(address recipient,uint256 ao,uint256 expirationTime,bytes32 refUUID,bytes data,uint256 nonce)";
@@ -176,7 +177,7 @@ export class Proxy {
       r: request.r
     });
 
-    return attester === recoveredAddress;
+    return getAddress(attester) === getAddress(recoveredAddress);
   }
 
   public getAttestationTypedData(params: EIP712AttestationParams): EIP712AttestationTypedData {
@@ -217,7 +218,7 @@ export class Proxy {
       r: request.r
     });
 
-    return attester === recoveredAddress;
+    return getAddress(attester) === getAddress(recoveredAddress);
   }
 
   public async getRevocationRequest(
@@ -242,7 +243,7 @@ export class Proxy {
       r: request.r
     });
 
-    return attester === recoveredAddress;
+    return getAddress(attester) === getAddress(recoveredAddress);
   }
 
   public getRevocationTypedData(params: EIP712RevocationParams): EIP712RevocationTypedData {
@@ -283,7 +284,7 @@ export class Proxy {
       r: request.r
     });
 
-    return attester === recoveredAddress;
+    return getAddress(attester) === getAddress(recoveredAddress);
   }
 
   private getAttestationDigest(params: EIP712AttestationParams): string {
