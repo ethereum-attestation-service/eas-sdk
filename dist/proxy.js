@@ -6,6 +6,7 @@ var keccak256_1 = require("@ethersproject/keccak256");
 var abi_1 = require("@ethersproject/abi");
 var strings_1 = require("@ethersproject/strings");
 var solidity_1 = require("@ethersproject/solidity");
+var address_1 = require("@ethersproject/address");
 exports.ATTEST_TYPED_SIGNATURE = "Attest(address recipient,uint256 ao,uint256 expirationTime,bytes32 refUUID,bytes data,uint256 nonce)";
 exports.REVOKE_TYPED_SIGNATURE = "Revoke(byte32 uuid,uint256 nonce)";
 exports.EIP712_DOMAIN = "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)";
@@ -80,21 +81,10 @@ var Proxy = /** @class */ (function () {
                             })];
                     case 1:
                         recoveredAddress = _a.sent();
-                        return [2 /*return*/, attester === recoveredAddress];
+                        return [2 /*return*/, address_1.getAddress(attester) === address_1.getAddress(recoveredAddress)];
                 }
             });
         });
-    };
-    Proxy.prototype.getAttestationTypedData = function (params) {
-        return {
-            domain: this.getDomainTypedData(),
-            primaryType: exports.ATTEST_PRIMARY_TYPE,
-            message: params,
-            types: {
-                EIP712Domain: exports.DOMAIN_TYPE,
-                Attest: exports.ATTEST_TYPE
-            }
-        };
     };
     Proxy.prototype.getAttestationTypedDataRequest = function (params, signTypedData) {
         return tslib_1.__awaiter(this, void 0, void 0, function () {
@@ -103,7 +93,7 @@ var Proxy = /** @class */ (function () {
                 switch (_b.label) {
                     case 0:
                         data = this.getAttestationTypedData(params);
-                        return [4 /*yield*/, signTypedData(JSON.stringify(data))];
+                        return [4 /*yield*/, signTypedData(data)];
                     case 1:
                         _a = _b.sent(), v = _a.v, r = _a.r, s = _a.s;
                         return [2 /*return*/, {
@@ -121,14 +111,14 @@ var Proxy = /** @class */ (function () {
             var recoveredAddress;
             return tslib_1.__generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, verifyTypedData(JSON.stringify(request.data), {
+                    case 0: return [4 /*yield*/, verifyTypedData(request.data, {
                             v: request.v,
                             s: request.s,
                             r: request.r
                         })];
                     case 1:
                         recoveredAddress = _a.sent();
-                        return [2 /*return*/, attester === recoveredAddress];
+                        return [2 /*return*/, address_1.getAddress(attester) === address_1.getAddress(recoveredAddress)];
                 }
             });
         });
@@ -162,21 +152,10 @@ var Proxy = /** @class */ (function () {
                             })];
                     case 1:
                         recoveredAddress = _a.sent();
-                        return [2 /*return*/, attester === recoveredAddress];
+                        return [2 /*return*/, address_1.getAddress(attester) === address_1.getAddress(recoveredAddress)];
                 }
             });
         });
-    };
-    Proxy.prototype.getRevocationTypedData = function (params) {
-        return {
-            domain: this.getDomainTypedData(),
-            primaryType: exports.REVOKE_PRIMARY_TYPE,
-            message: params,
-            types: {
-                EIP712Domain: exports.DOMAIN_TYPE,
-                Revoke: exports.REVOKE_TYPE
-            }
-        };
     };
     Proxy.prototype.getRevocationTypedDataRequest = function (params, signTypedData) {
         return tslib_1.__awaiter(this, void 0, void 0, function () {
@@ -185,7 +164,7 @@ var Proxy = /** @class */ (function () {
                 switch (_b.label) {
                     case 0:
                         data = this.getRevocationTypedData(params);
-                        return [4 /*yield*/, signTypedData(JSON.stringify(data))];
+                        return [4 /*yield*/, signTypedData(data)];
                     case 1:
                         _a = _b.sent(), v = _a.v, r = _a.r, s = _a.s;
                         return [2 /*return*/, {
@@ -203,14 +182,14 @@ var Proxy = /** @class */ (function () {
             var recoveredAddress;
             return tslib_1.__generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, verifyTypedData(JSON.stringify(request.data), {
+                    case 0: return [4 /*yield*/, verifyTypedData(request.data, {
                             v: request.v,
                             s: request.s,
                             r: request.r
                         })];
                     case 1:
                         recoveredAddress = _a.sent();
-                        return [2 /*return*/, attester === recoveredAddress];
+                        return [2 /*return*/, address_1.getAddress(attester) === address_1.getAddress(recoveredAddress)];
                 }
             });
         });
@@ -238,6 +217,28 @@ var Proxy = /** @class */ (function () {
             this.getDomainSeparator(),
             keccak256_1.keccak256(abi_1.defaultAbiCoder.encode(["bytes32", "bytes32", "uint256"], [keccak256_1.keccak256(strings_1.toUtf8Bytes(exports.REVOKE_TYPED_SIGNATURE)), params.uuid, params.nonce]))
         ]));
+    };
+    Proxy.prototype.getAttestationTypedData = function (params) {
+        return {
+            domain: this.getDomainTypedData(),
+            primaryType: exports.ATTEST_PRIMARY_TYPE,
+            message: params,
+            types: {
+                EIP712Domain: exports.DOMAIN_TYPE,
+                Attest: exports.ATTEST_TYPE
+            }
+        };
+    };
+    Proxy.prototype.getRevocationTypedData = function (params) {
+        return {
+            domain: this.getDomainTypedData(),
+            primaryType: exports.REVOKE_PRIMARY_TYPE,
+            message: params,
+            types: {
+                EIP712Domain: exports.DOMAIN_TYPE,
+                Revoke: exports.REVOKE_TYPE
+            }
+        };
     };
     return Proxy;
 }());

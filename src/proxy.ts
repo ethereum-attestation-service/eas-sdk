@@ -48,11 +48,9 @@ export interface EIP712RevocationRequest extends EIP712Request {
 
 export type Signature = { v: number; r: string; s: string };
 export type SignMessage = (message: Buffer) => Promise<Signature>;
-export type SignTypedData = (data: string) => Promise<Signature>;
 export type VerifyMessage = (message: Buffer, signature: Signature) => Promise<string>;
-export type VerifyTypedData = (data: string, signature: Signature) => Promise<string>;
 
-export interface Attribute {
+export interface TypedData {
   name: string;
   type:
     | "bool"
@@ -70,13 +68,13 @@ export interface Attribute {
 
 export const ATTEST_PRIMARY_TYPE = "Attest";
 export const REVOKE_PRIMARY_TYPE = "Revoke";
-export const DOMAIN_TYPE: Attribute[] = [
+export const DOMAIN_TYPE: TypedData[] = [
   { name: "name", type: "string" },
   { name: "version", type: "string" },
   { name: "chainId", type: "uint256" },
   { name: "verifyingContract", type: "address" }
 ];
-export const ATTEST_TYPE: Attribute[] = [
+export const ATTEST_TYPE: TypedData[] = [
   { name: "recipient", type: "address" },
   { name: "ao", type: "uint256" },
   { name: "expirationTime", type: "uint256" },
@@ -84,7 +82,7 @@ export const ATTEST_TYPE: Attribute[] = [
   { name: "data", type: "bytes" },
   { name: "nonce", type: "uint256" }
 ];
-export const REVOKE_TYPE: Attribute[] = [
+export const REVOKE_TYPE: TypedData[] = [
   { name: "uuid", type: "bytes32" },
   { name: "nonce", type: "uint256" }
 ];
@@ -96,23 +94,31 @@ export interface EIP712DomainTypedData {
   version: string;
 }
 
-export interface EIP712AttestationTypedData {
+export interface EIP712MessageTypes {
+  EIP712Domain: TypedData[];
+  [additionalProperties: string]: TypedData[];
+}
+
+export interface EIP712TypedData<T extends EIP712MessageTypes> {
   domain: EIP712DomainTypedData;
-  primaryType: typeof ATTEST_PRIMARY_TYPE;
-  types: {
-    EIP712Domain: typeof DOMAIN_TYPE;
-    Attest: typeof ATTEST_TYPE;
-  };
+  primaryType: keyof T;
+  types: T;
+  message: any;
+}
+
+export interface EIP712AttestationMessageTypes extends EIP712MessageTypes {
+  Attest: typeof ATTEST_TYPE;
+}
+
+export interface EIP712AttestationTypedData extends EIP712TypedData<EIP712AttestationMessageTypes> {
   message: EIP712AttestationParams;
 }
 
-export interface EIP712RevocationTypedData {
-  domain: EIP712DomainTypedData;
-  primaryType: typeof REVOKE_PRIMARY_TYPE;
-  types: {
-    EIP712Domain: typeof DOMAIN_TYPE;
-    Revoke: typeof REVOKE_TYPE;
-  };
+export interface EIP712RevocationMessageTypes extends EIP712MessageTypes {
+  Revoke: typeof REVOKE_TYPE;
+}
+
+export interface EIP712RevocationTypedData extends EIP712TypedData<EIP712RevocationMessageTypes> {
   message: EIP712RevocationParams;
 }
 
@@ -123,6 +129,12 @@ export interface EIP712AttestationTypedDataRequest extends EIP712Request {
 export interface EIP712RevocationTypedDataRequest extends EIP712Request {
   data: EIP712RevocationTypedData;
 }
+
+export type SignTypedData<T extends EIP712MessageTypes> = (data: EIP712TypedData<T>) => Promise<Signature>;
+export type VerifyTypedData<T extends EIP712MessageTypes> = (
+  data: EIP712TypedData<T>,
+  signature: Signature
+) => Promise<string>;
 
 export class Proxy {
   private eip712Config: EIP712Config;
@@ -180,24 +192,12 @@ export class Proxy {
     return getAddress(attester) === getAddress(recoveredAddress);
   }
 
-  public getAttestationTypedData(params: EIP712AttestationParams): EIP712AttestationTypedData {
-    return {
-      domain: this.getDomainTypedData(),
-      primaryType: ATTEST_PRIMARY_TYPE,
-      message: params,
-      types: {
-        EIP712Domain: DOMAIN_TYPE,
-        Attest: ATTEST_TYPE
-      }
-    };
-  }
-
   public async getAttestationTypedDataRequest(
     params: EIP712AttestationParams,
-    signTypedData: SignTypedData
+    signTypedData: SignTypedData<EIP712AttestationMessageTypes>
   ): Promise<EIP712AttestationTypedDataRequest> {
     const data = this.getAttestationTypedData(params);
-    const { v, r, s } = await signTypedData(JSON.stringify(data));
+    const { v, r, s } = await signTypedData(data);
 
     return {
       v,
@@ -210,9 +210,9 @@ export class Proxy {
   public async verifyAttestationTypedDataRequest(
     attester: string,
     request: EIP712AttestationTypedDataRequest,
-    verifyTypedData: VerifyTypedData
+    verifyTypedData: VerifyTypedData<EIP712AttestationMessageTypes>
   ): Promise<boolean> {
-    const recoveredAddress = await verifyTypedData(JSON.stringify(request.data), {
+    const recoveredAddress = await verifyTypedData(request.data, {
       v: request.v,
       s: request.s,
       r: request.r
@@ -246,24 +246,12 @@ export class Proxy {
     return getAddress(attester) === getAddress(recoveredAddress);
   }
 
-  public getRevocationTypedData(params: EIP712RevocationParams): EIP712RevocationTypedData {
-    return {
-      domain: this.getDomainTypedData(),
-      primaryType: REVOKE_PRIMARY_TYPE,
-      message: params,
-      types: {
-        EIP712Domain: DOMAIN_TYPE,
-        Revoke: REVOKE_TYPE
-      }
-    };
-  }
-
   public async getRevocationTypedDataRequest(
     params: EIP712RevocationParams,
-    signTypedData: SignTypedData
+    signTypedData: SignTypedData<EIP712RevocationMessageTypes>
   ): Promise<EIP712RevocationTypedDataRequest> {
     const data = this.getRevocationTypedData(params);
-    const { v, r, s } = await signTypedData(JSON.stringify(data));
+    const { v, r, s } = await signTypedData(data);
 
     return {
       v,
@@ -276,9 +264,9 @@ export class Proxy {
   public async verifyRevocationTypedDataRequest(
     attester: string,
     request: EIP712RevocationTypedDataRequest,
-    verifyTypedData: VerifyTypedData
+    verifyTypedData: VerifyTypedData<EIP712RevocationMessageTypes>
   ): Promise<boolean> {
-    const recoveredAddress = await verifyTypedData(JSON.stringify(request.data), {
+    const recoveredAddress = await verifyTypedData(request.data, {
       v: request.v,
       s: request.s,
       r: request.r
@@ -331,5 +319,29 @@ export class Proxy {
         ]
       )
     );
+  }
+
+  private getAttestationTypedData(params: EIP712AttestationParams): EIP712AttestationTypedData {
+    return {
+      domain: this.getDomainTypedData(),
+      primaryType: ATTEST_PRIMARY_TYPE,
+      message: params,
+      types: {
+        EIP712Domain: DOMAIN_TYPE,
+        Attest: ATTEST_TYPE
+      }
+    };
+  }
+
+  private getRevocationTypedData(params: EIP712RevocationParams): EIP712RevocationTypedData {
+    return {
+      domain: this.getDomainTypedData(),
+      primaryType: REVOKE_PRIMARY_TYPE,
+      message: params,
+      types: {
+        EIP712Domain: DOMAIN_TYPE,
+        Revoke: REVOKE_TYPE
+      }
+    };
   }
 }

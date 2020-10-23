@@ -38,40 +38,42 @@ export declare type Signature = {
     s: string;
 };
 export declare type SignMessage = (message: Buffer) => Promise<Signature>;
-export declare type SignTypedData = (data: string) => Promise<Signature>;
 export declare type VerifyMessage = (message: Buffer, signature: Signature) => Promise<string>;
-export declare type VerifyTypedData = (data: string, signature: Signature) => Promise<string>;
-export interface Attribute {
+export interface TypedData {
     name: string;
     type: "bool" | "uint8" | "uint16" | "uint32" | "uint64" | "uint128" | "uint256" | "address" | "string" | "bytes" | "bytes32";
 }
 export declare const ATTEST_PRIMARY_TYPE = "Attest";
 export declare const REVOKE_PRIMARY_TYPE = "Revoke";
-export declare const DOMAIN_TYPE: Attribute[];
-export declare const ATTEST_TYPE: Attribute[];
-export declare const REVOKE_TYPE: Attribute[];
+export declare const DOMAIN_TYPE: TypedData[];
+export declare const ATTEST_TYPE: TypedData[];
+export declare const REVOKE_TYPE: TypedData[];
 export interface EIP712DomainTypedData {
     chainId: number;
     name: string;
     verifyingContract: string;
     version: string;
 }
-export interface EIP712AttestationTypedData {
+export interface EIP712MessageTypes {
+    EIP712Domain: TypedData[];
+    [additionalProperties: string]: TypedData[];
+}
+export interface EIP712TypedData<T extends EIP712MessageTypes> {
     domain: EIP712DomainTypedData;
-    primaryType: typeof ATTEST_PRIMARY_TYPE;
-    types: {
-        EIP712Domain: typeof DOMAIN_TYPE;
-        Attest: typeof ATTEST_TYPE;
-    };
+    primaryType: keyof T;
+    types: T;
+    message: any;
+}
+export interface EIP712AttestationMessageTypes extends EIP712MessageTypes {
+    Attest: typeof ATTEST_TYPE;
+}
+export interface EIP712AttestationTypedData extends EIP712TypedData<EIP712AttestationMessageTypes> {
     message: EIP712AttestationParams;
 }
-export interface EIP712RevocationTypedData {
-    domain: EIP712DomainTypedData;
-    primaryType: typeof REVOKE_PRIMARY_TYPE;
-    types: {
-        EIP712Domain: typeof DOMAIN_TYPE;
-        Revoke: typeof REVOKE_TYPE;
-    };
+export interface EIP712RevocationMessageTypes extends EIP712MessageTypes {
+    Revoke: typeof REVOKE_TYPE;
+}
+export interface EIP712RevocationTypedData extends EIP712TypedData<EIP712RevocationMessageTypes> {
     message: EIP712RevocationParams;
 }
 export interface EIP712AttestationTypedDataRequest extends EIP712Request {
@@ -80,6 +82,8 @@ export interface EIP712AttestationTypedDataRequest extends EIP712Request {
 export interface EIP712RevocationTypedDataRequest extends EIP712Request {
     data: EIP712RevocationTypedData;
 }
+export declare type SignTypedData<T extends EIP712MessageTypes> = (data: EIP712TypedData<T>) => Promise<Signature>;
+export declare type VerifyTypedData<T extends EIP712MessageTypes> = (data: EIP712TypedData<T>, signature: Signature) => Promise<string>;
 export declare class Proxy {
     private eip712Config;
     constructor(eip712Config: EIP712Config);
@@ -87,14 +91,14 @@ export declare class Proxy {
     getDomainTypedData(): EIP712DomainTypedData;
     getAttestationRequest(params: EIP712AttestationParams, signMessage: SignMessage): Promise<EIP712AttestationRequest>;
     verifyAttestationRequest(attester: string, request: EIP712AttestationRequest, verifyMessage: VerifyMessage): Promise<boolean>;
-    getAttestationTypedData(params: EIP712AttestationParams): EIP712AttestationTypedData;
-    getAttestationTypedDataRequest(params: EIP712AttestationParams, signTypedData: SignTypedData): Promise<EIP712AttestationTypedDataRequest>;
-    verifyAttestationTypedDataRequest(attester: string, request: EIP712AttestationTypedDataRequest, verifyTypedData: VerifyTypedData): Promise<boolean>;
+    getAttestationTypedDataRequest(params: EIP712AttestationParams, signTypedData: SignTypedData<EIP712AttestationMessageTypes>): Promise<EIP712AttestationTypedDataRequest>;
+    verifyAttestationTypedDataRequest(attester: string, request: EIP712AttestationTypedDataRequest, verifyTypedData: VerifyTypedData<EIP712AttestationMessageTypes>): Promise<boolean>;
     getRevocationRequest(params: EIP712RevocationParams, signMessage: SignMessage): Promise<EIP712RevocationRequest>;
     verifyRevocationRequest(attester: string, request: EIP712RevocationRequest, verifyMessage: VerifyMessage): Promise<boolean>;
-    getRevocationTypedData(params: EIP712RevocationParams): EIP712RevocationTypedData;
-    getRevocationTypedDataRequest(params: EIP712RevocationParams, signTypedData: SignTypedData): Promise<EIP712RevocationTypedDataRequest>;
-    verifyRevocationTypedDataRequest(attester: string, request: EIP712RevocationTypedDataRequest, verifyTypedData: VerifyTypedData): Promise<boolean>;
+    getRevocationTypedDataRequest(params: EIP712RevocationParams, signTypedData: SignTypedData<EIP712RevocationMessageTypes>): Promise<EIP712RevocationTypedDataRequest>;
+    verifyRevocationTypedDataRequest(attester: string, request: EIP712RevocationTypedDataRequest, verifyTypedData: VerifyTypedData<EIP712RevocationMessageTypes>): Promise<boolean>;
     private getAttestationDigest;
     private getRevocationDigest;
+    private getAttestationTypedData;
+    private getRevocationTypedData;
 }
