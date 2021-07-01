@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Proxy = exports.REVOKE_TYPE = exports.ATTEST_TYPE = exports.DOMAIN_TYPE = exports.REVOKE_PRIMARY_TYPE = exports.ATTEST_PRIMARY_TYPE = exports.EIP712_NAME = exports.EIP712_DOMAIN = exports.REVOKE_TYPED_SIGNATURE = exports.ATTEST_TYPED_SIGNATURE = void 0;
+exports.Delegation = exports.REVOKE_TYPE = exports.ATTEST_TYPE = exports.DOMAIN_TYPE = exports.REVOKE_PRIMARY_TYPE = exports.ATTEST_PRIMARY_TYPE = exports.EIP712_NAME = exports.EIP712_DOMAIN = exports.REVOKE_TYPED_SIGNATURE = exports.ATTEST_TYPED_SIGNATURE = void 0;
 var tslib_1 = require("tslib");
 var keccak256_1 = require("@ethersproject/keccak256");
 var abi_1 = require("@ethersproject/abi");
@@ -31,11 +31,11 @@ exports.REVOKE_TYPE = [
     { name: "uuid", type: "bytes32" },
     { name: "nonce", type: "uint256" }
 ];
-var Proxy = /** @class */ (function () {
-    function Proxy(eip712Config) {
+var Delegation = /** @class */ (function () {
+    function Delegation(eip712Config) {
         this.eip712Config = eip712Config;
     }
-    Proxy.prototype.getDomainSeparator = function () {
+    Delegation.prototype.getDomainSeparator = function () {
         return keccak256_1.keccak256(abi_1.defaultAbiCoder.encode(["bytes32", "bytes32", "bytes32", "uint256", "address"], [
             keccak256_1.keccak256(strings_1.toUtf8Bytes(exports.EIP712_DOMAIN)),
             keccak256_1.keccak256(strings_1.toUtf8Bytes(exports.EIP712_NAME)),
@@ -44,7 +44,7 @@ var Proxy = /** @class */ (function () {
             this.eip712Config.address
         ]));
     };
-    Proxy.prototype.getDomainTypedData = function () {
+    Delegation.prototype.getDomainTypedData = function () {
         return {
             name: exports.EIP712_NAME,
             version: this.eip712Config.version,
@@ -52,7 +52,7 @@ var Proxy = /** @class */ (function () {
             verifyingContract: this.eip712Config.address
         };
     };
-    Proxy.prototype.getAttestationRequest = function (params, signData) {
+    Delegation.prototype.getAttestationRequest = function (params, signData) {
         return tslib_1.__awaiter(this, void 0, void 0, function () {
             var digest, _a, v, r, s;
             return tslib_1.__generator(this, function (_b) {
@@ -67,7 +67,7 @@ var Proxy = /** @class */ (function () {
             });
         });
     };
-    Proxy.prototype.verifyAttestationRequest = function (attester, request, verifyData) {
+    Delegation.prototype.verifyAttestationRequest = function (attester, request, verifyData) {
         return tslib_1.__awaiter(this, void 0, void 0, function () {
             var digest, recoveredAddress;
             return tslib_1.__generator(this, function (_a) {
@@ -86,7 +86,7 @@ var Proxy = /** @class */ (function () {
             });
         });
     };
-    Proxy.prototype.getAttestationTypedDataRequest = function (params, signTypedData) {
+    Delegation.prototype.getAttestationTypedDataRequest = function (params, signTypedData) {
         return tslib_1.__awaiter(this, void 0, void 0, function () {
             var data, _a, v, r, s;
             return tslib_1.__generator(this, function (_b) {
@@ -106,7 +106,7 @@ var Proxy = /** @class */ (function () {
             });
         });
     };
-    Proxy.prototype.verifyAttestationTypedDataRequest = function (attester, request, verifyTypedData) {
+    Delegation.prototype.verifyAttestationTypedDataRequest = function (attester, request, verifyTypedData) {
         return tslib_1.__awaiter(this, void 0, void 0, function () {
             var recoveredAddress;
             return tslib_1.__generator(this, function (_a) {
@@ -123,7 +123,7 @@ var Proxy = /** @class */ (function () {
             });
         });
     };
-    Proxy.prototype.getRevocationRequest = function (params, signData) {
+    Delegation.prototype.getRevocationRequest = function (params, signData) {
         return tslib_1.__awaiter(this, void 0, void 0, function () {
             var digest, _a, v, r, s;
             return tslib_1.__generator(this, function (_b) {
@@ -138,7 +138,7 @@ var Proxy = /** @class */ (function () {
             });
         });
     };
-    Proxy.prototype.verifyRevocationRequest = function (attester, request, verifyData) {
+    Delegation.prototype.verifyRevocationRequest = function (attester, request, verifyData) {
         return tslib_1.__awaiter(this, void 0, void 0, function () {
             var digest, recoveredAddress;
             return tslib_1.__generator(this, function (_a) {
@@ -157,7 +157,7 @@ var Proxy = /** @class */ (function () {
             });
         });
     };
-    Proxy.prototype.getRevocationTypedDataRequest = function (params, signTypedData) {
+    Delegation.prototype.getRevocationTypedDataRequest = function (params, signTypedData) {
         return tslib_1.__awaiter(this, void 0, void 0, function () {
             var data, _a, v, r, s;
             return tslib_1.__generator(this, function (_b) {
@@ -177,7 +177,7 @@ var Proxy = /** @class */ (function () {
             });
         });
     };
-    Proxy.prototype.verifyRevocationTypedDataRequest = function (attester, request, verifyTypedData) {
+    Delegation.prototype.verifyRevocationTypedDataRequest = function (attester, request, verifyTypedData) {
         return tslib_1.__awaiter(this, void 0, void 0, function () {
             var recoveredAddress;
             return tslib_1.__generator(this, function (_a) {
@@ -194,7 +194,7 @@ var Proxy = /** @class */ (function () {
             });
         });
     };
-    Proxy.prototype.getAttestationDigest = function (params) {
+    Delegation.prototype.getAttestationDigest = function (params) {
         return keccak256_1.keccak256(solidity_1.pack(["bytes1", "bytes1", "bytes32", "bytes32"], [
             "0x19",
             "0x01",
@@ -210,7 +210,7 @@ var Proxy = /** @class */ (function () {
             ]))
         ]));
     };
-    Proxy.prototype.getRevocationDigest = function (params) {
+    Delegation.prototype.getRevocationDigest = function (params) {
         return keccak256_1.keccak256(solidity_1.pack(["bytes1", "bytes1", "bytes32", "bytes32"], [
             "0x19",
             "0x01",
@@ -218,7 +218,7 @@ var Proxy = /** @class */ (function () {
             keccak256_1.keccak256(abi_1.defaultAbiCoder.encode(["bytes32", "bytes32", "uint256"], [keccak256_1.keccak256(strings_1.toUtf8Bytes(exports.REVOKE_TYPED_SIGNATURE)), params.uuid, params.nonce]))
         ]));
     };
-    Proxy.prototype.getAttestationTypedData = function (params) {
+    Delegation.prototype.getAttestationTypedData = function (params) {
         return {
             domain: this.getDomainTypedData(),
             primaryType: exports.ATTEST_PRIMARY_TYPE,
@@ -229,7 +229,7 @@ var Proxy = /** @class */ (function () {
             }
         };
     };
-    Proxy.prototype.getRevocationTypedData = function (params) {
+    Delegation.prototype.getRevocationTypedData = function (params) {
         return {
             domain: this.getDomainTypedData(),
             primaryType: exports.REVOKE_PRIMARY_TYPE,
@@ -240,7 +240,7 @@ var Proxy = /** @class */ (function () {
             }
         };
     };
-    return Proxy;
+    return Delegation;
 }());
-exports.Proxy = Proxy;
-//# sourceMappingURL=proxy.js.map
+exports.Delegation = Delegation;
+//# sourceMappingURL=delegation.js.map
