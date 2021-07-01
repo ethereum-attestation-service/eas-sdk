@@ -16,21 +16,21 @@ export interface EIP712Config {
   chainId: number;
 }
 
-export interface EIP712Params {
+export type EIP712Params = {
   nonce: number;
-}
+};
 
-export interface EIP712AttestationParams extends EIP712Params {
+export type EIP712AttestationParams = EIP712Params & {
   recipient: string;
   ao: number;
   expirationTime: number;
   refUUID: string;
   data: Buffer;
-}
+};
 
-export interface EIP712RevocationParams extends EIP712Params {
+export type EIP712RevocationParams = EIP712Params & {
   uuid: string;
-}
+};
 
 export interface EIP712Request {
   v: number;
