@@ -2,7 +2,7 @@
   "name": "@ethereum-attestation-service/sdk",
   "version": "0.8.0",
   "description": "Ethereum Attestation Service SDK",
-  "repository": "git@github.com:ethereum-attestation-service/sdk.git",
+  "repository": "git@github.com:ethereum-attestation-service/eas-sdk.git",
   "author": "Leonid Beder <leonid.beder@gmail.com>",
   "license": "MIT",
   "main": "./dist/index.js",
