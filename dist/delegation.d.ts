@@ -8,19 +8,19 @@ export interface EIP712Config {
     version: string;
     chainId: number;
 }
-export interface EIP712Params {
+export declare type EIP712Params = {
     nonce: number;
-}
-export interface EIP712AttestationParams extends EIP712Params {
+};
+export declare type EIP712AttestationParams = EIP712Params & {
     recipient: string;
     ao: number;
     expirationTime: number;
     refUUID: string;
     data: Buffer;
-}
-export interface EIP712RevocationParams extends EIP712Params {
+};
+export declare type EIP712RevocationParams = EIP712Params & {
     uuid: string;
-}
+};
 export interface EIP712Request {
     v: number;
     r: Buffer;
@@ -84,7 +84,7 @@ export interface EIP712RevocationTypedDataRequest extends EIP712Request {
 }
 export declare type SignTypedData<T extends EIP712MessageTypes> = (data: EIP712TypedData<T>) => Promise<Signature>;
 export declare type VerifyTypedData<T extends EIP712MessageTypes> = (data: EIP712TypedData<T>, signature: Signature) => Promise<string>;
-export declare class Proxy {
+export declare class Delegation {
     private eip712Config;
     constructor(eip712Config: EIP712Config);
     getDomainSeparator(): string;
