@@ -138,7 +138,7 @@ export type VerifyTypedData<T extends EIP712MessageTypes> = (
   signature: Signature
 ) => Promise<string>;
 
-export class Proxy {
+export class Delegation {
   private eip712Config: EIP712Config;
 
   public constructor(eip712Config: EIP712Config) {
