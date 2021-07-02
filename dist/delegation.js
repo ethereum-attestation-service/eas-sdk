@@ -2,11 +2,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Delegation = exports.REVOKE_TYPE = exports.ATTEST_TYPE = exports.DOMAIN_TYPE = exports.REVOKE_PRIMARY_TYPE = exports.ATTEST_PRIMARY_TYPE = exports.EIP712_NAME = exports.EIP712_DOMAIN = exports.REVOKE_TYPED_SIGNATURE = exports.ATTEST_TYPED_SIGNATURE = void 0;
 var tslib_1 = require("tslib");
-var keccak256_1 = require("@ethersproject/keccak256");
-var abi_1 = require("@ethersproject/abi");
-var strings_1 = require("@ethersproject/strings");
-var solidity_1 = require("@ethersproject/solidity");
-var address_1 = require("@ethersproject/address");
+var ethers_1 = require("ethers");
+var keccak256 = ethers_1.utils.keccak256, getAddress = ethers_1.utils.getAddress, toUtf8Bytes = ethers_1.utils.toUtf8Bytes, defaultAbiCoder = ethers_1.utils.defaultAbiCoder, solidityPack = ethers_1.utils.solidityPack;
 exports.ATTEST_TYPED_SIGNATURE = "Attest(address recipient,uint256 ao,uint256 expirationTime,bytes32 refUUID,bytes data,uint256 nonce)";
 exports.REVOKE_TYPED_SIGNATURE = "Revoke(bytes32 uuid,uint256 nonce)";
 exports.EIP712_DOMAIN = "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)";
@@ -36,10 +33,10 @@ var Delegation = /** @class */ (function () {
         this.eip712Config = eip712Config;
     }
     Delegation.prototype.getDomainSeparator = function () {
-        return keccak256_1.keccak256(abi_1.defaultAbiCoder.encode(["bytes32", "bytes32", "bytes32", "uint256", "address"], [
-            keccak256_1.keccak256(strings_1.toUtf8Bytes(exports.EIP712_DOMAIN)),
-            keccak256_1.keccak256(strings_1.toUtf8Bytes(exports.EIP712_NAME)),
-            keccak256_1.keccak256(strings_1.toUtf8Bytes(this.eip712Config.version)),
+        return keccak256(defaultAbiCoder.encode(["bytes32", "bytes32", "bytes32", "uint256", "address"], [
+            keccak256(toUtf8Bytes(exports.EIP712_DOMAIN)),
+            keccak256(toUtf8Bytes(exports.EIP712_NAME)),
+            keccak256(toUtf8Bytes(this.eip712Config.version)),
             this.eip712Config.chainId,
             this.eip712Config.address
         ]));
@@ -81,7 +78,7 @@ var Delegation = /** @class */ (function () {
                             })];
                     case 1:
                         recoveredAddress = _a.sent();
-                        return [2 /*return*/, address_1.getAddress(attester) === address_1.getAddress(recoveredAddress)];
+                        return [2 /*return*/, getAddress(attester) === getAddress(recoveredAddress)];
                 }
             });
         });
@@ -118,7 +115,7 @@ var Delegation = /** @class */ (function () {
                         })];
                     case 1:
                         recoveredAddress = _a.sent();
-                        return [2 /*return*/, address_1.getAddress(attester) === address_1.getAddress(recoveredAddress)];
+                        return [2 /*return*/, getAddress(attester) === getAddress(recoveredAddress)];
                 }
             });
         });
@@ -152,7 +149,7 @@ var Delegation = /** @class */ (function () {
                             })];
                     case 1:
                         recoveredAddress = _a.sent();
-                        return [2 /*return*/, address_1.getAddress(attester) === address_1.getAddress(recoveredAddress)];
+                        return [2 /*return*/, getAddress(attester) === getAddress(recoveredAddress)];
                 }
             });
         });
@@ -189,33 +186,33 @@ var Delegation = /** @class */ (function () {
                         })];
                     case 1:
                         recoveredAddress = _a.sent();
-                        return [2 /*return*/, address_1.getAddress(attester) === address_1.getAddress(recoveredAddress)];
+                        return [2 /*return*/, getAddress(attester) === getAddress(recoveredAddress)];
                 }
             });
         });
     };
     Delegation.prototype.getAttestationDigest = function (params) {
-        return keccak256_1.keccak256(solidity_1.pack(["bytes1", "bytes1", "bytes32", "bytes32"], [
+        return keccak256(solidityPack(["bytes1", "bytes1", "bytes32", "bytes32"], [
             "0x19",
             "0x01",
             this.getDomainSeparator(),
-            keccak256_1.keccak256(abi_1.defaultAbiCoder.encode(["bytes32", "address", "uint256", "uint256", "bytes32", "bytes32", "uint256"], [
-                keccak256_1.keccak256(strings_1.toUtf8Bytes(exports.ATTEST_TYPED_SIGNATURE)),
+            keccak256(defaultAbiCoder.encode(["bytes32", "address", "uint256", "uint256", "bytes32", "bytes32", "uint256"], [
+                keccak256(toUtf8Bytes(exports.ATTEST_TYPED_SIGNATURE)),
                 params.recipient,
                 params.ao,
                 params.expirationTime,
                 params.refUUID,
-                keccak256_1.keccak256(params.data),
+                keccak256(params.data),
                 params.nonce
             ]))
         ]));
     };
     Delegation.prototype.getRevocationDigest = function (params) {
-        return keccak256_1.keccak256(solidity_1.pack(["bytes1", "bytes1", "bytes32", "bytes32"], [
+        return keccak256(solidityPack(["bytes1", "bytes1", "bytes32", "bytes32"], [
             "0x19",
             "0x01",
             this.getDomainSeparator(),
-            keccak256_1.keccak256(abi_1.defaultAbiCoder.encode(["bytes32", "bytes32", "uint256"], [keccak256_1.keccak256(strings_1.toUtf8Bytes(exports.REVOKE_TYPED_SIGNATURE)), params.uuid, params.nonce]))
+            keccak256(defaultAbiCoder.encode(["bytes32", "bytes32", "uint256"], [keccak256(toUtf8Bytes(exports.REVOKE_TYPED_SIGNATURE)), params.uuid, params.nonce]))
         ]));
     };
     Delegation.prototype.getAttestationTypedData = function (params) {

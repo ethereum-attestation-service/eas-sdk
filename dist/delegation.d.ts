@@ -1,4 +1,5 @@
 /// <reference types="node" />
+import { BigNumberish } from "ethers";
 export declare const ATTEST_TYPED_SIGNATURE = "Attest(address recipient,uint256 ao,uint256 expirationTime,bytes32 refUUID,bytes data,uint256 nonce)";
 export declare const REVOKE_TYPED_SIGNATURE = "Revoke(bytes32 uuid,uint256 nonce)";
 export declare const EIP712_DOMAIN = "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)";
@@ -9,12 +10,12 @@ export interface EIP712Config {
     chainId: number;
 }
 export declare type EIP712Params = {
-    nonce: number;
+    nonce: BigNumberish;
 };
 export declare type EIP712AttestationParams = EIP712Params & {
     recipient: string;
-    ao: number;
-    expirationTime: number;
+    ao: BigNumberish;
+    expirationTime: BigNumberish;
     refUUID: string;
     data: Buffer;
 };

@@ -1,8 +1,6 @@
-import { keccak256 } from "@ethersproject/keccak256";
-import { defaultAbiCoder } from "@ethersproject/abi";
-import { toUtf8Bytes } from "@ethersproject/strings";
-import { pack } from "@ethersproject/solidity";
-import { getAddress } from "@ethersproject/address";
+import { BigNumberish, utils } from "ethers";
+
+const { keccak256, getAddress, toUtf8Bytes, defaultAbiCoder, solidityPack } = utils;
 
 export const ATTEST_TYPED_SIGNATURE =
   "Attest(address recipient,uint256 ao,uint256 expirationTime,bytes32 refUUID,bytes data,uint256 nonce)";
@@ -17,13 +15,13 @@ export interface EIP712Config {
 }
 
 export type EIP712Params = {
-  nonce: number;
+  nonce: BigNumberish;
 };
 
 export type EIP712AttestationParams = EIP712Params & {
   recipient: string;
-  ao: number;
-  expirationTime: number;
+  ao: BigNumberish;
+  expirationTime: BigNumberish;
   refUUID: string;
   data: Buffer;
 };
@@ -279,7 +277,7 @@ export class Delegation {
 
   private getAttestationDigest(params: EIP712AttestationParams): string {
     return keccak256(
-      pack(
+      solidityPack(
         ["bytes1", "bytes1", "bytes32", "bytes32"],
         [
           "0x19",
@@ -306,7 +304,7 @@ export class Delegation {
 
   private getRevocationDigest(params: EIP712RevocationParams): string {
     return keccak256(
-      pack(
+      solidityPack(
         ["bytes1", "bytes1", "bytes32", "bytes32"],
         [
           "0x19",

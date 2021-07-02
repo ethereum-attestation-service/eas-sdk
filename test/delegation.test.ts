@@ -1,8 +1,9 @@
-import { keccak256 } from "@ethersproject/keccak256";
+import { BigNumber, utils } from "ethers";
+
+const { keccak256, toUtf8Bytes, recoverAddress, splitSignature, joinSignature, hexlify } = utils;
+
 import { Wallet } from "@ethersproject/wallet";
-import { toUtf8Bytes } from "@ethersproject/strings";
-import { splitSignature, joinSignature, hexlify } from "@ethersproject/bytes";
-import { recoverAddress } from "@ethersproject/transactions";
+
 import { signTypedData_v4, recoverTypedSignature_v4 } from "eth-sig-util";
 import { ecsign } from "ethereumjs-util";
 
