@@ -1,4 +1,4 @@
-import { BigNumber, utils } from "ethers";
+import { utils } from "ethers";
 
 const { keccak256, toUtf8Bytes, recoverAddress, splitSignature, joinSignature, hexlify } = utils;
 
