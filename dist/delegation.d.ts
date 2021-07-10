@@ -14,7 +14,7 @@ export declare type EIP712Params = {
 };
 export declare type EIP712AttestationParams = EIP712Params & {
     recipient: string;
-    ao: BigNumberish;
+    ao: string;
     expirationTime: BigNumberish;
     refUUID: string;
     data: Buffer;

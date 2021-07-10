@@ -196,7 +196,7 @@ var Delegation = /** @class */ (function () {
             "0x19",
             "0x01",
             this.getDomainSeparator(),
-            keccak256(defaultAbiCoder.encode(["bytes32", "address", "uint256", "uint256", "bytes32", "bytes32", "uint256"], [
+            keccak256(defaultAbiCoder.encode(["bytes32", "address", "bytes32", "uint256", "bytes32", "bytes32", "uint256"], [
                 keccak256(toUtf8Bytes(exports.ATTEST_TYPED_SIGNATURE)),
                 params.recipient,
                 params.ao,
