@@ -1,6 +1,6 @@
 import { utils } from "ethers";
 
-const { keccak256, toUtf8Bytes, recoverAddress, splitSignature, joinSignature, hexlify } = utils;
+const { keccak256, toUtf8Bytes, recoverAddress, splitSignature, joinSignature, hexlify, formatBytes32String } = utils;
 
 import { Wallet } from "@ethersproject/wallet";
 
@@ -43,7 +43,7 @@ describe("attest", () => {
   it("should create a proper EIP712 attestation request", async () => {
     const params = {
       recipient: ZERO_ADDRESS,
-      ao: 123,
+      ao: formatBytes32String("AO1"),
       expirationTime: 100000,
       refUUID: ZERO_BYTES32,
       data: Buffer.alloc(0),
@@ -71,7 +71,7 @@ describe("attest", () => {
   it("should create a proper EIP712 attestation typed data request", async () => {
     const params = {
       recipient: ZERO_ADDRESS,
-      ao: 555,
+      ao: formatBytes32String("AO2"),
       expirationTime: 12,
       refUUID: ZERO_BYTES32,
       data: Buffer.from("1234", "hex"),

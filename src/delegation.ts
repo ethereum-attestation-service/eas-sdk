@@ -20,7 +20,7 @@ export type EIP712Params = {
 
 export type EIP712AttestationParams = EIP712Params & {
   recipient: string;
-  ao: BigNumberish;
+  ao: string;
   expirationTime: BigNumberish;
   refUUID: string;
   data: Buffer;
@@ -285,7 +285,7 @@ export class Delegation {
           this.getDomainSeparator(),
           keccak256(
             defaultAbiCoder.encode(
-              ["bytes32", "address", "uint256", "uint256", "bytes32", "bytes32", "uint256"],
+              ["bytes32", "address", "bytes32", "uint256", "bytes32", "bytes32", "uint256"],
               [
                 keccak256(toUtf8Bytes(ATTEST_TYPED_SIGNATURE)),
                 params.recipient,
