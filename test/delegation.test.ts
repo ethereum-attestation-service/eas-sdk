@@ -22,7 +22,7 @@ const ZERO_BYTES32 = "0x00000000000000000000000000000000000000000000000000000000
 describe("type hashes", () => {
   it("should have matching ATTEST_TYPE to the contract's ATTEST_TYPEHASH", () => {
     expect(keccak256(toUtf8Bytes(ATTEST_TYPED_SIGNATURE))).toEqual(
-      "0x65c1f6a23cba082e11808f5810768554fa9dfba7aa5f718980214483e87e1031"
+      "0x531428c5a0280af75a716171c6425f003876d506658954796652160838d6dbb9"
     );
   });
 
@@ -43,7 +43,7 @@ describe("attest", () => {
   it("should create a proper EIP712 attestation request", async () => {
     const params = {
       recipient: ZERO_ADDRESS,
-      ao: formatBytes32String("AO1"),
+      schema: formatBytes32String("AS1"),
       expirationTime: 100000,
       refUUID: ZERO_BYTES32,
       data: Buffer.alloc(0),
@@ -71,7 +71,7 @@ describe("attest", () => {
   it("should create a proper EIP712 attestation typed data request", async () => {
     const params = {
       recipient: ZERO_ADDRESS,
-      ao: formatBytes32String("AO2"),
+      schema: formatBytes32String("AS2"),
       expirationTime: 12,
       refUUID: ZERO_BYTES32,
       data: Buffer.from("1234", "hex"),
