@@ -4,7 +4,7 @@ exports.Delegation = exports.REVOKE_TYPE = exports.ATTEST_TYPE = exports.DOMAIN_
 var tslib_1 = require("tslib");
 var ethers_1 = require("ethers");
 var keccak256 = ethers_1.utils.keccak256, getAddress = ethers_1.utils.getAddress, toUtf8Bytes = ethers_1.utils.toUtf8Bytes, defaultAbiCoder = ethers_1.utils.defaultAbiCoder, solidityPack = ethers_1.utils.solidityPack;
-exports.ATTEST_TYPED_SIGNATURE = "Attest(address recipient,uint256 ao,uint256 expirationTime,bytes32 refUUID,bytes data,uint256 nonce)";
+exports.ATTEST_TYPED_SIGNATURE = "Attest(address recipient,uint256 schema,uint256 expirationTime,bytes32 refUUID,bytes data,uint256 nonce)";
 exports.REVOKE_TYPED_SIGNATURE = "Revoke(bytes32 uuid,uint256 nonce)";
 exports.EIP712_DOMAIN = "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)";
 exports.EIP712_NAME = "EAS";
@@ -18,7 +18,7 @@ exports.DOMAIN_TYPE = [
 ];
 exports.ATTEST_TYPE = [
     { name: "recipient", type: "address" },
-    { name: "ao", type: "uint256" },
+    { name: "schema", type: "uint256" },
     { name: "expirationTime", type: "uint256" },
     { name: "refUUID", type: "bytes32" },
     { name: "data", type: "bytes" },
@@ -199,7 +199,7 @@ var Delegation = /** @class */ (function () {
             keccak256(defaultAbiCoder.encode(["bytes32", "address", "bytes32", "uint256", "bytes32", "bytes32", "uint256"], [
                 keccak256(toUtf8Bytes(exports.ATTEST_TYPED_SIGNATURE)),
                 params.recipient,
-                params.ao,
+                params.schema,
                 params.expirationTime,
                 params.refUUID,
                 keccak256(params.data),
