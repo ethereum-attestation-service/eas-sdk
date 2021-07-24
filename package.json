@@ -20,6 +20,7 @@
     "jest": "^27.0.6",
     "prettier": "^2.3.2",
     "prettier-package-json": "^2.6.0",
+    "prettier-plugin-organize-imports": "^2.3.3",
     "prettier-tslint": "^0.4.2",
     "ts-jest": "^27.0.3",
     "ts-node": "^10.1.0",
