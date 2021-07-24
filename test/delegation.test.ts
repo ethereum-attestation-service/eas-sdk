@@ -1,20 +1,17 @@
+import { Wallet } from "@ethersproject/wallet";
+import { recoverTypedSignature_v4, signTypedData_v4 } from "eth-sig-util";
+import { ecsign } from "ethereumjs-util";
 import { utils } from "ethers";
+import {
+  ATTEST_TYPED_SIGNATURE,
+  Delegation,
+  EIP712AttestationTypedData,
+  EIP712RevocationTypedData,
+  REVOKE_TYPED_SIGNATURE,
+  Signature
+} from "../src/delegation";
 
 const { keccak256, toUtf8Bytes, recoverAddress, splitSignature, joinSignature, hexlify, formatBytes32String } = utils;
-
-import { Wallet } from "@ethersproject/wallet";
-
-import { signTypedData_v4, recoverTypedSignature_v4 } from "eth-sig-util";
-import { ecsign } from "ethereumjs-util";
-
-import {
-  Delegation,
-  Signature,
-  ATTEST_TYPED_SIGNATURE,
-  REVOKE_TYPED_SIGNATURE,
-  EIP712AttestationTypedData,
-  EIP712RevocationTypedData
-} from "../src/delegation";
 
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 const ZERO_BYTES32 = "0x0000000000000000000000000000000000000000000000000000000000000000";
