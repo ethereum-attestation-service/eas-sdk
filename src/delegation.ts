@@ -3,7 +3,7 @@ import { BigNumberish, utils } from "ethers";
 const { keccak256, getAddress, toUtf8Bytes, defaultAbiCoder, solidityPack } = utils;
 
 export const ATTEST_TYPED_SIGNATURE =
-  "Attest(address recipient,uint256 schema,uint256 expirationTime,bytes32 refUUID,bytes data,uint256 nonce)";
+  "Attest(address recipient,bytes32 schema,uint256 expirationTime,bytes32 refUUID,bytes data,uint256 nonce)";
 export const REVOKE_TYPED_SIGNATURE = "Revoke(bytes32 uuid,uint256 nonce)";
 export const EIP712_DOMAIN = "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)";
 export const EIP712_NAME = "EAS";
@@ -75,7 +75,7 @@ export const DOMAIN_TYPE: TypedData[] = [
 
 export const ATTEST_TYPE: TypedData[] = [
   { name: "recipient", type: "address" },
-  { name: "schema", type: "uint256" },
+  { name: "schema", type: "bytes32" },
   { name: "expirationTime", type: "uint256" },
   { name: "refUUID", type: "bytes32" },
   { name: "data", type: "bytes" },
