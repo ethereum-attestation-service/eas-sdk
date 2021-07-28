@@ -1,6 +1,6 @@
 /// <reference types="node" />
 import { BigNumberish } from "ethers";
-export declare const ATTEST_TYPED_SIGNATURE = "Attest(address recipient,uint256 schema,uint256 expirationTime,bytes32 refUUID,bytes data,uint256 nonce)";
+export declare const ATTEST_TYPED_SIGNATURE = "Attest(address recipient,bytes32 schema,uint256 expirationTime,bytes32 refUUID,bytes data,uint256 nonce)";
 export declare const REVOKE_TYPED_SIGNATURE = "Revoke(bytes32 uuid,uint256 nonce)";
 export declare const EIP712_DOMAIN = "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)";
 export declare const EIP712_NAME = "EAS";
