@@ -50,9 +50,9 @@ var Delegation = /** @class */ (function () {
         };
     };
     Delegation.prototype.getAttestationRequest = function (params, signData) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
+        return (0, tslib_1.__awaiter)(this, void 0, void 0, function () {
             var digest, _a, v, r, s;
-            return tslib_1.__generator(this, function (_b) {
+            return (0, tslib_1.__generator)(this, function (_b) {
                 switch (_b.label) {
                     case 0:
                         digest = this.getAttestationDigest(params);
@@ -65,9 +65,9 @@ var Delegation = /** @class */ (function () {
         });
     };
     Delegation.prototype.verifyAttestationRequest = function (attester, request, verifyData) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
+        return (0, tslib_1.__awaiter)(this, void 0, void 0, function () {
             var digest, recoveredAddress;
-            return tslib_1.__generator(this, function (_a) {
+            return (0, tslib_1.__generator)(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         digest = this.getAttestationDigest(request.params);
@@ -84,9 +84,9 @@ var Delegation = /** @class */ (function () {
         });
     };
     Delegation.prototype.getAttestationTypedDataRequest = function (params, signTypedData) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
+        return (0, tslib_1.__awaiter)(this, void 0, void 0, function () {
             var data, _a, v, r, s;
-            return tslib_1.__generator(this, function (_b) {
+            return (0, tslib_1.__generator)(this, function (_b) {
                 switch (_b.label) {
                     case 0:
                         data = this.getAttestationTypedData(params);
@@ -104,9 +104,9 @@ var Delegation = /** @class */ (function () {
         });
     };
     Delegation.prototype.verifyAttestationTypedDataRequest = function (attester, request, verifyTypedData) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
+        return (0, tslib_1.__awaiter)(this, void 0, void 0, function () {
             var recoveredAddress;
-            return tslib_1.__generator(this, function (_a) {
+            return (0, tslib_1.__generator)(this, function (_a) {
                 switch (_a.label) {
                     case 0: return [4 /*yield*/, verifyTypedData(request.data, {
                             v: request.v,
@@ -121,9 +121,9 @@ var Delegation = /** @class */ (function () {
         });
     };
     Delegation.prototype.getRevocationRequest = function (params, signData) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
+        return (0, tslib_1.__awaiter)(this, void 0, void 0, function () {
             var digest, _a, v, r, s;
-            return tslib_1.__generator(this, function (_b) {
+            return (0, tslib_1.__generator)(this, function (_b) {
                 switch (_b.label) {
                     case 0:
                         digest = this.getRevocationDigest(params);
@@ -136,9 +136,9 @@ var Delegation = /** @class */ (function () {
         });
     };
     Delegation.prototype.verifyRevocationRequest = function (attester, request, verifyData) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
+        return (0, tslib_1.__awaiter)(this, void 0, void 0, function () {
             var digest, recoveredAddress;
-            return tslib_1.__generator(this, function (_a) {
+            return (0, tslib_1.__generator)(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         digest = this.getRevocationDigest(request.params);
@@ -155,9 +155,9 @@ var Delegation = /** @class */ (function () {
         });
     };
     Delegation.prototype.getRevocationTypedDataRequest = function (params, signTypedData) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
+        return (0, tslib_1.__awaiter)(this, void 0, void 0, function () {
             var data, _a, v, r, s;
-            return tslib_1.__generator(this, function (_b) {
+            return (0, tslib_1.__generator)(this, function (_b) {
                 switch (_b.label) {
                     case 0:
                         data = this.getRevocationTypedData(params);
@@ -175,9 +175,9 @@ var Delegation = /** @class */ (function () {
         });
     };
     Delegation.prototype.verifyRevocationTypedDataRequest = function (attester, request, verifyTypedData) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
+        return (0, tslib_1.__awaiter)(this, void 0, void 0, function () {
             var recoveredAddress;
-            return tslib_1.__generator(this, function (_a) {
+            return (0, tslib_1.__generator)(this, function (_a) {
                 switch (_a.label) {
                     case 0: return [4 /*yield*/, verifyTypedData(request.data, {
                             v: request.v,
