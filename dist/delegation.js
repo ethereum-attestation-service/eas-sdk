@@ -4,7 +4,7 @@ exports.Delegation = exports.REVOKE_TYPE = exports.ATTEST_TYPE = exports.DOMAIN_
 var tslib_1 = require("tslib");
 var ethers_1 = require("ethers");
 var keccak256 = ethers_1.utils.keccak256, getAddress = ethers_1.utils.getAddress, toUtf8Bytes = ethers_1.utils.toUtf8Bytes, defaultAbiCoder = ethers_1.utils.defaultAbiCoder, solidityPack = ethers_1.utils.solidityPack;
-exports.ATTEST_TYPED_SIGNATURE = "Attest(address recipient,bytes32 schema,uint256 expirationTime,bytes32 refUUID,bytes data,uint256 nonce)";
+exports.ATTEST_TYPED_SIGNATURE = "Attest(address recipient,bytes32 schema,uint32 expirationTime,bytes32 refUUID,bytes data,uint256 nonce)";
 exports.REVOKE_TYPED_SIGNATURE = "Revoke(bytes32 uuid,uint256 nonce)";
 exports.EIP712_DOMAIN = "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)";
 exports.EIP712_NAME = "EAS";
@@ -19,7 +19,7 @@ exports.DOMAIN_TYPE = [
 exports.ATTEST_TYPE = [
     { name: "recipient", type: "address" },
     { name: "schema", type: "bytes32" },
-    { name: "expirationTime", type: "uint256" },
+    { name: "expirationTime", type: "uint32" },
     { name: "refUUID", type: "bytes32" },
     { name: "data", type: "bytes" },
     { name: "nonce", type: "uint256" }
@@ -50,9 +50,9 @@ var Delegation = /** @class */ (function () {
         };
     };
     Delegation.prototype.getAttestationRequest = function (params, signData) {
-        return (0, tslib_1.__awaiter)(this, void 0, void 0, function () {
+        return tslib_1.__awaiter(this, void 0, void 0, function () {
             var digest, _a, v, r, s;
-            return (0, tslib_1.__generator)(this, function (_b) {
+            return tslib_1.__generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
                         digest = this.getAttestationDigest(params);
@@ -65,9 +65,9 @@ var Delegation = /** @class */ (function () {
         });
     };
     Delegation.prototype.verifyAttestationRequest = function (attester, request, verifyData) {
-        return (0, tslib_1.__awaiter)(this, void 0, void 0, function () {
+        return tslib_1.__awaiter(this, void 0, void 0, function () {
             var digest, recoveredAddress;
-            return (0, tslib_1.__generator)(this, function (_a) {
+            return tslib_1.__generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         digest = this.getAttestationDigest(request.params);
@@ -84,9 +84,9 @@ var Delegation = /** @class */ (function () {
         });
     };
     Delegation.prototype.getAttestationTypedDataRequest = function (params, signTypedData) {
-        return (0, tslib_1.__awaiter)(this, void 0, void 0, function () {
+        return tslib_1.__awaiter(this, void 0, void 0, function () {
             var data, _a, v, r, s;
-            return (0, tslib_1.__generator)(this, function (_b) {
+            return tslib_1.__generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
                         data = this.getAttestationTypedData(params);
@@ -104,9 +104,9 @@ var Delegation = /** @class */ (function () {
         });
     };
     Delegation.prototype.verifyAttestationTypedDataRequest = function (attester, request, verifyTypedData) {
-        return (0, tslib_1.__awaiter)(this, void 0, void 0, function () {
+        return tslib_1.__awaiter(this, void 0, void 0, function () {
             var recoveredAddress;
-            return (0, tslib_1.__generator)(this, function (_a) {
+            return tslib_1.__generator(this, function (_a) {
                 switch (_a.label) {
                     case 0: return [4 /*yield*/, verifyTypedData(request.data, {
                             v: request.v,
@@ -121,9 +121,9 @@ var Delegation = /** @class */ (function () {
         });
     };
     Delegation.prototype.getRevocationRequest = function (params, signData) {
-        return (0, tslib_1.__awaiter)(this, void 0, void 0, function () {
+        return tslib_1.__awaiter(this, void 0, void 0, function () {
             var digest, _a, v, r, s;
-            return (0, tslib_1.__generator)(this, function (_b) {
+            return tslib_1.__generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
                         digest = this.getRevocationDigest(params);
@@ -136,9 +136,9 @@ var Delegation = /** @class */ (function () {
         });
     };
     Delegation.prototype.verifyRevocationRequest = function (attester, request, verifyData) {
-        return (0, tslib_1.__awaiter)(this, void 0, void 0, function () {
+        return tslib_1.__awaiter(this, void 0, void 0, function () {
             var digest, recoveredAddress;
-            return (0, tslib_1.__generator)(this, function (_a) {
+            return tslib_1.__generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         digest = this.getRevocationDigest(request.params);
@@ -155,9 +155,9 @@ var Delegation = /** @class */ (function () {
         });
     };
     Delegation.prototype.getRevocationTypedDataRequest = function (params, signTypedData) {
-        return (0, tslib_1.__awaiter)(this, void 0, void 0, function () {
+        return tslib_1.__awaiter(this, void 0, void 0, function () {
             var data, _a, v, r, s;
-            return (0, tslib_1.__generator)(this, function (_b) {
+            return tslib_1.__generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
                         data = this.getRevocationTypedData(params);
@@ -175,9 +175,9 @@ var Delegation = /** @class */ (function () {
         });
     };
     Delegation.prototype.verifyRevocationTypedDataRequest = function (attester, request, verifyTypedData) {
-        return (0, tslib_1.__awaiter)(this, void 0, void 0, function () {
+        return tslib_1.__awaiter(this, void 0, void 0, function () {
             var recoveredAddress;
-            return (0, tslib_1.__generator)(this, function (_a) {
+            return tslib_1.__generator(this, function (_a) {
                 switch (_a.label) {
                     case 0: return [4 /*yield*/, verifyTypedData(request.data, {
                             v: request.v,
@@ -196,7 +196,7 @@ var Delegation = /** @class */ (function () {
             "0x19",
             "0x01",
             this.getDomainSeparator(),
-            keccak256(defaultAbiCoder.encode(["bytes32", "address", "bytes32", "uint256", "bytes32", "bytes32", "uint256"], [
+            keccak256(defaultAbiCoder.encode(["bytes32", "address", "bytes32", "uint32", "bytes32", "bytes32", "uint256"], [
                 keccak256(toUtf8Bytes(exports.ATTEST_TYPED_SIGNATURE)),
                 params.recipient,
                 params.schema,
