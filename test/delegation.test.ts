@@ -19,7 +19,7 @@ const ZERO_BYTES32 = "0x00000000000000000000000000000000000000000000000000000000
 describe("type hashes", () => {
   it("should have matching ATTEST_TYPE to the contract's ATTEST_TYPEHASH", () => {
     expect(keccak256(toUtf8Bytes(ATTEST_TYPED_SIGNATURE))).toEqual(
-      "0x39c0608dd995a3a25bfecb0fffe6801a81bae611d94438af988caa522d9d1476"
+      "0xfd4dc6e2693a62bd64d4a19b3cff766012b6aed3bb661a4b20ffcf8236431150"
     );
   });
 
