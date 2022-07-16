@@ -3,7 +3,7 @@ import { BigNumberish, utils } from "ethers";
 const { keccak256, getAddress, toUtf8Bytes, defaultAbiCoder, solidityPack } = utils;
 
 export const ATTEST_TYPED_SIGNATURE =
-  "Attest(address recipient,bytes32 schema,uint256 expirationTime,bytes32 refUUID,bytes data,uint256 nonce)";
+  "Attest(address recipient,bytes32 schema,uint32 expirationTime,bytes32 refUUID,bytes data,uint256 nonce)";
 export const REVOKE_TYPED_SIGNATURE = "Revoke(bytes32 uuid,uint256 nonce)";
 export const EIP712_DOMAIN = "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)";
 export const EIP712_NAME = "EAS";
@@ -76,7 +76,7 @@ export const DOMAIN_TYPE: TypedData[] = [
 export const ATTEST_TYPE: TypedData[] = [
   { name: "recipient", type: "address" },
   { name: "schema", type: "bytes32" },
-  { name: "expirationTime", type: "uint256" },
+  { name: "expirationTime", type: "uint32" },
   { name: "refUUID", type: "bytes32" },
   { name: "data", type: "bytes" },
   { name: "nonce", type: "uint256" }
@@ -285,7 +285,7 @@ export class Delegation {
           this.getDomainSeparator(),
           keccak256(
             defaultAbiCoder.encode(
-              ["bytes32", "address", "bytes32", "uint256", "bytes32", "bytes32", "uint256"],
+              ["bytes32", "address", "bytes32", "uint32", "bytes32", "bytes32", "uint256"],
               [
                 keccak256(toUtf8Bytes(ATTEST_TYPED_SIGNATURE)),
                 params.recipient,
