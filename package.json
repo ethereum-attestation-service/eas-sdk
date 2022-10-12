@@ -15,8 +15,8 @@
   "devDependencies": {
     "@ethersproject/wallet": "^5.7.0",
     "@jest/types": "^29.1.2",
-    "@types/jest": "^29.1.1",
-    "@types/node": "^18.8.2",
+    "@types/jest": "^29.1.2",
+    "@types/node": "^18.8.4",
     "eth-sig-util": "^3.0.1",
     "ethereumjs-util": "^7.1.5",
     "jest": "^29.1.2",
