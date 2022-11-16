@@ -103,6 +103,7 @@ export interface EIP712TypedData<T extends EIP712MessageTypes> {
   domain: EIP712DomainTypedData;
   primaryType: keyof T;
   types: T;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   message: any;
 }
 
