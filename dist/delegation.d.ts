@@ -9,17 +9,17 @@ export interface EIP712Config {
     version: string;
     chainId: number;
 }
-export declare type EIP712Params = {
+export type EIP712Params = {
     nonce: BigNumberish;
 };
-export declare type EIP712AttestationParams = EIP712Params & {
+export type EIP712AttestationParams = EIP712Params & {
     recipient: string;
     schema: string;
     expirationTime: BigNumberish;
     refUUID: string;
     data: Buffer;
 };
-export declare type EIP712RevocationParams = EIP712Params & {
+export type EIP712RevocationParams = EIP712Params & {
     uuid: string;
 };
 export interface EIP712Request {
@@ -33,13 +33,13 @@ export interface EIP712AttestationRequest extends EIP712Request {
 export interface EIP712RevocationRequest extends EIP712Request {
     params: EIP712RevocationParams;
 }
-export declare type Signature = {
+export type Signature = {
     v: number;
     r: Buffer;
     s: Buffer;
 };
-export declare type SignData = (message: Buffer) => Promise<Signature>;
-export declare type VerifyData = (message: Buffer, signature: Signature) => Promise<string>;
+export type SignData = (message: Buffer) => Promise<Signature>;
+export type VerifyData = (message: Buffer, signature: Signature) => Promise<string>;
 export interface TypedData {
     name: string;
     type: "bool" | "uint8" | "uint16" | "uint32" | "uint64" | "uint128" | "uint256" | "address" | "string" | "bytes" | "bytes32";
@@ -83,8 +83,8 @@ export interface EIP712AttestationTypedDataRequest extends EIP712Request {
 export interface EIP712RevocationTypedDataRequest extends EIP712Request {
     data: EIP712RevocationTypedData;
 }
-export declare type SignTypedData<T extends EIP712MessageTypes> = (data: EIP712TypedData<T>) => Promise<Signature>;
-export declare type VerifyTypedData<T extends EIP712MessageTypes> = (data: EIP712TypedData<T>, signature: Signature) => Promise<string>;
+export type SignTypedData<T extends EIP712MessageTypes> = (data: EIP712TypedData<T>) => Promise<Signature>;
+export type VerifyTypedData<T extends EIP712MessageTypes> = (data: EIP712TypedData<T>, signature: Signature) => Promise<string>;
 export declare class Delegation {
     private eip712Config;
     constructor(eip712Config: EIP712Config);
