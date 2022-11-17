@@ -4,12 +4,10 @@
   "plugins": ["@typescript-eslint"],
   "root": true,
   "rules": {
-    "sort-imports": "off",
     "semi": "error",
     "quotes": ["error", "double"],
     "no-console": "error",
     "object-shorthand-properties-first": "off",
-    "no-unused-vars": "off",
     "@typescript-eslint/no-empty-function": "off",
     "@typescript-eslint/no-unused-vars": [
       "error",

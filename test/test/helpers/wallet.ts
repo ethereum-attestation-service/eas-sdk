@@ -1,5 +1,5 @@
-import { BigNumber, Wallet } from 'ethers';
-import { ethers, waffle } from 'hardhat';
+import { BigNumber, Wallet } from "ethers";
+import { ethers, waffle } from "hardhat";
 
 export const createWallet = async () => {
   const wallet = Wallet.createRandom().connect(waffle.provider);
@@ -12,4 +12,4 @@ export const createWallet = async () => {
   return wallet;
 };
 
-export { Wallet } from 'ethers';
+export { Wallet } from "ethers";
