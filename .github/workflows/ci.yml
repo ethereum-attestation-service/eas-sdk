@@ -11,38 +11,38 @@ jobs:
   test:
     name: Test
 
-      runs-on: ubuntu-latest
+    runs-on: ubuntu-latest
 
-      steps:
-        - name: Check out the repository
-          uses: actions/checkout@v2
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v2
 
-        - name: Set up Node.js
-          uses: actions/setup-node@v2
-          with:
-            node-version: '16'
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: "16"
 
-        - name: Get yarn cache directory path
-          id: yarn-cache-dir-path
-          run: echo "::set-output name=dir::$(yarn cache dir)"
+      - name: Get yarn cache directory path
+        id: yarn-cache-dir-path
+        run: echo "::set-output name=dir::$(yarn cache dir)"
 
-        - name: Cache dependencies
-          uses: actions/cache@v3
-          id: yarn-cache
-          with:
-            path: |
-              **/node_modules
-              ${{ steps.yarn-cache-dir-path.outputs.dir }}
-            key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-            restore-keys: |
-              ${{ runner.os }}-yarn-
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        id: yarn-cache
+        with:
+          path: |
+            **/node_modules
+            ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
 
-        - name: Install NPM Dependencies
-          if: steps.yarn-cache.outputs.cache-hit != 'true'
-          run: yarn install --frozen-lockfile
+      - name: Install NPM Dependencies
+        if: steps.yarn-cache.outputs.cache-hit != 'true'
+        run: yarn install --frozen-lockfile
 
-        - name: Lint
-          run: yarn lint
+      - name: Lint
+        run: yarn lint
 
-        - name: Test
-          run: yarn test
+      - name: Test
+        run: yarn test
