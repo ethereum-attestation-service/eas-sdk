@@ -5,7 +5,7 @@
   "root": true,
   "rules": {
     "semi": "error",
-    "quotes": ["error", "double"],
+    "quotes": ["error", "single"],
     "no-console": "error",
     "object-shorthand-properties-first": "off",
     "@typescript-eslint/no-empty-function": "off",

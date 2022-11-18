@@ -1,18 +1,18 @@
-import { Delegation } from "../../../src/delegation";
-import { HARDHAT_CHAIN_ID } from "../../utils/Constants";
-import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { ecsign } from "ethereumjs-util";
-import { BigNumber, BigNumberish } from "ethers";
+import { Delegation } from '../../../src/delegation';
+import { HARDHAT_CHAIN_ID } from '../../utils/Constants';
+import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
+import { ecsign } from 'ethereumjs-util';
+import { BigNumber, BigNumberish } from 'ethers';
 
 export class EIP712Utils {
   delegation: Delegation;
 
   constructor(contract: string | SignerWithAddress) {
-    const contractAddress = typeof contract === "string" ? contract : contract.address;
+    const contractAddress = typeof contract === 'string' ? contract : contract.address;
 
     this.delegation = new Delegation({
       address: contractAddress,
-      version: "0.14",
+      version: '0.14',
       chainId: HARDHAT_CHAIN_ID
     });
   }
@@ -28,11 +28,11 @@ export class EIP712Utils {
   ) {
     return this.delegation.getAttestationRequest(
       {
-        recipient: typeof recipient === "string" ? recipient : recipient.address,
+        recipient: typeof recipient === 'string' ? recipient : recipient.address,
         schema,
         expirationTime,
         refUUID,
-        data: Buffer.from(data.slice(2), "hex"),
+        data: Buffer.from(data.slice(2), 'hex'),
         nonce
       },
       async (message) => {
