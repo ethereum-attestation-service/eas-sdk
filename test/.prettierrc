@@ -13,7 +13,7 @@
   "tabWidth": 2,
   "useTabs": false,
   "semi": true,
-  "singleQuote": false,
+  "singleQuote": true,
   "trailingComma": "none",
   "arrowParens": "always",
   "bracketSpacing": true,

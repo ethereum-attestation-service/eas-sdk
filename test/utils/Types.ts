@@ -1,5 +1,5 @@
-import Decimal from "decimal.js";
-import { BigNumber, BigNumberish } from "ethers";
+import Decimal from 'decimal.js';
+import { BigNumber, BigNumberish } from 'ethers';
 
 type ToWeiInput = Decimal | BigNumberish;
 

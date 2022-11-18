@@ -1,9 +1,9 @@
-import { Base } from "./base";
-import { getSchemaUUID, ZERO_ADDRESS, ZERO_BYTES32 } from "./utils";
+import { Base } from './base';
+import { getSchemaUUID, ZERO_ADDRESS, ZERO_BYTES32 } from './utils';
 import {
   SchemaRegistry__factory,
   SchemaRegistry as SchemaRegistryContract
-} from "@ethereum-attestation-service/eas-contracts";
+} from '@ethereum-attestation-service/eas-contracts';
 
 export declare type SchemaRecord = {
   uuid: string;
@@ -27,7 +27,7 @@ export class SchemaRegistry extends Base<SchemaRegistryContract> {
   public async getSchema(uuid: string): Promise<SchemaRecord> {
     const schema = await this.contract.getSchema(uuid);
     if (schema.uuid === ZERO_BYTES32) {
-      throw new Error("Schema not found");
+      throw new Error('Schema not found');
     }
 
     return schema;

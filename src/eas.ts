@@ -1,8 +1,8 @@
-import { Base } from "./base";
-import { EIP712AttestationRequest, EIP712RevocationRequest } from "./delegation";
-import { ZERO_BYTES32 } from "./utils";
-import { EAS__factory, EAS as EASContract } from "@ethereum-attestation-service/eas-contracts";
-import { BytesLike, PayableOverrides, utils } from "ethers";
+import { Base } from './base';
+import { EIP712AttestationRequest, EIP712RevocationRequest } from './delegation';
+import { ZERO_BYTES32 } from './utils';
+import { EAS__factory, EAS as EASContract } from '@ethereum-attestation-service/eas-contracts';
+import { BytesLike, PayableOverrides, utils } from 'ethers';
 
 const { hexlify } = utils;
 
@@ -37,9 +37,9 @@ export class EAS extends Base<EASContract> {
     const res = await this.contract.attest(recipient, schema, expirationTime, refUUID, data, overrides);
     const receipt = await res.wait();
 
-    const event = receipt.events?.find((e) => e.event === "Attested");
+    const event = receipt.events?.find((e) => e.event === 'Attested');
     if (!event) {
-      throw new Error("Unable to process attestation event");
+      throw new Error('Unable to process attestation event');
     }
 
     return event.args?.uuid;
@@ -70,9 +70,9 @@ export class EAS extends Base<EASContract> {
     );
     const receipt = await res.wait();
 
-    const event = receipt.events?.find((e) => e.event === "Attested");
+    const event = receipt.events?.find((e) => e.event === 'Attested');
     if (!event) {
-      throw new Error("Unable to process attestation event");
+      throw new Error('Unable to process attestation event');
     }
 
     return event.args?.uuid;

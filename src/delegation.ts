@@ -1,12 +1,12 @@
-import { BigNumberish, utils } from "ethers";
+import { BigNumberish, utils } from 'ethers';
 
 const { keccak256, getAddress, toUtf8Bytes, defaultAbiCoder, solidityPack } = utils;
 
 export const ATTEST_TYPED_SIGNATURE =
-  "Attest(address recipient,bytes32 schema,uint32 expirationTime,bytes32 refUUID,bytes data,uint256 nonce)";
-export const REVOKE_TYPED_SIGNATURE = "Revoke(bytes32 uuid,uint256 nonce)";
-export const EIP712_DOMAIN = "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)";
-export const EIP712_NAME = "EAS";
+  'Attest(address recipient,bytes32 schema,uint32 expirationTime,bytes32 refUUID,bytes data,uint256 nonce)';
+export const REVOKE_TYPED_SIGNATURE = 'Revoke(bytes32 uuid,uint256 nonce)';
+export const EIP712_DOMAIN = 'EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)';
+export const EIP712_NAME = 'EAS';
 
 export interface EIP712Config {
   address: string;
@@ -51,40 +51,40 @@ export type VerifyData = (message: Buffer, signature: Signature) => Promise<stri
 export interface TypedData {
   name: string;
   type:
-    | "bool"
-    | "uint8"
-    | "uint16"
-    | "uint32"
-    | "uint64"
-    | "uint128"
-    | "uint256"
-    | "address"
-    | "string"
-    | "bytes"
-    | "bytes32";
+    | 'bool'
+    | 'uint8'
+    | 'uint16'
+    | 'uint32'
+    | 'uint64'
+    | 'uint128'
+    | 'uint256'
+    | 'address'
+    | 'string'
+    | 'bytes'
+    | 'bytes32';
 }
 
-export const ATTEST_PRIMARY_TYPE = "Attest";
-export const REVOKE_PRIMARY_TYPE = "Revoke";
+export const ATTEST_PRIMARY_TYPE = 'Attest';
+export const REVOKE_PRIMARY_TYPE = 'Revoke';
 export const DOMAIN_TYPE: TypedData[] = [
-  { name: "name", type: "string" },
-  { name: "version", type: "string" },
-  { name: "chainId", type: "uint256" },
-  { name: "verifyingContract", type: "address" }
+  { name: 'name', type: 'string' },
+  { name: 'version', type: 'string' },
+  { name: 'chainId', type: 'uint256' },
+  { name: 'verifyingContract', type: 'address' }
 ];
 
 export const ATTEST_TYPE: TypedData[] = [
-  { name: "recipient", type: "address" },
-  { name: "schema", type: "bytes32" },
-  { name: "expirationTime", type: "uint32" },
-  { name: "refUUID", type: "bytes32" },
-  { name: "data", type: "bytes" },
-  { name: "nonce", type: "uint256" }
+  { name: 'recipient', type: 'address' },
+  { name: 'schema', type: 'bytes32' },
+  { name: 'expirationTime', type: 'uint32' },
+  { name: 'refUUID', type: 'bytes32' },
+  { name: 'data', type: 'bytes' },
+  { name: 'nonce', type: 'uint256' }
 ];
 
 export const REVOKE_TYPE: TypedData[] = [
-  { name: "uuid", type: "bytes32" },
-  { name: "nonce", type: "uint256" }
+  { name: 'uuid', type: 'bytes32' },
+  { name: 'nonce', type: 'uint256' }
 ];
 
 export interface EIP712DomainTypedData {
@@ -147,7 +147,7 @@ export class Delegation {
   public getDomainSeparator() {
     return keccak256(
       defaultAbiCoder.encode(
-        ["bytes32", "bytes32", "bytes32", "uint256", "address"],
+        ['bytes32', 'bytes32', 'bytes32', 'uint256', 'address'],
         [
           keccak256(toUtf8Bytes(EIP712_DOMAIN)),
           keccak256(toUtf8Bytes(EIP712_NAME)),
@@ -173,7 +173,7 @@ export class Delegation {
     signData: SignData
   ): Promise<EIP712AttestationRequest> {
     const digest = this.getAttestationDigest(params);
-    const { v, r, s } = await signData(Buffer.from(digest.slice(2), "hex"));
+    const { v, r, s } = await signData(Buffer.from(digest.slice(2), 'hex'));
 
     return { v, r, s, params };
   }
@@ -184,7 +184,7 @@ export class Delegation {
     verifyData: VerifyData
   ): Promise<boolean> {
     const digest = this.getAttestationDigest(request.params);
-    const recoveredAddress = await verifyData(Buffer.from(digest.slice(2), "hex"), {
+    const recoveredAddress = await verifyData(Buffer.from(digest.slice(2), 'hex'), {
       v: request.v,
       s: request.s,
       r: request.r
@@ -227,7 +227,7 @@ export class Delegation {
     signData: SignData
   ): Promise<EIP712RevocationRequest> {
     const digest = this.getRevocationDigest(params);
-    const { v, r, s } = await signData(Buffer.from(digest.slice(2), "hex"));
+    const { v, r, s } = await signData(Buffer.from(digest.slice(2), 'hex'));
 
     return { v, r, s, params };
   }
@@ -238,7 +238,7 @@ export class Delegation {
     verifyData: VerifyData
   ): Promise<boolean> {
     const digest = this.getRevocationDigest(request.params);
-    const recoveredAddress = await verifyData(Buffer.from(digest.slice(2), "hex"), {
+    const recoveredAddress = await verifyData(Buffer.from(digest.slice(2), 'hex'), {
       v: request.v,
       s: request.s,
       r: request.r
@@ -279,14 +279,14 @@ export class Delegation {
   private getAttestationDigest(params: EIP712AttestationParams): string {
     return keccak256(
       solidityPack(
-        ["bytes1", "bytes1", "bytes32", "bytes32"],
+        ['bytes1', 'bytes1', 'bytes32', 'bytes32'],
         [
-          "0x19",
-          "0x01",
+          '0x19',
+          '0x01',
           this.getDomainSeparator(),
           keccak256(
             defaultAbiCoder.encode(
-              ["bytes32", "address", "bytes32", "uint32", "bytes32", "bytes32", "uint256"],
+              ['bytes32', 'address', 'bytes32', 'uint32', 'bytes32', 'bytes32', 'uint256'],
               [
                 keccak256(toUtf8Bytes(ATTEST_TYPED_SIGNATURE)),
                 params.recipient,
@@ -306,14 +306,14 @@ export class Delegation {
   private getRevocationDigest(params: EIP712RevocationParams): string {
     return keccak256(
       solidityPack(
-        ["bytes1", "bytes1", "bytes32", "bytes32"],
+        ['bytes1', 'bytes1', 'bytes32', 'bytes32'],
         [
-          "0x19",
-          "0x01",
+          '0x19',
+          '0x01',
           this.getDomainSeparator(),
           keccak256(
             defaultAbiCoder.encode(
-              ["bytes32", "bytes32", "uint256"],
+              ['bytes32', 'bytes32', 'uint256'],
               [keccak256(toUtf8Bytes(REVOKE_TYPED_SIGNATURE)), params.uuid, params.nonce]
             )
           )

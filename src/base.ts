@@ -1,4 +1,4 @@
-import { Contract, ContractFactory, Signer } from "ethers";
+import { Contract, ContractFactory, Signer } from 'ethers';
 
 export class Base<C extends Contract> {
   contract: C;
