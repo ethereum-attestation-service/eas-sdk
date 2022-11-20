@@ -87,7 +87,7 @@ describe('EAS API', () => {
               value: options?.value
             });
           } else {
-            const request = await eip712Utils.getAttestationRequest(
+            const signature = await eip712Utils.getAttestationSignature(
               recipient,
               schema,
               expirationTime,
@@ -99,7 +99,7 @@ describe('EAS API', () => {
 
             uuid = await eas
               .connect(txSender)
-              .attestByDelegation(recipient, schema, data, txSender.address, request, expirationTime, refUUID, {
+              .attestByDelegation(recipient, schema, data, txSender.address, signature, expirationTime, refUUID, {
                 value: options?.value
               });
           }
@@ -183,13 +183,13 @@ describe('EAS API', () => {
         if (!delegation) {
           await eas.connect(txSender).revoke(uuid);
         } else {
-          const request = await eip712Utils.getRevocationRequest(
+          const signature = await eip712Utils.getRevocationSignature(
             uuid,
             await verifier.getNonce(txSender.address),
             Buffer.from(txSender.privateKey.slice(2), 'hex')
           );
 
-          await eas.connect(txSender).revokeByDelegation(uuid, txSender.address, request);
+          await eas.connect(txSender).revokeByDelegation(uuid, txSender.address, signature);
         }
 
         const now = await latest();
