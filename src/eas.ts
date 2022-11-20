@@ -1,5 +1,5 @@
 import { Base } from './base';
-import { EIP712AttestationRequest, EIP712RevocationRequest } from './delegation';
+import { Signature } from './offchain/delegation';
 import { ZERO_BYTES32 } from './utils';
 import { EAS__factory, EAS as EASContract } from '@ethereum-attestation-service/eas-contracts';
 import { BytesLike, PayableOverrides, utils } from 'ethers';
@@ -51,7 +51,7 @@ export class EAS extends Base<EASContract> {
     schema: string,
     data: BytesLike,
     attester: string,
-    request: EIP712AttestationRequest,
+    signature: Signature,
     expirationTime: number = NO_EXPIRATION,
     refUUID: string = ZERO_BYTES32,
     overrides: PayableOverrides = {}
@@ -63,9 +63,9 @@ export class EAS extends Base<EASContract> {
       refUUID,
       data,
       attester,
-      request.v,
-      hexlify(request.r),
-      hexlify(request.s),
+      signature.v,
+      hexlify(signature.r),
+      hexlify(signature.s),
       overrides
     );
     const receipt = await res.wait();
@@ -84,8 +84,8 @@ export class EAS extends Base<EASContract> {
   }
 
   // Revokes an existing attestation an EIP712 delegation request
-  revokeByDelegation(uuid: string, attester: string, request: EIP712RevocationRequest) {
-    return this.contract.revokeByDelegation(uuid, attester, request.v, hexlify(request.r), hexlify(request.s));
+  revokeByDelegation(uuid: string, attester: string, signature: Signature) {
+    return this.contract.revokeByDelegation(uuid, attester, signature.v, hexlify(signature.r), hexlify(signature.s));
   }
 
   // Returns an existing schema by attestation UUID
