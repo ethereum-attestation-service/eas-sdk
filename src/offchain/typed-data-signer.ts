@@ -1,5 +1,5 @@
 import { ZERO_ADDRESS } from '../utils';
-import { utils } from 'ethers';
+import { BigNumberish, utils } from 'ethers';
 
 const { getAddress, solidityPack, defaultAbiCoder, keccak256 } = utils;
 
@@ -13,7 +13,19 @@ export type Signature = { v: number; r: Buffer; s: Buffer };
 export type SignData = (message: Buffer) => Promise<Signature>;
 export type VerifyData = (message: Buffer, signature: Signature) => Promise<string>;
 
-export interface Data {
+export interface DomainTypedData {
+  chainId: number;
+  name: string;
+  verifyingContract: string;
+  version: string;
+}
+
+export interface TypedDataParams {
+  types: string[];
+  values: unknown[];
+}
+
+export interface TypedData {
   name: string;
   type:
     | 'bool'
@@ -29,40 +41,45 @@ export interface Data {
     | 'bytes32';
 }
 
-export const DOMAIN_TYPE: Data[] = [
+export const EIP712_DOMAIN_TYPE: TypedData[] = [
   { name: 'name', type: 'string' },
   { name: 'version', type: 'string' },
   { name: 'chainId', type: 'uint256' },
   { name: 'verifyingContract', type: 'address' }
 ];
 
-export interface DomainTypedData {
+export interface EIP712DomainTypedData {
   chainId: number;
   name: string;
   verifyingContract: string;
   version: string;
 }
 
-export interface MessageTypes {
-  EIP712Domain: Data[];
-  [additionalProperties: string]: Data[];
+export interface EIP712MessageTypes {
+  EIP712Domain: TypedData[];
+  [additionalProperties: string]: TypedData[];
 }
+export type EIP712Params = {
+  nonce: BigNumberish;
+};
 
-export interface TypedData<T extends MessageTypes> {
-  domain: DomainTypedData;
+export interface EIP712TypedData<T extends EIP712MessageTypes> {
+  domain: EIP712DomainTypedData;
   primaryType: keyof T;
   types: T;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   message: any;
 }
 
-export interface TypedDataParams {
-  types: string[];
-  values: unknown[];
+export interface EIP712Request extends Signature {
+  data: EIP712TypedData<EIP712MessageTypes>;
 }
 
-export type SignTypedData<T extends MessageTypes> = (data: TypedData<T>) => Promise<Signature>;
-export type VerifyTypedData<T extends MessageTypes> = (data: TypedData<T>, signature: Signature) => Promise<string>;
+export type SignTypedData<T extends EIP712MessageTypes> = (data: EIP712TypedData<T>) => Promise<Signature>;
+export type VerifyTypedData<T extends EIP712MessageTypes> = (
+  data: EIP712TypedData<T>,
+  signature: Signature
+) => Promise<string>;
 
 export abstract class TypedDataSigner {
   protected config: TypedDataConfig;
@@ -73,8 +90,9 @@ export abstract class TypedDataSigner {
 
   abstract getDomainSeparator(): string;
   abstract getDomainTypedData(): DomainTypedData;
+  abstract getTypedData(type: string, params: EIP712Params): EIP712TypedData<EIP712MessageTypes>;
 
-  public async getTypedDataSignature(params: TypedDataParams, signData: SignData): Promise<Signature> {
+  public async signTypedData(params: TypedDataParams, signData: SignData): Promise<Signature> {
     const digest = this.getDigest(params);
     const { v, r, s } = await signData(Buffer.from(digest.slice(2), 'hex'));
 
@@ -90,8 +108,35 @@ export abstract class TypedDataSigner {
     if (attester === ZERO_ADDRESS) {
       throw new Error('Invalid address');
     }
+
     const digest = this.getDigest(params);
     const recoveredAddress = await verifyData(Buffer.from(digest.slice(2), 'hex'), signature);
+
+    return getAddress(attester) === getAddress(recoveredAddress);
+  }
+
+  public async signTypedDataRequest(
+    type: string,
+    params: EIP712Params,
+    signTypedData: SignTypedData<EIP712MessageTypes>
+  ): Promise<EIP712Request> {
+    const data = this.getTypedData(type, params);
+    const { v, r, s } = await signTypedData(data);
+
+    return {
+      v,
+      r,
+      s,
+      data
+    };
+  }
+
+  public async verifyTypedDataRequestSignature(
+    attester: string,
+    request: EIP712Request,
+    verifyTypedData: VerifyTypedData<EIP712MessageTypes>
+  ): Promise<boolean> {
+    const recoveredAddress = await verifyTypedData(request.data, request);
 
     return getAddress(attester) === getAddress(recoveredAddress);
   }

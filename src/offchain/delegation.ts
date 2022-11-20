@@ -1,26 +1,44 @@
 import {
   DomainTypedData,
+  EIP712_DOMAIN_TYPE,
+  EIP712MessageTypes,
+  EIP712Params,
+  EIP712Request,
+  EIP712TypedData,
   Signature,
   SignData,
+  SignTypedData,
+  TypedData,
   TypedDataConfig,
   TypedDataSigner,
-  VerifyData
+  VerifyData,
+  VerifyTypedData
 } from './typed-data-signer';
-import { BigNumberish, utils } from 'ethers';
+import { utils } from 'ethers';
 
 const { keccak256, toUtf8Bytes, defaultAbiCoder } = utils;
 
-export { Signature } from './typed-data-signer';
+export { Signature, EIP712MessageTypes, EIP712TypedData } from './typed-data-signer';
 
+export const ATTEST_PRIMARY_TYPE = 'Attest';
+export const REVOKE_PRIMARY_TYPE = 'Revoke';
 export const ATTEST_TYPED_SIGNATURE =
   'Attest(address recipient,bytes32 schema,uint32 expirationTime,bytes32 refUUID,bytes data,uint256 nonce)';
 export const REVOKE_TYPED_SIGNATURE = 'Revoke(bytes32 uuid,uint256 nonce)';
+export const ATTEST_TYPE: TypedData[] = [
+  { name: 'recipient', type: 'address' },
+  { name: 'schema', type: 'bytes32' },
+  { name: 'expirationTime', type: 'uint32' },
+  { name: 'refUUID', type: 'bytes32' },
+  { name: 'data', type: 'bytes' },
+  { name: 'nonce', type: 'uint256' }
+];
+export const REVOKE_TYPE: TypedData[] = [
+  { name: 'uuid', type: 'bytes32' },
+  { name: 'nonce', type: 'uint256' }
+];
 export const EIP712_DOMAIN = 'EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)';
 export const EIP712_NAME = 'EAS';
-
-export type EIP712Params = {
-  nonce: BigNumberish;
-};
 
 export type EIP712AttestationParams = EIP712Params & {
   recipient: string;
@@ -33,6 +51,30 @@ export type EIP712AttestationParams = EIP712Params & {
 export type EIP712RevocationParams = EIP712Params & {
   uuid: string;
 };
+
+export interface EIP712AttestationMessageTypes extends EIP712MessageTypes {
+  Attest: typeof ATTEST_TYPE;
+}
+
+export interface EIP712AttestationTypedData extends EIP712TypedData<EIP712AttestationMessageTypes> {
+  message: EIP712AttestationParams;
+}
+
+export interface EIP712RevocationMessageTypes extends EIP712MessageTypes {
+  Revoke: typeof REVOKE_TYPE;
+}
+
+export interface EIP712RevocationTypedData extends EIP712TypedData<EIP712RevocationMessageTypes> {
+  message: EIP712RevocationParams;
+}
+
+export interface EIP712AttestationTypedDataRequest extends EIP712Request {
+  data: EIP712AttestationTypedData;
+}
+
+export interface EIP712RevocationTypedDataRequest extends EIP712Request {
+  data: EIP712RevocationTypedData;
+}
 
 export class Delegation extends TypedDataSigner {
   public constructor(config: TypedDataConfig) {
@@ -63,11 +105,40 @@ export class Delegation extends TypedDataSigner {
     };
   }
 
-  public async getAttestationSignature(params: EIP712AttestationParams, signData: SignData): Promise<Signature> {
-    return this.getTypedDataSignature(Delegation.getAttestationTypedParams(params), signData);
+  public getTypedData(type: string, params: EIP712Params): EIP712TypedData<EIP712MessageTypes> {
+    switch (type) {
+      case ATTEST_PRIMARY_TYPE:
+        return {
+          domain: this.getDomainTypedData(),
+          primaryType: ATTEST_PRIMARY_TYPE,
+          message: params,
+          types: {
+            EIP712Domain: EIP712_DOMAIN_TYPE,
+            Attest: ATTEST_TYPE
+          }
+        };
+
+      case REVOKE_PRIMARY_TYPE:
+        return {
+          domain: this.getDomainTypedData(),
+          primaryType: REVOKE_PRIMARY_TYPE,
+          message: params,
+          types: {
+            EIP712Domain: EIP712_DOMAIN_TYPE,
+            Revoke: REVOKE_TYPE
+          }
+        };
+
+      default:
+        throw new Error(`Unsupported type: ${type}`);
+    }
   }
 
-  public async verifyAttestationSignature(
+  public async signDelegatedAttestation(params: EIP712AttestationParams, signData: SignData): Promise<Signature> {
+    return this.signTypedData(Delegation.getAttestationTypedParams(params), signData);
+  }
+
+  public async verifyDelegatedAttestationSignature(
     attester: string,
     params: EIP712AttestationParams,
     signature: Signature,
@@ -76,17 +147,47 @@ export class Delegation extends TypedDataSigner {
     return this.verifyTypedDataSignature(attester, Delegation.getAttestationTypedParams(params), signature, verifyData);
   }
 
-  public async getRevocationSignature(params: EIP712RevocationParams, signData: SignData): Promise<Signature> {
-    return this.getTypedDataSignature(Delegation.getRevocationParams(params), signData);
+  public async signDelegatedAttestationTypedData(
+    params: EIP712AttestationParams,
+    signTypedData: SignTypedData<EIP712MessageTypes>
+  ): Promise<EIP712Request> {
+    return this.signTypedDataRequest(ATTEST_PRIMARY_TYPE, params, signTypedData);
   }
 
-  public async verifyRevocationSignature(
+  public async verifyDelegatedAttestationTypedDataSignature(
+    attester: string,
+    request: EIP712Request,
+    verifyTypedData: VerifyTypedData<EIP712MessageTypes>
+  ): Promise<boolean> {
+    return this.verifyTypedDataRequestSignature(attester, request, verifyTypedData);
+  }
+
+  public async signDelegatedRevocation(params: EIP712RevocationParams, signData: SignData): Promise<Signature> {
+    return this.signTypedData(Delegation.getRevocationParams(params), signData);
+  }
+
+  public async verifyRevocationAttestationSignature(
     attester: string,
     params: EIP712RevocationParams,
     signature: Signature,
     verifyData: VerifyData
   ): Promise<boolean> {
     return this.verifyTypedDataSignature(attester, Delegation.getRevocationParams(params), signature, verifyData);
+  }
+
+  public async signDelegatedRevocationTypedData(
+    params: EIP712RevocationParams,
+    signTypedData: SignTypedData<EIP712MessageTypes>
+  ): Promise<EIP712Request> {
+    return this.signTypedDataRequest(REVOKE_PRIMARY_TYPE, params, signTypedData);
+  }
+
+  public async verifyDelegatedRevocationTypedDataSignature(
+    attester: string,
+    request: EIP712Request,
+    verifyTypedData: VerifyTypedData<EIP712MessageTypes>
+  ): Promise<boolean> {
+    return this.verifyTypedDataRequestSignature(attester, request, verifyTypedData);
   }
 
   private static getAttestationTypedParams(params: EIP712AttestationParams) {
