@@ -1,5 +1,5 @@
 import { Base } from './base';
-import { Signature } from './offchain/delegation';
+import { Signature } from './offchain/delegated';
 import { ZERO_BYTES32 } from './utils';
 import { EAS__factory, EAS as EASContract } from '@ethereum-attestation-service/eas-contracts';
 import { BytesLike, PayableOverrides, utils } from 'ethers';
