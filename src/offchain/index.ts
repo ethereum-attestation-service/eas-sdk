@@ -1,2 +1,2 @@
-export * from './delegation';
+export * from './delegated';
 export * from './offchain';

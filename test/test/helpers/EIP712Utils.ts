@@ -1,4 +1,4 @@
-import { Delegation, EIP712MessageTypes, EIP712TypedData } from '../../../src/offchain/delegation';
+import { Delegated, EIP712MessageTypes, EIP712TypedData } from '../../../src/offchain/delegated';
 import { Offchain, Signature } from '../../../src/offchain/offchain';
 import { HARDHAT_CHAIN_ID } from '../../utils/Constants';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
@@ -9,7 +9,7 @@ import { BigNumber, utils } from 'ethers';
 const { splitSignature, joinSignature, hexlify, recoverAddress } = utils;
 
 export class EIP712Utils {
-  delegation: Delegation;
+  delegated: Delegated;
   offchain: Offchain;
 
   constructor(contract: string | SignerWithAddress) {
@@ -21,7 +21,7 @@ export class EIP712Utils {
       chainId: HARDHAT_CHAIN_ID
     };
 
-    this.delegation = new Delegation(config);
+    this.delegated = new Delegated(config);
     this.offchain = new Offchain(config);
   }
 
@@ -34,7 +34,7 @@ export class EIP712Utils {
     nonce: BigNumber,
     privateKey: Buffer
   ) {
-    return this.delegation.signDelegatedAttestation(
+    return this.delegated.signDelegatedAttestation(
       {
         recipient: typeof recipient === 'string' ? recipient : recipient.address,
         schema,
@@ -51,7 +51,7 @@ export class EIP712Utils {
   }
 
   async signDelegatedRevocation(uuid: string, nonce: BigNumber, privateKey: Buffer) {
-    return this.delegation.signDelegatedRevocation(
+    return this.delegated.signDelegatedRevocation(
       {
         uuid,
         nonce
@@ -72,7 +72,7 @@ export class EIP712Utils {
     nonce: BigNumber,
     privateKey: Buffer
   ) {
-    return this.delegation.signDelegatedAttestationTypedData(
+    return this.delegated.signDelegatedAttestationTypedData(
       {
         recipient: typeof recipient === 'string' ? recipient : recipient.address,
         schema,
@@ -89,7 +89,7 @@ export class EIP712Utils {
   }
 
   async signDelegatedRevocationTypedData(uuid: string, nonce: BigNumber, privateKey: Buffer) {
-    return this.delegation.signDelegatedRevocationTypedData(
+    return this.delegated.signDelegatedRevocationTypedData(
       {
         uuid,
         nonce: nonce.toNumber()

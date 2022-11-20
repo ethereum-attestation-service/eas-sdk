@@ -76,7 +76,7 @@ export interface EIP712RevocationTypedDataRequest extends EIP712Request {
   data: EIP712RevocationTypedData;
 }
 
-export class Delegation extends TypedDataSigner {
+export class Delegated extends TypedDataSigner {
   public constructor(config: TypedDataConfig) {
     super(config);
   }
@@ -135,7 +135,7 @@ export class Delegation extends TypedDataSigner {
   }
 
   public async signDelegatedAttestation(params: EIP712AttestationParams, signData: SignData): Promise<Signature> {
-    return this.signTypedData(Delegation.getAttestationTypedParams(params), signData);
+    return this.signTypedData(Delegated.getAttestationTypedParams(params), signData);
   }
 
   public async verifyDelegatedAttestationSignature(
@@ -144,7 +144,7 @@ export class Delegation extends TypedDataSigner {
     signature: Signature,
     verifyData: VerifyData
   ): Promise<boolean> {
-    return this.verifyTypedDataSignature(attester, Delegation.getAttestationTypedParams(params), signature, verifyData);
+    return this.verifyTypedDataSignature(attester, Delegated.getAttestationTypedParams(params), signature, verifyData);
   }
 
   public async signDelegatedAttestationTypedData(
@@ -163,7 +163,7 @@ export class Delegation extends TypedDataSigner {
   }
 
   public async signDelegatedRevocation(params: EIP712RevocationParams, signData: SignData): Promise<Signature> {
-    return this.signTypedData(Delegation.getRevocationParams(params), signData);
+    return this.signTypedData(Delegated.getRevocationParams(params), signData);
   }
 
   public async verifyRevocationAttestationSignature(
@@ -172,7 +172,7 @@ export class Delegation extends TypedDataSigner {
     signature: Signature,
     verifyData: VerifyData
   ): Promise<boolean> {
-    return this.verifyTypedDataSignature(attester, Delegation.getRevocationParams(params), signature, verifyData);
+    return this.verifyTypedDataSignature(attester, Delegated.getRevocationParams(params), signature, verifyData);
   }
 
   public async signDelegatedRevocationTypedData(
