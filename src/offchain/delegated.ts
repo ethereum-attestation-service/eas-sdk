@@ -68,14 +68,6 @@ export interface EIP712RevocationTypedData extends EIP712TypedData<EIP712Revocat
   message: EIP712RevocationParams;
 }
 
-export interface EIP712AttestationTypedDataRequest extends EIP712Request {
-  data: EIP712AttestationTypedData;
-}
-
-export interface EIP712RevocationTypedDataRequest extends EIP712Request {
-  data: EIP712RevocationTypedData;
-}
-
 export class Delegated extends TypedDataSigner {
   public constructor(config: TypedDataConfig) {
     super(config);
