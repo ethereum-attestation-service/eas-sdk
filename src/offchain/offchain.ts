@@ -2,20 +2,31 @@ import {
   DomainTypedData,
   EIP712MessageTypes,
   EIP712Params,
+  EIP712Request,
   EIP712TypedData,
-  Signature,
-  SignData,
+  TypedData,
   TypedDataConfig,
-  TypedDataSigner,
-  VerifyData
-} from './typed-data-signer';
+  TypedDataHandler
+} from './typed-data-handler';
+import { TypedDataSigner } from '@ethersproject/abstract-signer';
 import { utils } from 'ethers';
 
 const { keccak256, toUtf8Bytes, defaultAbiCoder } = utils;
 
-export { Signature } from './typed-data-signer';
+export { EIP712Request } from './typed-data-handler';
 
-export const NAME = 'EAS Attestation';
+export const ATTESTATION_PRIMARY_TYPE = 'Attestation';
+export const ATTESTATION_TYPE: TypedData[] = [
+  { name: 'time', type: 'uint32' },
+  { name: 'uuid', type: 'bytes32' },
+  { name: 'recipient', type: 'address' },
+  { name: 'schema', type: 'bytes32' },
+  { name: 'expirationTime', type: 'uint32' },
+  { name: 'refUUID', type: 'bytes32' },
+  { name: 'data', type: 'bytes' }
+];
+
+export const DOMAIN_NAME = 'EAS Attestation';
 
 export type OffchainAttestationParams = {
   time: number;
@@ -25,9 +36,9 @@ export type OffchainAttestationParams = {
   expirationTime: number;
   refUUID: string;
   data: Buffer;
-};
+} & Partial<EIP712Params>;
 
-export class Offchain extends TypedDataSigner {
+export class Offchain extends TypedDataHandler {
   public constructor(config: TypedDataConfig) {
     super(config);
   }
@@ -37,7 +48,7 @@ export class Offchain extends TypedDataSigner {
       defaultAbiCoder.encode(
         ['bytes32', 'bytes32', 'uint256', 'address'],
         [
-          keccak256(toUtf8Bytes(NAME)),
+          keccak256(toUtf8Bytes(DOMAIN_NAME)),
           keccak256(toUtf8Bytes(this.config.version)),
           this.config.chainId,
           this.config.address
@@ -48,47 +59,32 @@ export class Offchain extends TypedDataSigner {
 
   public getDomainTypedData(): DomainTypedData {
     return {
-      name: NAME,
+      name: DOMAIN_NAME,
       version: this.config.version,
       chainId: this.config.chainId,
       verifyingContract: this.config.address
     };
   }
 
-  public async signOffchainAttestation(params: OffchainAttestationParams, signData: SignData): Promise<Signature> {
-    return this.signTypedData(Offchain.getOffchainAttestationTypedParams(params), signData);
-  }
-
-  public async verifyOffchainAttestationSignature(
-    attester: string,
-    params: OffchainAttestationParams,
-    signature: Signature,
-    verifyData: VerifyData
-  ): Promise<boolean> {
-    return this.verifyTypedDataSignature(
-      attester,
-      Offchain.getOffchainAttestationTypedParams(params),
-      signature,
-      verifyData
-    );
-  }
-
-  public getTypedData(_type: string, _params: EIP712Params): EIP712TypedData<EIP712MessageTypes> {
-    throw new Error('Unsupported typed data');
-  }
-
-  private static getOffchainAttestationTypedParams(params: OffchainAttestationParams) {
+  public getTypedData(_type: string, params: EIP712Params): EIP712TypedData<EIP712MessageTypes> {
     return {
-      types: ['uint32', 'bytes32', 'address', 'bytes32', 'uint32', 'bytes32', 'bytes32'],
-      values: [
-        params.time,
-        params.uuid,
-        params.recipient,
-        params.schema,
-        params.expirationTime,
-        params.refUUID,
-        keccak256(params.data)
-      ]
+      domain: this.getDomainTypedData(),
+      primaryType: ATTESTATION_PRIMARY_TYPE,
+      message: params,
+      types: {
+        Attest: ATTESTATION_TYPE
+      }
     };
+  }
+
+  public async signOffchainAttestation(
+    params: OffchainAttestationParams,
+    signer: TypedDataSigner
+  ): Promise<EIP712Request> {
+    return this.signTypedDataRequest(ATTESTATION_PRIMARY_TYPE, params, signer);
+  }
+
+  public async verifyOffchainAttestationSignature(attester: string, request: EIP712Request): Promise<boolean> {
+    return this.verifyTypedDataRequestSignature(attester, request);
   }
 }
