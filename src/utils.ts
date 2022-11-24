@@ -1,6 +1,6 @@
 import { constants, utils } from 'ethers';
 
-const { solidityKeccak256 } = utils;
+const { solidityKeccak256, hexlify, toUtf8Bytes } = utils;
 
 const { AddressZero } = constants;
 
@@ -22,5 +22,5 @@ export const getUUID = (
 ) =>
   solidityKeccak256(
     ['bytes', 'address', 'address', 'uint32', 'uint32', 'bytes', 'uint32'],
-    [schema, recipient, attester, time, expirationTime, data, bump]
+    [hexlify(toUtf8Bytes(schema)), recipient, attester, time, expirationTime, data, bump]
   );
