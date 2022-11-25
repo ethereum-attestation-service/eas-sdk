@@ -1,6 +1,6 @@
 import { EAS, NO_EXPIRATION } from '../../src/eas';
 import { SchemaRegistry } from '../../src/schema-registry';
-import { getSchemaUUID } from '../../src/utils';
+import { getOffchainUUID, getSchemaUUID } from '../../src/utils';
 import Contracts from '../components/Contracts';
 import { ZERO_ADDRESS, ZERO_BYTES, ZERO_BYTES32 } from '../utils/Constants';
 import chai from './helpers/chai';
@@ -119,17 +119,17 @@ describe('EAS API', () => {
 
             case SignatureType.Offchain: {
               const now = await latest();
-              const uuid = ZERO_BYTES32;
+              const uuid = getOffchainUUID(schema, recipient, now, expirationTime, refUUID, data);
               const request = await eip712Utils.signOffchainAttestation(
                 txSender,
-                now,
-                uuid,
-                recipient,
                 schema,
+                recipient,
+                now,
                 expirationTime,
                 refUUID,
                 data
               );
+              expect(request.uuid).to.equal(uuid);
               expect(await eip712Utils.verifyOffchainAttestation(txSender.address, request));
 
               return;

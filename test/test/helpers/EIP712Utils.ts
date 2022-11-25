@@ -1,5 +1,5 @@
 import { Delegated, EIP712Request } from '../../../src/offchain/delegated';
-import { Offchain } from '../../../src/offchain/offchain';
+import { Offchain, OffchainAttestationRequest } from '../../../src/offchain/offchain';
 import { HARDHAT_CHAIN_ID } from '../../utils/Constants';
 import { TypedDataSigner } from '@ethersproject/abstract-signer';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
@@ -56,20 +56,18 @@ export class EIP712Utils {
 
   public async signOffchainAttestation(
     attester: TypedDataSigner,
-    time: number,
-    uuid: string,
-    recipient: string | SignerWithAddress,
     schema: string,
+    recipient: string | SignerWithAddress,
+    time: number,
     expirationTime: number,
     refUUID: string,
     data: string
-  ): Promise<EIP712Request> {
+  ): Promise<OffchainAttestationRequest> {
     return this.offchain.signOffchainAttestation(
       {
-        time,
-        uuid,
-        recipient: typeof recipient === 'string' ? recipient : recipient.address,
         schema,
+        recipient: typeof recipient === 'string' ? recipient : recipient.address,
+        time,
         expirationTime,
         refUUID,
         data
@@ -78,7 +76,7 @@ export class EIP712Utils {
     );
   }
 
-  public async verifyOffchainAttestation(attester: string, request: EIP712Request): Promise<boolean> {
+  public async verifyOffchainAttestation(attester: string, request: OffchainAttestationRequest): Promise<boolean> {
     return this.offchain.verifyOffchainAttestationSignature(attester, request);
   }
 }

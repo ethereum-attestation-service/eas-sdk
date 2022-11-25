@@ -1,3 +1,4 @@
+import { getOffchainUUID } from '../utils';
 import {
   DomainTypedData,
   EIP712MessageTypes,
@@ -17,10 +18,9 @@ export { EIP712Request } from './typed-data-handler';
 
 export const ATTESTATION_PRIMARY_TYPE = 'Attestation';
 export const ATTESTATION_TYPE: TypedData[] = [
-  { name: 'time', type: 'uint32' },
-  { name: 'uuid', type: 'bytes32' },
-  { name: 'recipient', type: 'address' },
   { name: 'schema', type: 'bytes32' },
+  { name: 'recipient', type: 'address' },
+  { name: 'time', type: 'uint32' },
   { name: 'expirationTime', type: 'uint32' },
   { name: 'refUUID', type: 'bytes32' },
   { name: 'data', type: 'bytes' }
@@ -28,11 +28,14 @@ export const ATTESTATION_TYPE: TypedData[] = [
 
 export const DOMAIN_NAME = 'EAS Attestation';
 
-export type OffchainAttestationParams = {
-  time: number;
+export interface OffchainAttestationRequest extends EIP712Request {
   uuid: string;
-  recipient: string;
+}
+
+export type OffchainAttestationParams = {
   schema: string;
+  recipient: string;
+  time: number;
   expirationTime: number;
   refUUID: string;
   data: string;
@@ -80,11 +83,23 @@ export class Offchain extends TypedDataHandler {
   public async signOffchainAttestation(
     params: OffchainAttestationParams,
     signer: TypedDataSigner
-  ): Promise<EIP712Request> {
-    return this.signTypedDataRequest(ATTESTATION_PRIMARY_TYPE, params, signer);
+  ): Promise<OffchainAttestationRequest> {
+    const uuid = getOffchainUUID(
+      params.schema,
+      params.recipient,
+      params.time,
+      params.expirationTime,
+      params.refUUID,
+      params.data
+    );
+
+    return { ...(await this.signTypedDataRequest(ATTESTATION_PRIMARY_TYPE, params, signer)), uuid };
   }
 
-  public async verifyOffchainAttestationSignature(attester: string, request: EIP712Request): Promise<boolean> {
+  public async verifyOffchainAttestationSignature(
+    attester: string,
+    request: OffchainAttestationRequest
+  ): Promise<boolean> {
     return this.verifyTypedDataRequestSignature(attester, request);
   }
 }
