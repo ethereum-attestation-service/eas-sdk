@@ -25,21 +25,37 @@ describe('utils', () => {
         ]) {
           for (const time of [1, 12345, 1669299342]) {
             for (const expirationTime of [0, 1669299342]) {
-              for (const data of [ZERO_BYTES32, '0x1234']) {
-                for (const bump of [0, 1, 2]) {
-                  context(
-                    `schema=${schema},recipient=${recipient},attester=${attester},time=${time},expirationTime=${expirationTime},data=${data},bump=${bump}`,
-                    () => {
-                      it('should properly derive uuid', async () => {
-                        expect(getUUID(schema, recipient, attester, time, expirationTime, data, bump)).to.equal(
-                          solidityKeccak256(
-                            ['bytes', 'address', 'address', 'uint32', 'uint32', 'bytes', 'uint32'],
-                            [hexlify(toUtf8Bytes(schema)), recipient, attester, time, expirationTime, data, bump]
-                          )
-                        );
-                      });
-                    }
-                  );
+              for (const refUUID of [
+                ZERO_BYTES32,
+                '0x7465737400000000000000000000000000000000000000000000000000000000'
+              ]) {
+                for (const data of [ZERO_BYTES32, '0x1234']) {
+                  for (const bump of [0, 1, 2]) {
+                    context(
+                      `schema=${schema},recipient=${recipient},attester=${attester},time=${time},expirationTime=${expirationTime},data=${data},bump=${bump}`,
+                      () => {
+                        it('should properly derive uuid', async () => {
+                          expect(
+                            getUUID(schema, recipient, attester, time, expirationTime, refUUID, data, bump)
+                          ).to.equal(
+                            solidityKeccak256(
+                              ['bytes', 'address', 'address', 'uint32', 'uint32', 'bytes32', 'bytes', 'uint32'],
+                              [
+                                hexlify(toUtf8Bytes(schema)),
+                                recipient,
+                                attester,
+                                time,
+                                expirationTime,
+                                refUUID,
+                                data,
+                                bump
+                              ]
+                            )
+                          );
+                        });
+                      }
+                    );
+                  }
                 }
               }
             }
