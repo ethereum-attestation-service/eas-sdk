@@ -72,7 +72,7 @@ export class EIP712Utils {
         schema,
         expirationTime,
         refUUID,
-        data: Buffer.from(data.slice(2), 'hex')
+        data
       },
       attester
     );

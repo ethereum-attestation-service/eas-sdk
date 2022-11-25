@@ -35,7 +35,7 @@ export type OffchainAttestationParams = {
   schema: string;
   expirationTime: number;
   refUUID: string;
-  data: Buffer;
+  data: string;
 } & Partial<EIP712Params>;
 
 export class Offchain extends TypedDataHandler {
