@@ -28,7 +28,7 @@ export const ATTESTATION_TYPE: TypedData[] = [
 
 export const DOMAIN_NAME = 'EAS Attestation';
 
-export interface OffchainAttestationRequest extends EIP712Request {
+export interface SignedOffchainAttestation extends EIP712Request {
   uuid: string;
 }
 
@@ -83,7 +83,7 @@ export class Offchain extends TypedDataHandler {
   public async signOffchainAttestation(
     params: OffchainAttestationParams,
     signer: TypedDataSigner
-  ): Promise<OffchainAttestationRequest> {
+  ): Promise<SignedOffchainAttestation> {
     const uuid = getOffchainUUID(
       params.schema,
       params.recipient,
@@ -98,7 +98,7 @@ export class Offchain extends TypedDataHandler {
 
   public async verifyOffchainAttestationSignature(
     attester: string,
-    request: OffchainAttestationRequest
+    request: SignedOffchainAttestation
   ): Promise<boolean> {
     return this.verifyTypedDataRequestSignature(attester, request);
   }
