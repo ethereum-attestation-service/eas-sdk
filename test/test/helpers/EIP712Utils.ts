@@ -22,7 +22,7 @@ export class EIP712Utils {
     this.offchain = new Offchain(config);
   }
 
-  async signDelegatedAttestation(
+  public async signDelegatedAttestation(
     attester: TypedDataSigner,
     recipient: string | SignerWithAddress,
     schema: string,
@@ -44,13 +44,37 @@ export class EIP712Utils {
     );
   }
 
-  async signDelegatedRevocation(attester: TypedDataSigner, uuid: string, nonce: BigNumber): Promise<EIP712Request> {
+  public async verifyDelegatedAttestationSignature(
+    attester: string | SignerWithAddress,
+    request: EIP712Request
+  ): Promise<boolean> {
+    return this.delegated.verifyDelegatedAttestationSignature(
+      typeof attester === 'string' ? attester : attester.address,
+      request
+    );
+  }
+
+  public async signDelegatedRevocation(
+    attester: TypedDataSigner,
+    uuid: string,
+    nonce: BigNumber
+  ): Promise<EIP712Request> {
     return this.delegated.signDelegatedRevocation(
       {
         uuid,
         nonce: nonce.toNumber()
       },
       attester
+    );
+  }
+
+  public async verifyDelegatedRevocationSignature(
+    attester: string | SignerWithAddress,
+    request: EIP712Request
+  ): Promise<boolean> {
+    return this.delegated.verifyDelegatedRevocationSignature(
+      typeof attester === 'string' ? attester : attester.address,
+      request
     );
   }
 

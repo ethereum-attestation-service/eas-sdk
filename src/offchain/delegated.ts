@@ -118,7 +118,7 @@ export class Delegated extends TypedDataHandler {
     return this.signTypedDataRequest(REVOKE_PRIMARY_TYPE, params, signer);
   }
 
-  public async verifyDelegatedRevocationTypedData(attester: string, request: EIP712Request): Promise<boolean> {
+  public async verifyDelegatedRevocationSignature(attester: string, request: EIP712Request): Promise<boolean> {
     return this.verifyTypedDataRequestSignature(attester, request);
   }
 }
