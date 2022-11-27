@@ -1,6 +1,6 @@
 import { EAS, NO_EXPIRATION } from '../../src/eas';
 import { SchemaRegistry } from '../../src/schema-registry';
-import { getSchemaUUID } from '../../src/utils';
+import { getOffchainUUID, getSchemaUUID } from '../../src/utils';
 import Contracts from '../components/Contracts';
 import { ZERO_ADDRESS, ZERO_BYTES, ZERO_BYTES32 } from '../utils/Constants';
 import chai from './helpers/chai';
@@ -60,6 +60,12 @@ describe('EAS API', () => {
     bump?: number;
   }
 
+  enum SignatureType {
+    Direct = 'direct',
+    Delegated = 'delegated',
+    Offchain = 'offchain'
+  }
+
   describe('attesting', () => {
     let expirationTime: number;
     const data = '0x1234';
@@ -68,8 +74,8 @@ describe('EAS API', () => {
       expirationTime = (await latest()) + duration.days(30);
     });
 
-    for (const delegation of [false, true]) {
-      context(`${delegation ? 'via an EIP712 delegation' : 'directly'}`, () => {
+    for (const signatureType of [SignatureType.Direct, SignatureType.Delegated, SignatureType.Offchain]) {
+      context(`via ${signatureType} attestation`, () => {
         const expectAttestation = async (
           recipient: string,
           schema: string,
@@ -82,26 +88,52 @@ describe('EAS API', () => {
 
           let uuid;
 
-          if (!delegation) {
-            uuid = await eas.connect(txSender).attest(recipient, schema, data, expirationTime, refUUID, {
-              value: options?.value
-            });
-          } else {
-            const request = await eip712Utils.getAttestationRequest(
-              recipient,
-              schema,
-              expirationTime,
-              refUUID,
-              data,
-              await verifier.getNonce(txSender.address),
-              Buffer.from(txSender.privateKey.slice(2), 'hex')
-            );
-
-            uuid = await eas
-              .connect(txSender)
-              .attestByDelegation(recipient, schema, data, txSender.address, request, expirationTime, refUUID, {
+          switch (signatureType) {
+            case SignatureType.Direct: {
+              uuid = await eas.connect(txSender).attest(recipient, schema, data, expirationTime, refUUID, {
                 value: options?.value
               });
+
+              break;
+            }
+
+            case SignatureType.Delegated: {
+              const signature = await eip712Utils.signDelegatedAttestation(
+                txSender,
+                recipient,
+                schema,
+                expirationTime,
+                refUUID,
+                data,
+                await verifier.getNonce(txSender.address)
+              );
+
+              uuid = await eas
+                .connect(txSender)
+                .attestByDelegation(recipient, schema, data, txSender.address, signature, expirationTime, refUUID, {
+                  value: options?.value
+                });
+
+              break;
+            }
+
+            case SignatureType.Offchain: {
+              const now = await latest();
+              const uuid = getOffchainUUID(schema, recipient, now, expirationTime, refUUID, data);
+              const request = await eip712Utils.signOffchainAttestation(
+                txSender,
+                schema,
+                recipient,
+                now,
+                expirationTime,
+                refUUID,
+                data
+              );
+              expect(request.uuid).to.equal(uuid);
+              expect(await eip712Utils.verifyOffchainAttestation(txSender.address, request));
+
+              return;
+            }
           }
 
           expect(await eas.isAttestationValid(uuid)).to.be.true;
@@ -176,29 +208,37 @@ describe('EAS API', () => {
       await schemaRegistry.register(schema1, ZERO_ADDRESS);
     });
 
-    for (const delegation of [false, true]) {
-      const expectRevocation = async (uuid: string, options?: Options) => {
-        const txSender = options?.from || sender;
+    for (const signatureType of [SignatureType.Direct, SignatureType.Delegated]) {
+      context(`via ${signatureType} attestation`, () => {
+        const expectRevocation = async (uuid: string, options?: Options) => {
+          const txSender = options?.from || sender;
 
-        if (!delegation) {
-          await eas.connect(txSender).revoke(uuid);
-        } else {
-          const request = await eip712Utils.getRevocationRequest(
-            uuid,
-            await verifier.getNonce(txSender.address),
-            Buffer.from(txSender.privateKey.slice(2), 'hex')
-          );
+          switch (signatureType) {
+            case SignatureType.Direct: {
+              await eas.connect(txSender).revoke(uuid);
 
-          await eas.connect(txSender).revokeByDelegation(uuid, txSender.address, request);
-        }
+              break;
+            }
 
-        const now = await latest();
+            case SignatureType.Delegated: {
+              const signature = await eip712Utils.signDelegatedRevocation(
+                txSender,
+                uuid,
+                await verifier.getNonce(txSender.address)
+              );
 
-        const attestation = await eas.getAttestation(uuid);
-        expect(attestation.revocationTime).to.equal(now);
-      };
+              await eas.connect(txSender).revokeByDelegation(uuid, txSender.address, signature);
 
-      context(`${delegation ? 'via an EIP712 delegation' : 'directly'}`, () => {
+              break;
+            }
+          }
+
+          const now = await latest();
+
+          const attestation = await eas.getAttestation(uuid);
+          expect(attestation.revocationTime).to.equal(now);
+        };
+
         beforeEach(async () => {
           uuid = await eas.attest(recipient.address, schema1Id, data);
         });

@@ -1,57 +1,82 @@
-import { Delegation } from '../../../src/delegation';
+import { Delegated, EIP712Request } from '../../../src/offchain/delegated';
+import { Offchain, SignedOffchainAttestation } from '../../../src/offchain/offchain';
 import { HARDHAT_CHAIN_ID } from '../../utils/Constants';
+import { TypedDataSigner } from '@ethersproject/abstract-signer';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
-import { ecsign } from 'ethereumjs-util';
-import { BigNumber, BigNumberish } from 'ethers';
+import { BigNumber } from 'ethers';
 
 export class EIP712Utils {
-  delegation: Delegation;
+  delegated: Delegated;
+  offchain: Offchain;
 
   constructor(contract: string | SignerWithAddress) {
     const contractAddress = typeof contract === 'string' ? contract : contract.address;
 
-    this.delegation = new Delegation({
+    const config = {
       address: contractAddress,
       version: '0.14',
       chainId: HARDHAT_CHAIN_ID
-    });
+    };
+
+    this.delegated = new Delegated(config);
+    this.offchain = new Offchain(config);
   }
 
-  async getAttestationRequest(
+  async signDelegatedAttestation(
+    attester: TypedDataSigner,
     recipient: string | SignerWithAddress,
     schema: string,
-    expirationTime: BigNumberish,
+    expirationTime: number,
     refUUID: string,
     data: string,
-    nonce: BigNumber,
-    privateKey: Buffer
-  ) {
-    return this.delegation.getAttestationRequest(
+    nonce: BigNumber
+  ): Promise<EIP712Request> {
+    return this.delegated.signDelegatedAttestation(
       {
         recipient: typeof recipient === 'string' ? recipient : recipient.address,
         schema,
         expirationTime,
         refUUID,
         data: Buffer.from(data.slice(2), 'hex'),
-        nonce
+        nonce: nonce.toNumber()
       },
-      async (message) => {
-        const { v, r, s } = ecsign(message, privateKey);
-        return { v, r, s };
-      }
+      attester
     );
   }
 
-  async getRevocationRequest(uuid: string, nonce: BigNumber, privateKey: Buffer) {
-    return this.delegation.getRevocationRequest(
+  async signDelegatedRevocation(attester: TypedDataSigner, uuid: string, nonce: BigNumber): Promise<EIP712Request> {
+    return this.delegated.signDelegatedRevocation(
       {
         uuid,
-        nonce
+        nonce: nonce.toNumber()
       },
-      async (message) => {
-        const { v, r, s } = ecsign(message, privateKey);
-        return { v, r, s };
-      }
+      attester
     );
+  }
+
+  public async signOffchainAttestation(
+    attester: TypedDataSigner,
+    schema: string,
+    recipient: string | SignerWithAddress,
+    time: number,
+    expirationTime: number,
+    refUUID: string,
+    data: string
+  ): Promise<SignedOffchainAttestation> {
+    return this.offchain.signOffchainAttestation(
+      {
+        schema,
+        recipient: typeof recipient === 'string' ? recipient : recipient.address,
+        time,
+        expirationTime,
+        refUUID,
+        data
+      },
+      attester
+    );
+  }
+
+  public async verifyOffchainAttestation(attester: string, request: SignedOffchainAttestation): Promise<boolean> {
+    return this.offchain.verifyOffchainAttestationSignature(attester, request);
   }
 }
