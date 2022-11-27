@@ -26,5 +26,5 @@ export declare class Delegated extends TypedDataHandler {
     signDelegatedAttestation(params: EIP712AttestationParams, signer: TypedDataSigner): Promise<EIP712Request>;
     verifyDelegatedAttestationSignature(attester: string, request: EIP712Request): Promise<boolean>;
     signDelegatedRevocation(params: EIP712RevocationParams, signer: TypedDataSigner): Promise<EIP712Request>;
-    verifyDelegatedRevocationTypedData(attester: string, request: EIP712Request): Promise<boolean>;
+    verifyDelegatedRevocationSignature(attester: string, request: EIP712Request): Promise<boolean>;
 }

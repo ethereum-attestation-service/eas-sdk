@@ -98,7 +98,7 @@ describe('EAS API', () => {
             }
 
             case SignatureType.Delegated: {
-              const signature = await eip712Utils.signDelegatedAttestation(
+              const request = await eip712Utils.signDelegatedAttestation(
                 txSender,
                 recipient,
                 schema,
@@ -108,9 +108,11 @@ describe('EAS API', () => {
                 await verifier.getNonce(txSender.address)
               );
 
+              expect(await eip712Utils.verifyDelegatedAttestationSignature(txSender.address, request)).to.be.true;
+
               uuid = await eas
                 .connect(txSender)
-                .attestByDelegation(recipient, schema, data, txSender.address, signature, expirationTime, refUUID, {
+                .attestByDelegation(recipient, schema, data, txSender.address, request, expirationTime, refUUID, {
                   value: options?.value
                 });
 
@@ -221,13 +223,15 @@ describe('EAS API', () => {
             }
 
             case SignatureType.Delegated: {
-              const signature = await eip712Utils.signDelegatedRevocation(
+              const request = await eip712Utils.signDelegatedRevocation(
                 txSender,
                 uuid,
                 await verifier.getNonce(txSender.address)
               );
 
-              await eas.connect(txSender).revokeByDelegation(uuid, txSender.address, signature);
+              expect(await eip712Utils.verifyDelegatedRevocationSignature(txSender.address, request)).to.be.true;
+
+              await eas.connect(txSender).revokeByDelegation(uuid, txSender.address, request);
 
               break;
             }

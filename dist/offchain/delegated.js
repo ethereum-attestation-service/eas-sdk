@@ -74,7 +74,7 @@ class Delegated extends typed_data_handler_1.TypedDataHandler {
     async signDelegatedRevocation(params, signer) {
         return this.signTypedDataRequest(exports.REVOKE_PRIMARY_TYPE, params, signer);
     }
-    async verifyDelegatedRevocationTypedData(attester, request) {
+    async verifyDelegatedRevocationSignature(attester, request) {
         return this.verifyTypedDataRequestSignature(attester, request);
     }
 }
