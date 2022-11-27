@@ -1,6 +1,6 @@
 import { constants, utils } from 'ethers';
 
-const { solidityKeccak256 } = utils;
+const { solidityKeccak256, hexlify, toUtf8Bytes } = utils;
 
 const { AddressZero } = constants;
 
@@ -17,10 +17,24 @@ export const getUUID = (
   attester: string,
   time: number,
   expirationTime: number,
+  refUUID: string,
   data: string,
   bump: number
 ) =>
   solidityKeccak256(
-    ['bytes', 'address', 'address', 'uint32', 'uint32', 'bytes', 'uint32'],
-    [schema, recipient, attester, time, expirationTime, data, bump]
+    ['bytes', 'address', 'address', 'uint32', 'uint32', 'bytes32', 'bytes', 'uint32'],
+    [hexlify(toUtf8Bytes(schema)), recipient, attester, time, expirationTime, refUUID, data, bump]
+  );
+
+export const getOffchainUUID = (
+  schema: string,
+  recipient: string,
+  time: number,
+  expirationTime: number,
+  refUUID: string,
+  data: string
+) =>
+  solidityKeccak256(
+    ['bytes', 'address', 'address', 'uint32', 'uint32', 'bytes32', 'bytes', 'uint32'],
+    [hexlify(toUtf8Bytes(schema)), recipient, ZERO_ADDRESS, time, expirationTime, refUUID, data, 0]
   );
