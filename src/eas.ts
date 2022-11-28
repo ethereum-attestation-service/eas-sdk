@@ -30,11 +30,12 @@ export class EAS extends Base<EASContract> {
     schema: string,
     data: BytesLike,
     expirationTime: number = NO_EXPIRATION,
-    revocable = true,
+    _revocable = true,
     refUUID: string = ZERO_BYTES32,
     overrides: PayableOverrides = {}
   ) {
-    const res = await this.contract.attest(recipient, schema, expirationTime, revocable, refUUID, data, overrides);
+    // TODO: revocable
+    const res = await this.contract.attest(recipient, schema, expirationTime, refUUID, data, overrides);
     const receipt = await res.wait();
 
     const event = receipt.events?.find((e) => e.event === 'Attested');
@@ -53,15 +54,15 @@ export class EAS extends Base<EASContract> {
     attester: string,
     signature: Signature,
     expirationTime: number = NO_EXPIRATION,
-    revocable = true,
+    _revocable = true,
     refUUID: string = ZERO_BYTES32,
     overrides: PayableOverrides = {}
   ) {
+    // TODO: revocable
     const res = await this.contract.attestByDelegation(
       recipient,
       schema,
       expirationTime,
-      revocable,
       refUUID,
       data,
       attester,

@@ -10,6 +10,7 @@ exports.ATTEST_TYPE = [
     { name: 'recipient', type: 'address' },
     { name: 'schema', type: 'bytes32' },
     { name: 'expirationTime', type: 'uint32' },
+    { name: 'revocable', type: 'bool' },
     { name: 'refUUID', type: 'bytes32' },
     { name: 'data', type: 'bytes' },
     { name: 'nonce', type: 'uint256' }
