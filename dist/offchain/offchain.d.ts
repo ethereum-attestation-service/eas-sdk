@@ -12,6 +12,7 @@ export type OffchainAttestationParams = {
     recipient: string;
     time: number;
     expirationTime: number;
+    revocable: boolean;
     refUUID: string;
     data: string;
 } & Partial<EIP712Params>;

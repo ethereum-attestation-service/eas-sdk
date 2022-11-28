@@ -11,6 +11,7 @@ exports.ATTESTATION_TYPE = [
     { name: 'recipient', type: 'address' },
     { name: 'time', type: 'uint32' },
     { name: 'expirationTime', type: 'uint32' },
+    { name: 'revocable', type: 'bool' },
     { name: 'refUUID', type: 'bytes32' },
     { name: 'data', type: 'bytes' }
 ];
@@ -46,7 +47,7 @@ class Offchain extends typed_data_handler_1.TypedDataHandler {
         };
     }
     async signOffchainAttestation(params, signer) {
-        const uuid = (0, utils_1.getOffchainUUID)(params.schema, params.recipient, params.time, params.expirationTime, params.refUUID, params.data);
+        const uuid = (0, utils_1.getOffchainUUID)(params.schema, params.recipient, params.time, params.expirationTime, params.revocable, params.refUUID, params.data);
         return { ...(await this.signTypedDataRequest(exports.ATTESTATION_PRIMARY_TYPE, params, signer)), uuid };
     }
     async verifyOffchainAttestationSignature(attester, request) {
