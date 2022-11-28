@@ -22,6 +22,7 @@ export const ATTESTATION_TYPE: TypedData[] = [
   { name: 'recipient', type: 'address' },
   { name: 'time', type: 'uint32' },
   { name: 'expirationTime', type: 'uint32' },
+  { name: 'revocable', type: 'bool' },
   { name: 'refUUID', type: 'bytes32' },
   { name: 'data', type: 'bytes' }
 ];
@@ -37,6 +38,7 @@ export type OffchainAttestationParams = {
   recipient: string;
   time: number;
   expirationTime: number;
+  revocable: boolean;
   refUUID: string;
   data: string;
 } & Partial<EIP712Params>;
@@ -89,6 +91,7 @@ export class Offchain extends TypedDataHandler {
       params.recipient,
       params.time,
       params.expirationTime,
+      params.revocable,
       params.refUUID,
       params.data
     );
