@@ -12,6 +12,7 @@ export type EIP712AttestationParams = EIP712Params & {
     recipient: string;
     schema: string;
     expirationTime: number;
+    revocable: boolean;
     refUUID: string;
     data: Buffer;
 };

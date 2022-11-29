@@ -15,8 +15,8 @@ export interface Attestation {
 export declare const NO_EXPIRATION = 0;
 export declare class EAS extends Base<EASContract> {
     constructor(address: string);
-    attest(recipient: string, schema: string, data: BytesLike, expirationTime?: number, refUUID?: string, overrides?: PayableOverrides): Promise<any>;
-    attestByDelegation(recipient: string, schema: string, data: BytesLike, attester: string, signature: Signature, expirationTime?: number, refUUID?: string, overrides?: PayableOverrides): Promise<any>;
+    attest(recipient: string, schema: string, data: BytesLike, expirationTime?: number, _revocable?: boolean, refUUID?: string, overrides?: PayableOverrides): Promise<any>;
+    attestByDelegation(recipient: string, schema: string, data: BytesLike, attester: string, signature: Signature, expirationTime?: number, _revocable?: boolean, refUUID?: string, overrides?: PayableOverrides): Promise<any>;
     revoke(uuid: string): Promise<import("ethers").ContractTransaction>;
     revokeByDelegation(uuid: string, attester: string, signature: Signature): Promise<import("ethers").ContractTransaction>;
     getAttestation(uuid: string): Promise<Attestation>;
