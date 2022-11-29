@@ -57,21 +57,21 @@ export interface EIP712DomainTypedData {
 export interface EIP712MessageTypes {
   [additionalProperties: string]: TypedData[];
 }
+
 export type EIP712Params = {
   nonce?: BigNumberish;
 };
 
-export interface EIP712TypedData<T extends EIP712MessageTypes> {
+export interface EIP712TypedData<T extends EIP712MessageTypes, P extends EIP712Params> {
   domain: EIP712DomainTypedData;
   primaryType: keyof T;
   types: T;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  message: any;
+  message: P;
 }
 
-export interface EIP712Request extends Signature {
-  params: EIP712Params;
-  data: EIP712TypedData<EIP712MessageTypes>;
+export interface EIP712Request<T extends EIP712MessageTypes, P extends EIP712Params> extends Signature {
+  params: P;
+  types: EIP712TypedData<T, P>;
 }
 
 export abstract class TypedDataHandler {
@@ -83,26 +83,27 @@ export abstract class TypedDataHandler {
 
   abstract getDomainSeparator(): string;
   abstract getDomainTypedData(): DomainTypedData;
-  abstract getTypedData(type: string, params: EIP712Params): EIP712TypedData<EIP712MessageTypes>;
 
-  public async signTypedDataRequest(
-    type: string,
-    params: EIP712Params,
+  public async signTypedDataRequest<T extends EIP712MessageTypes, P extends EIP712Params>(
+    params: P,
+    types: EIP712TypedData<T, P>,
     signer: TypedDataSigner
-  ): Promise<EIP712Request> {
-    const data = this.getTypedData(type, params);
-    const rawSignature = await signer._signTypedData(data.domain, data.types, params);
+  ): Promise<EIP712Request<T, P>> {
+    const rawSignature = await signer._signTypedData(types.domain, types.types, params);
 
-    return { data, params, ...splitSignature(rawSignature) };
+    return { types, params, ...splitSignature(rawSignature) };
   }
 
-  public async verifyTypedDataRequestSignature(attester: string, request: EIP712Request): Promise<boolean> {
+  public async verifyTypedDataRequestSignature<T extends EIP712MessageTypes, P extends EIP712Params>(
+    attester: string,
+    request: EIP712Request<T, P>
+  ): Promise<boolean> {
     if (attester === ZERO_ADDRESS) {
       throw new Error('Invalid address');
     }
 
     const sig = joinSignature({ v: request.v, r: hexlify(request.r), s: hexlify(request.s) });
-    const recoveredAddress = verifyTypedData(request.data.domain, request.data.types, request.params, sig);
+    const recoveredAddress = verifyTypedData(request.types.domain, request.types.types, request.params, sig);
 
     return getAddress(attester) === getAddress(recoveredAddress);
   }
