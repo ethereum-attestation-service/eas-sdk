@@ -163,8 +163,7 @@ describe('EAS API', () => {
           expect(attestation.time).to.equal(now);
           expect(attestation.expirationTime).to.equal(expirationTime);
           expect(attestation.revocationTime).to.equal(0);
-          // TODO: revocable
-          // expect(attestation.revocable).to.equal(revocable);
+          expect(attestation.revocable).to.equal(revocable);
           expect(attestation.refUUID).to.equal(refUUID);
           expect(attestation.data).to.equal(data);
 

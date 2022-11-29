@@ -14,7 +14,7 @@ export class EIP712Utils {
 
     const config = {
       address: contractAddress,
-      version: '0.14',
+      version: '0.17',
       chainId: HARDHAT_CHAIN_ID
     };
 
