@@ -80,6 +80,7 @@ describe('EAS API', () => {
           recipient: string,
           schema: string,
           expirationTime: number,
+          revocable: boolean,
           refUUID: string,
           data: string,
           options?: Options
@@ -90,7 +91,7 @@ describe('EAS API', () => {
 
           switch (signatureType) {
             case SignatureType.Direct: {
-              uuid = await eas.connect(txSender).attest(recipient, schema, data, expirationTime, refUUID, {
+              uuid = await eas.connect(txSender).attest(recipient, schema, data, expirationTime, revocable, refUUID, {
                 value: options?.value
               });
 
@@ -103,6 +104,7 @@ describe('EAS API', () => {
                 recipient,
                 schema,
                 expirationTime,
+                revocable,
                 refUUID,
                 data,
                 await verifier.getNonce(txSender.address)
@@ -112,22 +114,33 @@ describe('EAS API', () => {
 
               uuid = await eas
                 .connect(txSender)
-                .attestByDelegation(recipient, schema, data, txSender.address, request, expirationTime, refUUID, {
-                  value: options?.value
-                });
+                .attestByDelegation(
+                  recipient,
+                  schema,
+                  data,
+                  txSender.address,
+                  request,
+                  expirationTime,
+                  revocable,
+                  refUUID,
+                  {
+                    value: options?.value
+                  }
+                );
 
               break;
             }
 
             case SignatureType.Offchain: {
               const now = await latest();
-              const uuid = getOffchainUUID(schema, recipient, now, expirationTime, refUUID, data);
+              const uuid = getOffchainUUID(schema, recipient, now, expirationTime, revocable, refUUID, data);
               const request = await eip712Utils.signOffchainAttestation(
                 txSender,
                 schema,
                 recipient,
                 now,
                 expirationTime,
+                revocable,
                 refUUID,
                 data
               );
@@ -150,6 +163,7 @@ describe('EAS API', () => {
           expect(attestation.time).to.equal(now);
           expect(attestation.expirationTime).to.equal(expirationTime);
           expect(attestation.revocationTime).to.equal(0);
+          expect(attestation.revocable).to.equal(revocable);
           expect(attestation.refUUID).to.equal(refUUID);
           expect(attestation.data).to.equal(data);
 
@@ -168,32 +182,32 @@ describe('EAS API', () => {
           });
 
           it('should allow attestation to an empty recipient', async () => {
-            await expectAttestation(ZERO_ADDRESS, schema1Id, expirationTime, ZERO_BYTES32, data);
+            await expectAttestation(ZERO_ADDRESS, schema1Id, expirationTime, true, ZERO_BYTES32, data);
           });
 
           it('should allow self attestations', async () => {
-            await expectAttestation(sender.address, schema2Id, expirationTime, ZERO_BYTES32, data, {
+            await expectAttestation(sender.address, schema2Id, expirationTime, true, ZERO_BYTES32, data, {
               from: sender
             });
           });
 
           it('should allow multiple attestations', async () => {
-            await expectAttestation(recipient.address, schema1Id, expirationTime, ZERO_BYTES32, data);
-            await expectAttestation(recipient2.address, schema1Id, expirationTime, ZERO_BYTES32, data);
+            await expectAttestation(recipient.address, schema1Id, expirationTime, true, ZERO_BYTES32, data);
+            await expectAttestation(recipient2.address, schema1Id, expirationTime, true, ZERO_BYTES32, data);
           });
 
           it('should allow attestation without expiration time', async () => {
-            await expectAttestation(recipient.address, schema1Id, NO_EXPIRATION, ZERO_BYTES32, data);
+            await expectAttestation(recipient.address, schema1Id, NO_EXPIRATION, true, ZERO_BYTES32, data);
           });
 
           it('should allow attestation without any data', async () => {
-            await expectAttestation(recipient.address, schema1Id, expirationTime, ZERO_BYTES32, ZERO_BYTES);
+            await expectAttestation(recipient.address, schema1Id, expirationTime, true, ZERO_BYTES32, ZERO_BYTES);
           });
 
           it('should store referenced attestation', async () => {
             const uuid = await eas.attest(recipient.address, schema1Id, data, expirationTime);
 
-            await expectAttestation(recipient.address, schema1Id, expirationTime, uuid, data);
+            await expectAttestation(recipient.address, schema1Id, expirationTime, true, uuid, data);
           });
         });
       });

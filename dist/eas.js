@@ -12,7 +12,8 @@ class EAS extends base_1.Base {
         super(new eas_contracts_1.EAS__factory(), address);
     }
     // Attests to a specific schema
-    async attest(recipient, schema, data, expirationTime = exports.NO_EXPIRATION, refUUID = utils_1.ZERO_BYTES32, overrides = {}) {
+    async attest(recipient, schema, data, expirationTime = exports.NO_EXPIRATION, _revocable = true, refUUID = utils_1.ZERO_BYTES32, overrides = {}) {
+        // TODO: revocable
         const res = await this.contract.attest(recipient, schema, expirationTime, refUUID, data, overrides);
         const receipt = await res.wait();
         const event = receipt.events?.find((e) => e.event === 'Attested');
@@ -22,7 +23,8 @@ class EAS extends base_1.Base {
         return event.args?.uuid;
     }
     // Attests to a specific schema via an EIP712 delegation request
-    async attestByDelegation(recipient, schema, data, attester, signature, expirationTime = exports.NO_EXPIRATION, refUUID = utils_1.ZERO_BYTES32, overrides = {}) {
+    async attestByDelegation(recipient, schema, data, attester, signature, expirationTime = exports.NO_EXPIRATION, _revocable = true, refUUID = utils_1.ZERO_BYTES32, overrides = {}) {
+        // TODO: revocable
         const res = await this.contract.attestByDelegation(recipient, schema, expirationTime, refUUID, data, attester, signature.v, hexlify(signature.r), hexlify(signature.s), overrides);
         const receipt = await res.wait();
         const event = receipt.events?.find((e) => e.event === 'Attested');
