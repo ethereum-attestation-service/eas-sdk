@@ -42,38 +42,28 @@ class Delegated extends typed_data_handler_1.TypedDataHandler {
             verifyingContract: this.config.address
         };
     }
-    getTypedData(type, params) {
-        switch (type) {
-            case exports.ATTEST_PRIMARY_TYPE:
-                return {
-                    domain: this.getDomainTypedData(),
-                    primaryType: exports.ATTEST_PRIMARY_TYPE,
-                    message: params,
-                    types: {
-                        Attest: exports.ATTEST_TYPE
-                    }
-                };
-            case exports.REVOKE_PRIMARY_TYPE:
-                return {
-                    domain: this.getDomainTypedData(),
-                    primaryType: exports.REVOKE_PRIMARY_TYPE,
-                    message: params,
-                    types: {
-                        Revoke: exports.REVOKE_TYPE
-                    }
-                };
-            default:
-                throw new Error(`Unsupported type: ${type}`);
-        }
-    }
     async signDelegatedAttestation(params, signer) {
-        return this.signTypedDataRequest(exports.ATTEST_PRIMARY_TYPE, params, signer);
+        return this.signTypedDataRequest(params, {
+            domain: this.getDomainTypedData(),
+            primaryType: exports.ATTEST_PRIMARY_TYPE,
+            message: params,
+            types: {
+                Attest: exports.ATTEST_TYPE
+            }
+        }, signer);
     }
     async verifyDelegatedAttestationSignature(attester, request) {
         return this.verifyTypedDataRequestSignature(attester, request);
     }
     async signDelegatedRevocation(params, signer) {
-        return this.signTypedDataRequest(exports.REVOKE_PRIMARY_TYPE, params, signer);
+        return this.signTypedDataRequest(params, {
+            domain: this.getDomainTypedData(),
+            primaryType: exports.REVOKE_PRIMARY_TYPE,
+            message: params,
+            types: {
+                Revoke: exports.REVOKE_TYPE
+            }
+        }, signer);
     }
     async verifyDelegatedRevocationSignature(attester, request) {
         return this.verifyTypedDataRequestSignature(attester, request);

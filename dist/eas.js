@@ -12,9 +12,8 @@ class EAS extends base_1.Base {
         super(new eas_contracts_1.EAS__factory(), address);
     }
     // Attests to a specific schema
-    async attest(recipient, schema, data, expirationTime = exports.NO_EXPIRATION, _revocable = true, refUUID = utils_1.ZERO_BYTES32, overrides = {}) {
-        // TODO: revocable
-        const res = await this.contract.attest(recipient, schema, expirationTime, refUUID, data, overrides);
+    async attest({ recipient, schema, data, expirationTime = exports.NO_EXPIRATION, revocable = true, refUUID = utils_1.ZERO_BYTES32, overrides = { value: 0 } }) {
+        const res = await this.contract.attest(recipient, schema, expirationTime, revocable, refUUID, data, overrides);
         const receipt = await res.wait();
         const event = receipt.events?.find((e) => e.event === 'Attested');
         if (!event) {
@@ -23,9 +22,8 @@ class EAS extends base_1.Base {
         return event.args?.uuid;
     }
     // Attests to a specific schema via an EIP712 delegation request
-    async attestByDelegation(recipient, schema, data, attester, signature, expirationTime = exports.NO_EXPIRATION, _revocable = true, refUUID = utils_1.ZERO_BYTES32, overrides = {}) {
-        // TODO: revocable
-        const res = await this.contract.attestByDelegation(recipient, schema, expirationTime, refUUID, data, attester, signature.v, hexlify(signature.r), hexlify(signature.s), overrides);
+    async attestByDelegation({ recipient, schema, data, attester, signature, expirationTime = exports.NO_EXPIRATION, revocable = true, refUUID = utils_1.ZERO_BYTES32, overrides = {} }) {
+        const res = await this.contract.attestByDelegation(recipient, schema, expirationTime, revocable, refUUID, data, attester, signature.v, hexlify(signature.r), hexlify(signature.s), overrides);
         const receipt = await res.wait();
         const event = receipt.events?.find((e) => e.event === 'Attested');
         if (!event) {
@@ -34,19 +32,19 @@ class EAS extends base_1.Base {
         return event.args?.uuid;
     }
     // Revokes an existing attestation
-    revoke(uuid) {
-        return this.contract.revoke(uuid);
+    revoke({ uuid, overrides = {} }) {
+        return this.contract.revoke(uuid, overrides);
     }
     // Revokes an existing attestation an EIP712 delegation request
-    revokeByDelegation(uuid, attester, signature) {
-        return this.contract.revokeByDelegation(uuid, attester, signature.v, hexlify(signature.r), hexlify(signature.s));
+    revokeByDelegation({ uuid, attester, signature, overrides = {} }) {
+        return this.contract.revokeByDelegation(uuid, attester, signature.v, hexlify(signature.r), hexlify(signature.s), overrides);
     }
     // Returns an existing schema by attestation UUID
-    getAttestation(uuid) {
+    getAttestation({ uuid }) {
         return this.contract.getAttestation(uuid);
     }
     // Returns whether an attestation is valid
-    isAttestationValid(uuid) {
+    isAttestationValid({ uuid }) {
         return this.contract.isAttestationValid(uuid);
     }
 }

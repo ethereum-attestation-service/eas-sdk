@@ -9,12 +9,14 @@ import { PayableOverrides } from 'ethers';
 export declare type SchemaRecord = {
   uuid: string;
   resolver: string;
+  // TODO: revocable: boolean;
   schema: string;
 };
 
 export interface RegisterSchemaParams {
   schema: string;
   resolverAddress?: string;
+  revocable?: boolean;
   overrides?: PayableOverrides;
 }
 
@@ -31,11 +33,13 @@ export class SchemaRegistry extends Base<SchemaRegistryContract> {
   public async register({
     schema,
     resolverAddress = ZERO_ADDRESS,
+    revocable = true,
     overrides = {}
   }: RegisterSchemaParams): Promise<string> {
+    // TODO: revocable
     await this.contract.register(schema, resolverAddress, overrides);
 
-    return getSchemaUUID(schema, resolverAddress);
+    return getSchemaUUID(schema, resolverAddress, revocable);
   }
 
   // Returns an existing schema by a schema UUID

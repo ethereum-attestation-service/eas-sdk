@@ -30,10 +30,10 @@ describe('SchemaRegistry API', () => {
   });
 
   describe('registration', () => {
-    const testRegister = async (schema: string, resolver: string | SignerWithAddress) => {
+    const testRegister = async (schema: string, resolver: string | SignerWithAddress, revocable: boolean) => {
       const resolverAddress = typeof resolver === 'string' ? resolver : resolver.address;
 
-      const uuid = getSchemaUUID(schema, resolverAddress);
+      const uuid = getSchemaUUID(schema, resolverAddress, revocable);
       expect(api.getSchema({ uuid })).to.be.rejectedWith(new Error('Schema not found'));
 
       await api.register({ schema, resolverAddress });
@@ -41,19 +41,25 @@ describe('SchemaRegistry API', () => {
       const schemaRecord = await api.getSchema({ uuid });
       expect(schemaRecord.uuid).to.equal(uuid);
       expect(schemaRecord.schema).to.equal(schema);
+      // TODO: expect(schemaRecord.revocable).to.equal(revocable);
       expect(schemaRecord.resolver).to.equal(resolverAddress);
     };
 
-    it('should allow to register an schema without a schema', async () => {
-      await testRegister(ZERO_BYTES, accounts[3]);
+    it('should allow to register a schema', async () => {
+      await testRegister('SC1', accounts[3], true);
+      await testRegister('SC2', accounts[3], false);
     });
 
-    it('should allow to register an schema without a resolver', async () => {
-      await testRegister('0x1234', ZERO_ADDRESS);
+    it('should allow to register a schema without a schema', async () => {
+      await testRegister(ZERO_BYTES, accounts[3], true);
     });
 
-    it('should allow to register an schema without neither a schema or a resolver', async () => {
-      await testRegister(ZERO_BYTES, ZERO_ADDRESS);
+    it('should allow to register a schema without a resolver', async () => {
+      await testRegister('0x1234', ZERO_ADDRESS, true);
+    });
+
+    it('should allow to register a schema without neither a schema or a resolver', async () => {
+      await testRegister(ZERO_BYTES, ZERO_ADDRESS, true);
     });
   });
 });

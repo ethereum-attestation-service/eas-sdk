@@ -9,17 +9,16 @@ class TypedDataHandler {
     constructor(config) {
         this.config = config;
     }
-    async signTypedDataRequest(type, params, signer) {
-        const data = this.getTypedData(type, params);
-        const rawSignature = await signer._signTypedData(data.domain, data.types, params);
-        return { data, params, ...splitSignature(rawSignature) };
+    async signTypedDataRequest(params, types, signer) {
+        const rawSignature = await signer._signTypedData(types.domain, types.types, params);
+        return { types, params, ...splitSignature(rawSignature) };
     }
     async verifyTypedDataRequestSignature(attester, request) {
         if (attester === utils_1.ZERO_ADDRESS) {
             throw new Error('Invalid address');
         }
         const sig = joinSignature({ v: request.v, r: hexlify(request.r), s: hexlify(request.s) });
-        const recoveredAddress = verifyTypedData(request.data.domain, request.data.types, request.params, sig);
+        const recoveredAddress = verifyTypedData(request.types.domain, request.types.types, request.params, sig);
         return getAddress(attester) === getAddress(recoveredAddress);
     }
     getDigest(params) {
