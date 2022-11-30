@@ -88,14 +88,17 @@ describe('utils', () => {
         '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266',
         '0x70997970C51812dc3A010C7d01b50e0d17dc79C8',
         ZERO_ADDRESS
-      ])
-        context(`schema=${schema},resolver=${resolver}}`, () => {
-          it('should properly derive uuid', async () => {
-            expect(getSchemaUUID(schema, resolver)).to.equal(
-              solidityKeccak256(['string', 'address'], [schema, resolver])
-            );
+      ]) {
+        for (const revocable of [true, false]) {
+          context(`schema=${schema},resolver=${resolver}},revocable=${revocable}`, () => {
+            it('should properly derive uuid', async () => {
+              expect(getSchemaUUID(schema, resolver, revocable)).to.equal(
+                solidityKeccak256(['string', 'address', 'bool'], [schema, resolver, revocable])
+              );
+            });
           });
-        });
+        }
+      }
     }
   });
 });

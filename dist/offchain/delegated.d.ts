@@ -1,5 +1,5 @@
 /// <reference types="node" />
-import { DomainTypedData, EIP712MessageTypes, EIP712Params, EIP712Request, EIP712TypedData, TypedData, TypedDataConfig, TypedDataHandler } from './typed-data-handler';
+import { DomainTypedData, EIP712MessageTypes, EIP712Params, EIP712Request, TypedData, TypedDataConfig, TypedDataHandler } from './typed-data-handler';
 import { TypedDataSigner } from '@ethersproject/abstract-signer';
 export { EIP712MessageTypes, EIP712TypedData, EIP712Request } from './typed-data-handler';
 export declare const ATTEST_PRIMARY_TYPE = "Attest";
@@ -23,9 +23,8 @@ export declare class Delegated extends TypedDataHandler {
     constructor(config: TypedDataConfig);
     getDomainSeparator(): string;
     getDomainTypedData(): DomainTypedData;
-    getTypedData(type: string, params: EIP712Params): EIP712TypedData<EIP712MessageTypes>;
-    signDelegatedAttestation(params: EIP712AttestationParams, signer: TypedDataSigner): Promise<EIP712Request>;
-    verifyDelegatedAttestationSignature(attester: string, request: EIP712Request): Promise<boolean>;
-    signDelegatedRevocation(params: EIP712RevocationParams, signer: TypedDataSigner): Promise<EIP712Request>;
-    verifyDelegatedRevocationSignature(attester: string, request: EIP712Request): Promise<boolean>;
+    signDelegatedAttestation(params: EIP712AttestationParams, signer: TypedDataSigner): Promise<EIP712Request<EIP712MessageTypes, EIP712AttestationParams>>;
+    verifyDelegatedAttestationSignature(attester: string, request: EIP712Request<EIP712MessageTypes, EIP712AttestationParams>): Promise<boolean>;
+    signDelegatedRevocation(params: EIP712RevocationParams, signer: TypedDataSigner): Promise<EIP712Request<EIP712MessageTypes, EIP712RevocationParams>>;
+    verifyDelegatedRevocationSignature(attester: string, request: EIP712Request<EIP712MessageTypes, EIP712RevocationParams>): Promise<boolean>;
 }

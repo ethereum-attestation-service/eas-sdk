@@ -179,8 +179,8 @@ describe('EAS API', () => {
         context('with a registered schema', () => {
           const schema1 = 'S1';
           const schema2 = 'S2';
-          const schema1Id = getSchemaUUID(schema1, ZERO_ADDRESS);
-          const schema2Id = getSchemaUUID(schema2, ZERO_ADDRESS);
+          const schema1Id = getSchemaUUID(schema1, ZERO_ADDRESS, true);
+          const schema2Id = getSchemaUUID(schema2, ZERO_ADDRESS, false);
 
           beforeEach(async () => {
             await schemaRegistry.register({ schema: schema1 });
@@ -222,7 +222,7 @@ describe('EAS API', () => {
 
   describe('revocation', () => {
     const schema1 = 'S1';
-    const schema1Id = getSchemaUUID(schema1, ZERO_ADDRESS);
+    const schema1Id = getSchemaUUID(schema1, ZERO_ADDRESS, true);
     let uuid: string;
     const data = '0x1234';
 
