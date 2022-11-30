@@ -4,7 +4,6 @@ import {
   EIP712MessageTypes,
   EIP712Params,
   EIP712Request,
-  EIP712TypedData,
   TypedData,
   TypedDataConfig,
   TypedDataHandler
@@ -29,10 +28,6 @@ export const ATTESTATION_TYPE: TypedData[] = [
 
 export const DOMAIN_NAME = 'EAS Attestation';
 
-export interface SignedOffchainAttestation extends EIP712Request {
-  uuid: string;
-}
-
 export type OffchainAttestationParams = {
   schema: string;
   recipient: string;
@@ -42,6 +37,10 @@ export type OffchainAttestationParams = {
   refUUID: string;
   data: string;
 } & Partial<EIP712Params>;
+
+export interface SignedOffchainAttestation extends EIP712Request<EIP712MessageTypes, OffchainAttestationParams> {
+  uuid: string;
+}
 
 export class Offchain extends TypedDataHandler {
   public constructor(config: TypedDataConfig) {
@@ -71,17 +70,6 @@ export class Offchain extends TypedDataHandler {
     };
   }
 
-  public getTypedData(_type: string, params: EIP712Params): EIP712TypedData<EIP712MessageTypes> {
-    return {
-      domain: this.getDomainTypedData(),
-      primaryType: ATTESTATION_PRIMARY_TYPE,
-      message: params,
-      types: {
-        Attest: ATTESTATION_TYPE
-      }
-    };
-  }
-
   public async signOffchainAttestation(
     params: OffchainAttestationParams,
     signer: TypedDataSigner
@@ -96,7 +84,21 @@ export class Offchain extends TypedDataHandler {
       params.data
     );
 
-    return { ...(await this.signTypedDataRequest(ATTESTATION_PRIMARY_TYPE, params, signer)), uuid };
+    return {
+      ...(await this.signTypedDataRequest<EIP712MessageTypes, OffchainAttestationParams>(
+        params,
+        {
+          domain: this.getDomainTypedData(),
+          primaryType: ATTESTATION_PRIMARY_TYPE,
+          message: params,
+          types: {
+            Attest: ATTESTATION_TYPE
+          }
+        },
+        signer
+      )),
+      uuid
+    };
   }
 
   public async verifyOffchainAttestationSignature(

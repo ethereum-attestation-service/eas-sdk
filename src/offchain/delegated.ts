@@ -3,7 +3,6 @@ import {
   EIP712MessageTypes,
   EIP712Params,
   EIP712Request,
-  EIP712TypedData,
   TypedData,
   TypedDataConfig,
   TypedDataHandler
@@ -75,52 +74,53 @@ export class Delegated extends TypedDataHandler {
     };
   }
 
-  public getTypedData(type: string, params: EIP712Params): EIP712TypedData<EIP712MessageTypes> {
-    switch (type) {
-      case ATTEST_PRIMARY_TYPE:
-        return {
-          domain: this.getDomainTypedData(),
-          primaryType: ATTEST_PRIMARY_TYPE,
-          message: params,
-          types: {
-            Attest: ATTEST_TYPE
-          }
-        };
-
-      case REVOKE_PRIMARY_TYPE:
-        return {
-          domain: this.getDomainTypedData(),
-          primaryType: REVOKE_PRIMARY_TYPE,
-          message: params,
-          types: {
-            Revoke: REVOKE_TYPE
-          }
-        };
-
-      default:
-        throw new Error(`Unsupported type: ${type}`);
-    }
-  }
-
   public async signDelegatedAttestation(
     params: EIP712AttestationParams,
     signer: TypedDataSigner
-  ): Promise<EIP712Request> {
-    return this.signTypedDataRequest(ATTEST_PRIMARY_TYPE, params, signer);
+  ): Promise<EIP712Request<EIP712MessageTypes, EIP712AttestationParams>> {
+    return this.signTypedDataRequest<EIP712MessageTypes, EIP712AttestationParams>(
+      params,
+      {
+        domain: this.getDomainTypedData(),
+        primaryType: ATTEST_PRIMARY_TYPE,
+        message: params,
+        types: {
+          Attest: ATTEST_TYPE
+        }
+      },
+      signer
+    );
   }
 
-  public async verifyDelegatedAttestationSignature(attester: string, request: EIP712Request): Promise<boolean> {
+  public async verifyDelegatedAttestationSignature(
+    attester: string,
+    request: EIP712Request<EIP712MessageTypes, EIP712AttestationParams>
+  ): Promise<boolean> {
     return this.verifyTypedDataRequestSignature(attester, request);
   }
 
   public async signDelegatedRevocation(
     params: EIP712RevocationParams,
     signer: TypedDataSigner
-  ): Promise<EIP712Request> {
-    return this.signTypedDataRequest(REVOKE_PRIMARY_TYPE, params, signer);
+  ): Promise<EIP712Request<EIP712MessageTypes, EIP712RevocationParams>> {
+    return this.signTypedDataRequest<EIP712MessageTypes, EIP712RevocationParams>(
+      params,
+      {
+        domain: this.getDomainTypedData(),
+        primaryType: REVOKE_PRIMARY_TYPE,
+        message: params,
+        types: {
+          Revoke: REVOKE_TYPE
+        }
+      },
+      signer
+    );
   }
 
-  public async verifyDelegatedRevocationSignature(attester: string, request: EIP712Request): Promise<boolean> {
+  public async verifyDelegatedRevocationSignature(
+    attester: string,
+    request: EIP712Request<EIP712MessageTypes, EIP712RevocationParams>
+  ): Promise<boolean> {
     return this.verifyTypedDataRequestSignature(attester, request);
   }
 }

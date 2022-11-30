@@ -34,11 +34,11 @@ describe('SchemaRegistry API', () => {
       const resolverAddress = typeof resolver === 'string' ? resolver : resolver.address;
 
       const uuid = getSchemaUUID(schema, resolverAddress);
-      expect(api.getSchema(uuid)).to.be.rejectedWith(new Error('Schema not found'));
+      expect(api.getSchema({ uuid })).to.be.rejectedWith(new Error('Schema not found'));
 
-      await api.register(schema, resolverAddress);
+      await api.register({ schema, resolverAddress });
 
-      const schemaRecord = await api.getSchema(uuid);
+      const schemaRecord = await api.getSchema({ uuid });
       expect(schemaRecord.uuid).to.equal(uuid);
       expect(schemaRecord.schema).to.equal(schema);
       expect(schemaRecord.resolver).to.equal(resolverAddress);
