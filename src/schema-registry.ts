@@ -36,7 +36,8 @@ export class SchemaRegistry extends Base<SchemaRegistryContract> {
     revocable = true,
     overrides = {}
   }: RegisterSchemaParams): Promise<string> {
-    await this.contract.register(schema, resolverAddress, revocable, overrides);
+    const res = await this.contract.register(schema, resolverAddress, revocable, overrides);
+    await res.wait();
 
     return getSchemaUUID(schema, resolverAddress, revocable);
   }
