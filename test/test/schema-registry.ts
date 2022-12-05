@@ -41,7 +41,7 @@ describe('SchemaRegistry API', () => {
       const schemaRecord = await api.getSchema({ uuid });
       expect(schemaRecord.uuid).to.equal(uuid);
       expect(schemaRecord.schema).to.equal(schema);
-      // TODO: expect(schemaRecord.revocable).to.equal(revocable);
+      expect(schemaRecord.revocable).to.equal(revocable);
       expect(schemaRecord.resolver).to.equal(resolverAddress);
     };
 
