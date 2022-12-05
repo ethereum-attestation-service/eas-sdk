@@ -2,16 +2,7 @@ import { ZERO_ADDRESS } from '../utils';
 import { TypedDataSigner } from '@ethersproject/abstract-signer';
 import { BigNumberish, Signature, utils } from 'ethers';
 
-const {
-  getAddress,
-  solidityPack,
-  verifyTypedData,
-  defaultAbiCoder,
-  keccak256,
-  hexlify,
-  joinSignature,
-  splitSignature
-} = utils;
+const { getAddress, verifyTypedData, hexlify, joinSignature, splitSignature } = utils;
 
 export interface TypedDataConfig {
   address: string;

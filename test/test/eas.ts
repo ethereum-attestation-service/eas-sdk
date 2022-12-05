@@ -176,46 +176,51 @@ describe('EAS API', () => {
           return uuid;
         };
 
-        context('with a registered schema', () => {
-          const schema1 = 'S1';
-          const schema2 = 'S2';
-          const schema1Id = getSchemaUUID(schema1, ZERO_ADDRESS, true);
-          const schema2Id = getSchemaUUID(schema2, ZERO_ADDRESS, false);
+        for (const revocable of [true, false]) {
+          context(`with a ${revocable ? 'revocable' : 'irrevocable'} registered schema`, () => {
+            const schema = 'S1';
+            const schemaId = getSchemaUUID(schema, ZERO_ADDRESS, revocable);
 
-          beforeEach(async () => {
-            await schemaRegistry.register({ schema: schema1 });
-            await schemaRegistry.register({ schema: schema2 });
-          });
+            beforeEach(async () => {
+              await schemaRegistry.register({ schema: schema, revocable });
+            });
 
-          it('should allow attestation to an empty recipient', async () => {
-            await expectAttestation(ZERO_ADDRESS, schema1Id, expirationTime, true, ZERO_BYTES32, data);
-          });
+            it('should allow attestation to an empty recipient', async () => {
+              await expectAttestation(ZERO_ADDRESS, schemaId, expirationTime, revocable, ZERO_BYTES32, data);
+            });
 
-          it('should allow self attestations', async () => {
-            await expectAttestation(sender.address, schema2Id, expirationTime, true, ZERO_BYTES32, data, {
-              from: sender
+            it('should allow self attestations', async () => {
+              await expectAttestation(sender.address, schemaId, expirationTime, revocable, ZERO_BYTES32, data, {
+                from: sender
+              });
+            });
+
+            it('should allow multiple attestations', async () => {
+              await expectAttestation(recipient.address, schemaId, expirationTime, revocable, ZERO_BYTES32, data);
+              await expectAttestation(recipient2.address, schemaId, expirationTime, revocable, ZERO_BYTES32, data);
+            });
+
+            it('should allow attestation without expiration time', async () => {
+              await expectAttestation(recipient.address, schemaId, NO_EXPIRATION, revocable, ZERO_BYTES32, data);
+            });
+
+            it('should allow attestation without any data', async () => {
+              await expectAttestation(recipient.address, schemaId, expirationTime, revocable, ZERO_BYTES32, ZERO_BYTES);
+            });
+
+            it('should store referenced attestation', async () => {
+              const uuid = await eas.attest({
+                recipient: recipient.address,
+                schema: schemaId,
+                revocable,
+                data,
+                expirationTime
+              });
+
+              await expectAttestation(recipient.address, schemaId, expirationTime, revocable, uuid, data);
             });
           });
-
-          it('should allow multiple attestations', async () => {
-            await expectAttestation(recipient.address, schema1Id, expirationTime, true, ZERO_BYTES32, data);
-            await expectAttestation(recipient2.address, schema1Id, expirationTime, true, ZERO_BYTES32, data);
-          });
-
-          it('should allow attestation without expiration time', async () => {
-            await expectAttestation(recipient.address, schema1Id, NO_EXPIRATION, true, ZERO_BYTES32, data);
-          });
-
-          it('should allow attestation without any data', async () => {
-            await expectAttestation(recipient.address, schema1Id, expirationTime, true, ZERO_BYTES32, ZERO_BYTES);
-          });
-
-          it('should store referenced attestation', async () => {
-            const uuid = await eas.attest({ recipient: recipient.address, schema: schema1Id, data, expirationTime });
-
-            await expectAttestation(recipient.address, schema1Id, expirationTime, true, uuid, data);
-          });
-        });
+        }
       });
     }
   });
