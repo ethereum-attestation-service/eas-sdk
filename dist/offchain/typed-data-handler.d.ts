@@ -31,23 +31,22 @@ export interface EIP712MessageTypes {
 export type EIP712Params = {
     nonce?: BigNumberish;
 };
-export interface EIP712TypedData<T extends EIP712MessageTypes> {
+export interface EIP712TypedData<T extends EIP712MessageTypes, P extends EIP712Params> {
     domain: EIP712DomainTypedData;
     primaryType: keyof T;
     types: T;
-    message: any;
+    message: P;
 }
-export interface EIP712Request extends Signature {
-    params: EIP712Params;
-    data: EIP712TypedData<EIP712MessageTypes>;
+export interface EIP712Request<T extends EIP712MessageTypes, P extends EIP712Params> extends Signature {
+    params: P;
+    types: EIP712TypedData<T, P>;
 }
 export declare abstract class TypedDataHandler {
     protected config: TypedDataConfig;
     constructor(config: TypedDataConfig);
     abstract getDomainSeparator(): string;
     abstract getDomainTypedData(): DomainTypedData;
-    abstract getTypedData(type: string, params: EIP712Params): EIP712TypedData<EIP712MessageTypes>;
-    signTypedDataRequest(type: string, params: EIP712Params, signer: TypedDataSigner): Promise<EIP712Request>;
-    verifyTypedDataRequestSignature(attester: string, request: EIP712Request): Promise<boolean>;
+    signTypedDataRequest<T extends EIP712MessageTypes, P extends EIP712Params>(params: P, types: EIP712TypedData<T, P>, signer: TypedDataSigner): Promise<EIP712Request<T, P>>;
+    verifyTypedDataRequestSignature<T extends EIP712MessageTypes, P extends EIP712Params>(attester: string, request: EIP712Request<T, P>): Promise<boolean>;
     protected getDigest(params: TypedDataParams): string;
 }

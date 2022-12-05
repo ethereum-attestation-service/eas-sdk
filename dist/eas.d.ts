@@ -9,16 +9,44 @@ export interface Attestation {
     expirationTime: number;
     revocationTime: number;
     recipient: string;
+    revocable: boolean;
     attester: string;
     data: string;
 }
 export declare const NO_EXPIRATION = 0;
+export interface AttestParams {
+    recipient: string;
+    schema: string;
+    data: BytesLike;
+    expirationTime?: number;
+    revocable?: boolean;
+    refUUID?: string;
+    overrides?: PayableOverrides;
+}
+export interface AttestParamsByDelegation extends AttestParams {
+    attester: string;
+    signature: Signature;
+}
+export interface RevokeParams {
+    uuid: string;
+    overrides?: PayableOverrides;
+}
+export interface RevokeByDelegationParams extends RevokeParams {
+    attester: string;
+    signature: Signature;
+}
+export interface GetAttestationParams {
+    uuid: string;
+}
+export interface IsAttestationValidParams {
+    uuid: string;
+}
 export declare class EAS extends Base<EASContract> {
     constructor(address: string);
-    attest(recipient: string, schema: string, data: BytesLike, expirationTime?: number, _revocable?: boolean, refUUID?: string, overrides?: PayableOverrides): Promise<any>;
-    attestByDelegation(recipient: string, schema: string, data: BytesLike, attester: string, signature: Signature, expirationTime?: number, _revocable?: boolean, refUUID?: string, overrides?: PayableOverrides): Promise<any>;
-    revoke(uuid: string): Promise<import("ethers").ContractTransaction>;
-    revokeByDelegation(uuid: string, attester: string, signature: Signature): Promise<import("ethers").ContractTransaction>;
-    getAttestation(uuid: string): Promise<Attestation>;
-    isAttestationValid(uuid: string): Promise<boolean>;
+    attest({ recipient, schema, data, expirationTime, revocable, refUUID, overrides }: AttestParams): Promise<any>;
+    attestByDelegation({ recipient, schema, data, attester, signature, expirationTime, revocable, refUUID, overrides }: AttestParamsByDelegation): Promise<any>;
+    revoke({ uuid, overrides }: RevokeParams): Promise<import("ethers").ContractTransaction>;
+    revokeByDelegation({ uuid, attester, signature, overrides }: RevokeByDelegationParams): Promise<import("ethers").ContractTransaction>;
+    getAttestation({ uuid }: GetAttestationParams): Promise<Attestation>;
+    isAttestationValid({ uuid }: IsAttestationValidParams): Promise<boolean>;
 }
