@@ -9,7 +9,7 @@ import { PayableOverrides } from 'ethers';
 export declare type SchemaRecord = {
   uuid: string;
   resolver: string;
-  // TODO: revocable: boolean;
+  revocable: boolean;
   schema: string;
 };
 
@@ -36,8 +36,7 @@ export class SchemaRegistry extends Base<SchemaRegistryContract> {
     revocable = true,
     overrides = {}
   }: RegisterSchemaParams): Promise<string> {
-    // TODO: revocable
-    await this.contract.register(schema, resolverAddress, overrides);
+    await this.contract.register(schema, resolverAddress, revocable, overrides);
 
     return getSchemaUUID(schema, resolverAddress, revocable);
   }

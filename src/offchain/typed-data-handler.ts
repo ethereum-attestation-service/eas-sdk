@@ -107,13 +107,4 @@ export abstract class TypedDataHandler {
 
     return getAddress(attester) === getAddress(recoveredAddress);
   }
-
-  protected getDigest(params: TypedDataParams): string {
-    return keccak256(
-      solidityPack(
-        ['bytes1', 'bytes1', 'bytes32', 'bytes32'],
-        ['0x19', '0x01', this.getDomainSeparator(), keccak256(defaultAbiCoder.encode(params.types, params.values))]
-      )
-    );
-  }
 }
