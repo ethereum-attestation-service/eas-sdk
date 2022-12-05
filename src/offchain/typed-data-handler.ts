@@ -2,16 +2,7 @@ import { ZERO_ADDRESS } from '../utils';
 import { TypedDataSigner } from '@ethersproject/abstract-signer';
 import { BigNumberish, Signature, utils } from 'ethers';
 
-const {
-  getAddress,
-  solidityPack,
-  verifyTypedData,
-  defaultAbiCoder,
-  keccak256,
-  hexlify,
-  joinSignature,
-  splitSignature
-} = utils;
+const { getAddress, verifyTypedData, hexlify, joinSignature, splitSignature } = utils;
 
 export interface TypedDataConfig {
   address: string;
@@ -106,14 +97,5 @@ export abstract class TypedDataHandler {
     const recoveredAddress = verifyTypedData(request.types.domain, request.types.types, request.params, sig);
 
     return getAddress(attester) === getAddress(recoveredAddress);
-  }
-
-  protected getDigest(params: TypedDataParams): string {
-    return keccak256(
-      solidityPack(
-        ['bytes1', 'bytes1', 'bytes32', 'bytes32'],
-        ['0x19', '0x01', this.getDomainSeparator(), keccak256(defaultAbiCoder.encode(params.types, params.values))]
-      )
-    );
   }
 }

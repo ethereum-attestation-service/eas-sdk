@@ -9,12 +9,13 @@ class SchemaRegistry extends base_1.Base {
         super(new eas_contracts_1.SchemaRegistry__factory(), address);
     }
     // Registers a new schema and returns its UUID
-    async register(schema, resolverAddress = utils_1.ZERO_ADDRESS) {
-        await this.contract.register(schema, resolverAddress);
-        return (0, utils_1.getSchemaUUID)(schema, resolverAddress);
+    async register({ schema, resolverAddress = utils_1.ZERO_ADDRESS, revocable = true, overrides = {} }) {
+        // TODO: revocable
+        await this.contract.register(schema, resolverAddress, overrides);
+        return (0, utils_1.getSchemaUUID)(schema, resolverAddress, revocable);
     }
     // Returns an existing schema by a schema UUID
-    async getSchema(uuid) {
+    async getSchema({ uuid }) {
         const schema = await this.contract.getSchema(uuid);
         if (schema.uuid === utils_1.ZERO_BYTES32) {
             throw new Error('Schema not found');
