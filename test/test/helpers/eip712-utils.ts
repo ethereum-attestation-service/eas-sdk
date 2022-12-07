@@ -5,7 +5,6 @@ import {
   EIP712Request,
   EIP712RevocationParams
 } from '../../../src/offchain/delegated';
-import { Offchain, SignedOffchainAttestation } from '../../../src/offchain/offchain';
 import { HARDHAT_CHAIN_ID } from '../../utils/Constants';
 import { TypedDataSigner } from '@ethersproject/abstract-signer';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
@@ -13,7 +12,6 @@ import { BigNumber } from 'ethers';
 
 export class EIP712Utils {
   delegated: Delegated;
-  offchain: Offchain;
 
   constructor(contract: string | SignerWithAddress) {
     const contractAddress = typeof contract === 'string' ? contract : contract.address;
@@ -25,7 +23,6 @@ export class EIP712Utils {
     };
 
     this.delegated = new Delegated(config);
-    this.offchain = new Offchain(config);
   }
 
   public async signDelegatedAttestation(
@@ -84,33 +81,5 @@ export class EIP712Utils {
       typeof attester === 'string' ? attester : attester.address,
       request
     );
-  }
-
-  public async signOffchainAttestation(
-    attester: TypedDataSigner,
-    schema: string,
-    recipient: string | SignerWithAddress,
-    time: number,
-    expirationTime: number,
-    revocable: boolean,
-    refUUID: string,
-    data: string
-  ): Promise<SignedOffchainAttestation> {
-    return this.offchain.signOffchainAttestation(
-      {
-        schema,
-        recipient: typeof recipient === 'string' ? recipient : recipient.address,
-        time,
-        expirationTime,
-        revocable,
-        refUUID,
-        data
-      },
-      attester
-    );
-  }
-
-  public async verifyOffchainAttestation(attester: string, request: SignedOffchainAttestation): Promise<boolean> {
-    return this.offchain.verifyOffchainAttestationSignature(attester, request);
   }
 }
