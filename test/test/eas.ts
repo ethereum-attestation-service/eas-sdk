@@ -4,7 +4,8 @@ import { getOffchainUUID, getSchemaUUID } from '../../src/utils';
 import Contracts from '../components/Contracts';
 import { ZERO_ADDRESS, ZERO_BYTES, ZERO_BYTES32 } from '../utils/Constants';
 import chai from './helpers/chai';
-import { EIP712Utils } from './helpers/EIP712Utils';
+import { EIP712Utils } from './helpers/eip712-utils';
+import { OffchainUtils } from './helpers/offchain-utils';
 import { duration, latest } from './helpers/time';
 import { createWallet, Wallet } from './helpers/wallet';
 import {
@@ -28,6 +29,7 @@ describe('EAS API', () => {
   let verifier: EIP712Verifier;
   let easContract: EASContract;
   let eip712Utils: EIP712Utils;
+  let offchainUtils: OffchainUtils;
 
   let eas: EAS;
   let schemaRegistry: SchemaRegistry;
@@ -44,6 +46,7 @@ describe('EAS API', () => {
     registry = await Contracts.SchemaRegistry.deploy();
     verifier = await Contracts.EIP712Verifier.deploy();
     eip712Utils = new EIP712Utils(verifier.address);
+    offchainUtils = new OffchainUtils(verifier.address);
 
     easContract = await Contracts.EAS.deploy(registry.address, verifier.address);
 
@@ -140,7 +143,7 @@ describe('EAS API', () => {
             case SignatureType.Offchain: {
               const now = await latest();
               const uuid = getOffchainUUID(schema, recipient, now, expirationTime, revocable, refUUID, data);
-              const request = await eip712Utils.signOffchainAttestation(
+              const request = await offchainUtils.signAttestation(
                 txSender,
                 schema,
                 recipient,
@@ -151,7 +154,7 @@ describe('EAS API', () => {
                 data
               );
               expect(request.uuid).to.equal(uuid);
-              expect(await eip712Utils.verifyOffchainAttestation(txSender.address, request));
+              expect(await offchainUtils.verifyAttestation(txSender.address, request)).to.be.true;
 
               return;
             }
@@ -219,6 +222,37 @@ describe('EAS API', () => {
 
               await expectAttestation(recipient.address, schemaId, expirationTime, revocable, uuid, data);
             });
+
+            if (signatureType === SignatureType.Offchain) {
+              it('should verify the uuid of an offchain attestation', async () => {
+                const request = await offchainUtils.signAttestation(
+                  sender,
+                  schemaId,
+                  recipient,
+                  await latest(),
+                  expirationTime,
+                  revocable,
+                  ZERO_BYTES32,
+                  data
+                );
+
+                expect(await offchainUtils.verifyAttestation(sender.address, request)).to.be.true;
+
+                const request2 = await offchainUtils.signAttestation(
+                  sender,
+                  schemaId,
+                  recipient,
+                  await latest(),
+                  expirationTime,
+                  revocable,
+                  ZERO_BYTES32,
+                  data,
+                  '1234'
+                );
+
+                expect(await offchainUtils.verifyAttestation(sender.address, request2)).to.be.false;
+              });
+            }
           });
         }
       });
