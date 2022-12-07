@@ -10,8 +10,8 @@ class SchemaRegistry extends base_1.Base {
     }
     // Registers a new schema and returns its UUID
     async register({ schema, resolverAddress = utils_1.ZERO_ADDRESS, revocable = true, overrides = {} }) {
-        // TODO: revocable
-        await this.contract.register(schema, resolverAddress, overrides);
+        const res = await this.contract.register(schema, resolverAddress, revocable, overrides);
+        await res.wait();
         return (0, utils_1.getSchemaUUID)(schema, resolverAddress, revocable);
     }
     // Returns an existing schema by a schema UUID

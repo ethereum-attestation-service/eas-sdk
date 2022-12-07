@@ -37,7 +37,7 @@ class Offchain extends typed_data_handler_1.TypedDataHandler {
         };
     }
     async signOffchainAttestation(params, signer) {
-        const uuid = (0, utils_1.getOffchainUUID)(params.schema, params.recipient, params.time, params.expirationTime, params.revocable, params.refUUID, params.data);
+        const uuid = Offchain.getOffchainUUID(params);
         return {
             ...(await this.signTypedDataRequest(params, {
                 domain: this.getDomainTypedData(),
@@ -51,7 +51,11 @@ class Offchain extends typed_data_handler_1.TypedDataHandler {
         };
     }
     async verifyOffchainAttestationSignature(attester, request) {
-        return this.verifyTypedDataRequestSignature(attester, request);
+        return (request.uuid === Offchain.getOffchainUUID(request.params) &&
+            this.verifyTypedDataRequestSignature(attester, request));
+    }
+    static getOffchainUUID(params) {
+        return (0, utils_1.getOffchainUUID)(params.schema, params.recipient, params.time, params.expirationTime, params.revocable, params.refUUID, params.data);
     }
 }
 exports.Offchain = Offchain;

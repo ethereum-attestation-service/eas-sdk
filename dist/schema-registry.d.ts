@@ -4,6 +4,7 @@ import { PayableOverrides } from 'ethers';
 export declare type SchemaRecord = {
     uuid: string;
     resolver: string;
+    revocable: boolean;
     schema: string;
 };
 export interface RegisterSchemaParams {
