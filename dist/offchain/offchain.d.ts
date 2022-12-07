@@ -1,6 +1,7 @@
 import { DomainTypedData, EIP712MessageTypes, EIP712Params, EIP712Request, TypedData, TypedDataConfig, TypedDataHandler } from './typed-data-handler';
 import { TypedDataSigner } from '@ethersproject/abstract-signer';
-export { EIP712Request } from './typed-data-handler';
+export { EIP712Request, TypedDataConfig, EIP712MessageTypes } from './typed-data-handler';
+export { TypedDataSigner } from '@ethersproject/abstract-signer';
 export declare const ATTESTATION_PRIMARY_TYPE = "Attestation";
 export declare const ATTESTATION_TYPE: TypedData[];
 export declare const DOMAIN_NAME = "EAS Attestation";
@@ -22,4 +23,5 @@ export declare class Offchain extends TypedDataHandler {
     getDomainTypedData(): DomainTypedData;
     signOffchainAttestation(params: OffchainAttestationParams, signer: TypedDataSigner): Promise<SignedOffchainAttestation>;
     verifyOffchainAttestationSignature(attester: string, request: SignedOffchainAttestation): Promise<boolean>;
+    static getOffchainUUID(params: OffchainAttestationParams): string;
 }

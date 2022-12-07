@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.TypedDataHandler = void 0;
 const utils_1 = require("../utils");
 const ethers_1 = require("ethers");
-const { getAddress, solidityPack, verifyTypedData, defaultAbiCoder, keccak256, hexlify, joinSignature, splitSignature } = ethers_1.utils;
+const { getAddress, verifyTypedData, hexlify, joinSignature, splitSignature } = ethers_1.utils;
 class TypedDataHandler {
     config;
     constructor(config) {
@@ -20,9 +20,6 @@ class TypedDataHandler {
         const sig = joinSignature({ v: request.v, r: hexlify(request.r), s: hexlify(request.s) });
         const recoveredAddress = verifyTypedData(request.types.domain, request.types.types, request.params, sig);
         return getAddress(attester) === getAddress(recoveredAddress);
-    }
-    getDigest(params) {
-        return keccak256(solidityPack(['bytes1', 'bytes1', 'bytes32', 'bytes32'], ['0x19', '0x01', this.getDomainSeparator(), keccak256(defaultAbiCoder.encode(params.types, params.values))]));
     }
 }
 exports.TypedDataHandler = TypedDataHandler;
