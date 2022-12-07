@@ -13,7 +13,8 @@ import { utils } from 'ethers';
 
 const { keccak256, toUtf8Bytes, defaultAbiCoder } = utils;
 
-export { EIP712Request } from './typed-data-handler';
+export { EIP712Request, TypedDataConfig, EIP712MessageTypes } from './typed-data-handler';
+export { TypedDataSigner } from '@ethersproject/abstract-signer';
 
 export const ATTESTATION_PRIMARY_TYPE = 'Attestation';
 export const ATTESTATION_TYPE: TypedData[] = [
@@ -74,15 +75,7 @@ export class Offchain extends TypedDataHandler {
     params: OffchainAttestationParams,
     signer: TypedDataSigner
   ): Promise<SignedOffchainAttestation> {
-    const uuid = getOffchainUUID(
-      params.schema,
-      params.recipient,
-      params.time,
-      params.expirationTime,
-      params.revocable,
-      params.refUUID,
-      params.data
-    );
+    const uuid = Offchain.getOffchainUUID(params);
 
     return {
       ...(await this.signTypedDataRequest<EIP712MessageTypes, OffchainAttestationParams>(
@@ -105,6 +98,21 @@ export class Offchain extends TypedDataHandler {
     attester: string,
     request: SignedOffchainAttestation
   ): Promise<boolean> {
-    return this.verifyTypedDataRequestSignature(attester, request);
+    return (
+      request.uuid === Offchain.getOffchainUUID(request.params) &&
+      this.verifyTypedDataRequestSignature(attester, request)
+    );
+  }
+
+  public static getOffchainUUID(params: OffchainAttestationParams): string {
+    return getOffchainUUID(
+      params.schema,
+      params.recipient,
+      params.time,
+      params.expirationTime,
+      params.revocable,
+      params.refUUID,
+      params.data
+    );
   }
 }
