@@ -37,10 +37,7 @@ export interface EIP712TypedData<T extends EIP712MessageTypes, P extends EIP712P
     types: T;
     message: P;
 }
-export interface EIP712Request<T extends EIP712MessageTypes, P extends EIP712Params> extends Signature {
-    params: P;
-    types: EIP712TypedData<T, P>;
-}
+export type EIP712Request<T extends EIP712MessageTypes, P extends EIP712Params> = EIP712TypedData<T, P> & Signature;
 export declare abstract class TypedDataHandler {
     protected config: TypedDataConfig;
     constructor(config: TypedDataConfig);
