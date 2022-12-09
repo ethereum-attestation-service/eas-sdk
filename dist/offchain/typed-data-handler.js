@@ -11,14 +11,14 @@ class TypedDataHandler {
     }
     async signTypedDataRequest(params, types, signer) {
         const rawSignature = await signer._signTypedData(types.domain, types.types, params);
-        return { types, params, ...splitSignature(rawSignature) };
+        return { ...types, ...splitSignature(rawSignature) };
     }
     async verifyTypedDataRequestSignature(attester, request) {
         if (attester === utils_1.ZERO_ADDRESS) {
             throw new Error('Invalid address');
         }
         const sig = joinSignature({ v: request.v, r: hexlify(request.r), s: hexlify(request.s) });
-        const recoveredAddress = verifyTypedData(request.types.domain, request.types.types, request.params, sig);
+        const recoveredAddress = verifyTypedData(request.domain, request.types, request.message, sig);
         return getAddress(attester) === getAddress(recoveredAddress);
     }
 }
