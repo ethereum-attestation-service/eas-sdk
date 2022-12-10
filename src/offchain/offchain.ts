@@ -99,7 +99,7 @@ export class Offchain extends TypedDataHandler {
     request: SignedOffchainAttestation
   ): Promise<boolean> {
     return (
-      request.uuid === Offchain.getOffchainUUID(request.params) &&
+      request.uuid === Offchain.getOffchainUUID(request.message) &&
       this.verifyTypedDataRequestSignature(attester, request)
     );
   }

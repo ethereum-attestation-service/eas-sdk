@@ -51,7 +51,7 @@ class Offchain extends typed_data_handler_1.TypedDataHandler {
         };
     }
     async verifyOffchainAttestationSignature(attester, request) {
-        return (request.uuid === Offchain.getOffchainUUID(request.params) &&
+        return (request.uuid === Offchain.getOffchainUUID(request.message) &&
             this.verifyTypedDataRequestSignature(attester, request));
     }
     static getOffchainUUID(params) {
