@@ -60,10 +60,7 @@ export interface EIP712TypedData<T extends EIP712MessageTypes, P extends EIP712P
   message: P;
 }
 
-export interface EIP712Request<T extends EIP712MessageTypes, P extends EIP712Params> extends Signature {
-  params: P;
-  types: EIP712TypedData<T, P>;
-}
+export type EIP712Request<T extends EIP712MessageTypes, P extends EIP712Params> = EIP712TypedData<T, P> & Signature;
 
 export abstract class TypedDataHandler {
   protected config: TypedDataConfig;
@@ -82,7 +79,7 @@ export abstract class TypedDataHandler {
   ): Promise<EIP712Request<T, P>> {
     const rawSignature = await signer._signTypedData(types.domain, types.types, params);
 
-    return { types, params, ...splitSignature(rawSignature) };
+    return { ...types, ...splitSignature(rawSignature) };
   }
 
   public async verifyTypedDataRequestSignature<T extends EIP712MessageTypes, P extends EIP712Params>(
@@ -94,7 +91,7 @@ export abstract class TypedDataHandler {
     }
 
     const sig = joinSignature({ v: request.v, r: hexlify(request.r), s: hexlify(request.s) });
-    const recoveredAddress = verifyTypedData(request.types.domain, request.types.types, request.params, sig);
+    const recoveredAddress = verifyTypedData(request.domain, request.types, request.message, sig);
 
     return getAddress(attester) === getAddress(recoveredAddress);
   }
