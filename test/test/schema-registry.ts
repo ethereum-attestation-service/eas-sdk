@@ -46,8 +46,8 @@ describe('SchemaRegistry API', () => {
     };
 
     it('should allow to register a schema', async () => {
-      await testRegister('SC1', accounts[3], true);
-      await testRegister('SC2', accounts[3], false);
+      await testRegister('bytes32 proposalId, bool vote', accounts[3], true);
+      await testRegister('bool hasPhoneNumber, bytes32 phoneHash', accounts[3], false);
     });
 
     it('should allow to register a schema without a schema', async () => {
@@ -55,7 +55,7 @@ describe('SchemaRegistry API', () => {
     });
 
     it('should allow to register a schema without a resolver', async () => {
-      await testRegister('0x1234', ZERO_ADDRESS, true);
+      await testRegister('bool isFriend', ZERO_ADDRESS, true);
     });
 
     it('should allow to register a schema without neither a schema or a resolver', async () => {
