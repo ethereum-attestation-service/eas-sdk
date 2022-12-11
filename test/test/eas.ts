@@ -181,7 +181,7 @@ describe('EAS API', () => {
 
         for (const revocable of [true, false]) {
           context(`with a ${revocable ? 'revocable' : 'irrevocable'} registered schema`, () => {
-            const schema = 'S1';
+            const schema = 'bool like';
             const schemaId = getSchemaUUID(schema, ZERO_ADDRESS, revocable);
 
             beforeEach(async () => {
@@ -260,7 +260,7 @@ describe('EAS API', () => {
   });
 
   describe('revocation', () => {
-    const schema1 = 'S1';
+    const schema1 = 'bool like';
     const schema1Id = getSchemaUUID(schema1, ZERO_ADDRESS, true);
     let uuid: string;
     const data = '0x1234';
