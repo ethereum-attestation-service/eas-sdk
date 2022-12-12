@@ -249,14 +249,14 @@
     minimatch "^3.1.2"
     strip-json-comments "^3.1.1"
 
-"@ethereum-attestation-service/eas-contracts@^0.19.6":
-  version "0.19.6"
-  resolved "https://registry.yarnpkg.com/@ethereum-attestation-service/eas-contracts/-/eas-contracts-0.19.6.tgz#327e0e4273b1de975cc59ce6c3cda44f70e26c40"
-  integrity sha512-MFWD/Ga8m1Y0rncnldu+uBJ4zRfI7x0jrn0hpmWioUIV8QBwFPf2oFcub9TBwihuFRnLSGd+CSdK0BzHiMFkJQ==
+"@ethereum-attestation-service/eas-contracts@^0.20.2":
+  version "0.20.2"
+  resolved "https://registry.yarnpkg.com/@ethereum-attestation-service/eas-contracts/-/eas-contracts-0.20.2.tgz#b98f4e58a89b26635cae6f2843e05b12ca5b56ce"
+  integrity sha512-/4gbE4XJg22WBSNT9ygZ3UAcXQ9DohbV59vzwmQkHnrpyuGJdBVP3vsymC0smE1bOWTNd4U7sumjzn1mNsACMg==
   dependencies:
     "@typechain/ethers-v5" "^10.1.1"
     "@typechain/hardhat" "^6.1.4"
-    hardhat "2.12.3"
+    hardhat "2.12.4"
     typechain "^8.1.1"
 
 "@ethersproject/abi@5.7.0", "@ethersproject/abi@^5.1.2", "@ethersproject/abi@^5.7.0":
@@ -2558,10 +2558,10 @@ grapheme-splitter@^1.0.4:
   resolved "https://registry.yarnpkg.com/grapheme-splitter/-/grapheme-splitter-1.0.4.tgz#9cf3a665c6247479896834af35cf1dbb4400767e"
   integrity sha512-bzh50DW9kTPM00T8y4o8vQg89Di9oLJVLW/KaOGIXJWP/iqCN6WKYkbNOF04vFLJhwcpYUh9ydh/+5vpOqV4YQ==
 
-hardhat@2.12.3:
-  version "2.12.3"
-  resolved "https://registry.yarnpkg.com/hardhat/-/hardhat-2.12.3.tgz#1824c5d5e2bcc61601bee429053ccecb4dbc0adb"
-  integrity sha512-qxOvRNgQnLqRFssn5f8VP5KN3caytShU0HNeKxmPVK1Ix/0xDVhIC7JOLxG69DjOihUfmxmjqspsHbZvFj6EhQ==
+hardhat@2.12.4:
+  version "2.12.4"
+  resolved "https://registry.yarnpkg.com/hardhat/-/hardhat-2.12.4.tgz#e539ba58bee9ba1a1ced823bfdcec0b3c5a3e70f"
+  integrity sha512-rc9S2U/4M+77LxW1Kg7oqMMmjl81tzn5rNFARhbXKUA1am/nhfMJEujOjuKvt+ZGMiZ11PYSe8gyIpB/aRNDgw==
   dependencies:
     "@ethersproject/abi" "^5.1.2"
     "@metamask/eth-sig-util" "^4.0.0"

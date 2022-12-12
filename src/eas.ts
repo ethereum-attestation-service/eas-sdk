@@ -1,7 +1,7 @@
 import { Base } from './base';
 import { ZERO_BYTES32 } from './utils';
 import { EAS__factory, EAS as EASContract } from '@ethereum-attestation-service/eas-contracts';
-import { BytesLike, PayableOverrides, Signature, utils } from 'ethers';
+import { BigNumberish, BytesLike, ContractTransaction, Signature, utils } from 'ethers';
 
 const { hexlify } = utils;
 
@@ -27,22 +27,24 @@ export interface AttestParams {
   expirationTime?: number;
   revocable?: boolean;
   refUUID?: string;
-  overrides?: PayableOverrides;
+  value?: BigNumberish;
 }
 
 export interface AttestParamsByDelegation extends AttestParams {
   attester: string;
   signature: Signature;
+  value?: BigNumberish;
 }
 
 export interface RevokeParams {
   uuid: string;
-  overrides?: PayableOverrides;
+  value?: BigNumberish;
 }
 
 export interface RevokeByDelegationParams extends RevokeParams {
   attester: string;
   signature: Signature;
+  value?: BigNumberish;
 }
 
 export interface GetAttestationParams {
@@ -50,6 +52,10 @@ export interface GetAttestationParams {
 }
 
 export interface IsAttestationValidParams {
+  uuid: string;
+}
+
+export interface IsAttestationRevokedParams {
   uuid: string;
 }
 
@@ -66,9 +72,11 @@ export class EAS extends Base<EASContract> {
     expirationTime = NO_EXPIRATION,
     revocable = true,
     refUUID = ZERO_BYTES32,
-    overrides = { value: 0 }
-  }: AttestParams) {
-    const res = await this.contract.attest(recipient, schema, expirationTime, revocable, refUUID, data, overrides);
+    value = 0
+  }: AttestParams): Promise<string> {
+    const res = await this.contract.attest(recipient, schema, expirationTime, revocable, refUUID, data, value, {
+      value
+    });
 
     const receipt = await res.wait();
 
@@ -90,8 +98,8 @@ export class EAS extends Base<EASContract> {
     expirationTime = NO_EXPIRATION,
     revocable = true,
     refUUID = ZERO_BYTES32,
-    overrides = {}
-  }: AttestParamsByDelegation) {
+    value = 0
+  }: AttestParamsByDelegation): Promise<string> {
     const res = await this.contract.attestByDelegation(
       recipient,
       schema,
@@ -99,11 +107,12 @@ export class EAS extends Base<EASContract> {
       revocable,
       refUUID,
       data,
+      value,
       attester,
       signature.v,
       hexlify(signature.r),
       hexlify(signature.s),
-      overrides
+      { value }
     );
     const receipt = await res.wait();
 
@@ -116,29 +125,45 @@ export class EAS extends Base<EASContract> {
   }
 
   // Revokes an existing attestation
-  revoke({ uuid, overrides = {} }: RevokeParams) {
-    return this.contract.revoke(uuid, overrides);
+  public async revoke({ uuid, value = 0 }: RevokeParams): Promise<ContractTransaction> {
+    return this.contract.revoke(uuid, value, { value });
   }
 
   // Revokes an existing attestation an EIP712 delegation request
-  revokeByDelegation({ uuid, attester, signature, overrides = {} }: RevokeByDelegationParams) {
+  public async revokeByDelegation({
+    uuid,
+    attester,
+    signature,
+    value = 0
+  }: RevokeByDelegationParams): Promise<ContractTransaction> {
     return this.contract.revokeByDelegation(
       uuid,
+      value,
       attester,
       signature.v,
       hexlify(signature.r),
       hexlify(signature.s),
-      overrides
+      { value }
     );
   }
 
   // Returns an existing schema by attestation UUID
-  getAttestation({ uuid }: GetAttestationParams): Promise<Attestation> {
+  public async getAttestation({ uuid }: GetAttestationParams): Promise<Attestation> {
     return this.contract.getAttestation(uuid);
   }
 
   // Returns whether an attestation is valid
-  isAttestationValid({ uuid }: IsAttestationValidParams): Promise<boolean> {
+  public async isAttestationValid({ uuid }: IsAttestationValidParams): Promise<boolean> {
     return this.contract.isAttestationValid(uuid);
+  }
+
+  // Returns whether an attestation has been revoked
+  public async isAttestationRevoked({ uuid }: IsAttestationRevokedParams): Promise<boolean> {
+    const attestation = await this.contract.getAttestation(uuid);
+    if (attestation.uuid === ZERO_BYTES32) {
+      throw new Error('Invalid attestation');
+    }
+
+    return attestation.revocationTime != 0;
   }
 }

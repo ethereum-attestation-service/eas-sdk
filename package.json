@@ -1,6 +1,6 @@
 {
   "name": "@ethereum-attestation-service/eas-sdk",
-  "version": "0.19.3",
+  "version": "0.20.0",
   "description": "Ethereum Attestation Service - TypeScript/JavaScript SDK",
   "repository": "git@github.com:ethereum-attestation-service/eas-sdk.git",
   "author": "Leonid Beder <leonid.beder@gmail.com>",
@@ -34,7 +34,7 @@
     "typescript": "^4.9.4"
   },
   "dependencies": {
-    "@ethereum-attestation-service/eas-contracts": "^0.19.6",
+    "@ethereum-attestation-service/eas-contracts": "^0.20.2",
     "ethers": "^5.7.2",
     "multiformats": "9.9.0"
   }
