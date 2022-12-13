@@ -101,9 +101,7 @@ describe('EAS API', () => {
                 expirationTime,
                 revocable,
                 refUUID,
-                overrides: {
-                  value: options?.value
-                }
+                value: options?.value
               });
 
               break;
@@ -132,9 +130,7 @@ describe('EAS API', () => {
                 expirationTime,
                 revocable,
                 refUUID,
-                overrides: {
-                  value: options?.value
-                }
+                value: options?.value
               });
 
               break;
@@ -296,10 +292,7 @@ describe('EAS API', () => {
             }
           }
 
-          const now = await latest();
-
-          const attestation = await eas.getAttestation({ uuid });
-          expect(attestation.revocationTime).to.equal(now);
+          expect(await eas.isAttestationRevoked({ uuid })).to.be.true;
         };
 
         beforeEach(async () => {
