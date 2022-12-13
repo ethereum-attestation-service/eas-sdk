@@ -2,7 +2,7 @@ import { EAS } from '../../../src/eas';
 import { SchemaRegistry } from '../../../src/schema-registry';
 import Contracts from '../../components/Contracts';
 import { ETHResolver } from '../../typechain-types';
-import { createWallet } from '../helpers/Wallet';
+import { createWallet } from '../helpers/wallet';
 import {
   EAS as EASContract,
   EIP712Verifier,
