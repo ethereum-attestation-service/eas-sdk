@@ -4,7 +4,6 @@ import {
   SchemaRegistry__factory,
   SchemaRegistry as SchemaRegistryContract
 } from '@ethereum-attestation-service/eas-contracts';
-import { PayableOverrides } from 'ethers';
 
 export declare type SchemaRecord = {
   uuid: string;
@@ -17,7 +16,6 @@ export interface RegisterSchemaParams {
   schema: string;
   resolverAddress?: string;
   revocable?: boolean;
-  overrides?: PayableOverrides;
 }
 
 export interface GetSchemaParams {
@@ -33,10 +31,9 @@ export class SchemaRegistry extends Base<SchemaRegistryContract> {
   public async register({
     schema,
     resolverAddress = ZERO_ADDRESS,
-    revocable = true,
-    overrides = {}
+    revocable = true
   }: RegisterSchemaParams): Promise<string> {
-    const res = await this.contract.register(schema, resolverAddress, revocable, overrides);
+    const res = await this.contract.register(schema, resolverAddress, revocable);
     await res.wait();
 
     return getSchemaUUID(schema, resolverAddress, revocable);
