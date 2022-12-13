@@ -15,7 +15,7 @@
     "test": "cd test && yarn test",
     "lint": "eslint -c .eslintrc --ext .ts src test",
     "format": "prettier --check --write src/**/*.ts test/test/**/*.ts  --config .prettierrc",
-    "release": "yarn lint && yarn test && yarn build"
+    "prepare-release": "yarn lint && yarn test && yarn build"
   },
   "devDependencies": {
     "@ethersproject/wallet": "^5.7.0",

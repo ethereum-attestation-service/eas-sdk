@@ -9,8 +9,8 @@ class SchemaRegistry extends base_1.Base {
         super(new eas_contracts_1.SchemaRegistry__factory(), address);
     }
     // Registers a new schema and returns its UUID
-    async register({ schema, resolverAddress = utils_1.ZERO_ADDRESS, revocable = true, overrides = {} }) {
-        const res = await this.contract.register(schema, resolverAddress, revocable, overrides);
+    async register({ schema, resolverAddress = utils_1.ZERO_ADDRESS, revocable = true }) {
+        const res = await this.contract.register(schema, resolverAddress, revocable);
         await res.wait();
         return (0, utils_1.getSchemaUUID)(schema, resolverAddress, revocable);
     }
