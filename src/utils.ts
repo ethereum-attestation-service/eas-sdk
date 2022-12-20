@@ -1,4 +1,4 @@
-import { constants, utils } from 'ethers';
+import { constants, ContractTransaction, utils } from 'ethers';
 
 const { solidityKeccak256, hexlify, toUtf8Bytes } = utils;
 
@@ -40,3 +40,12 @@ export const getOffchainUUID = (
     ['bytes', 'address', 'address', 'uint32', 'uint32', 'bool', 'bytes32', 'bytes', 'uint32'],
     [hexlify(toUtf8Bytes(schema)), recipient, ZERO_ADDRESS, time, expirationTime, revocable, refUUID, data, 0]
   );
+
+export const getUUIDFromAttestTx = async (res: Promise<ContractTransaction> | ContractTransaction) => {
+  const receipt = await (await res).wait();
+  const event = receipt.events?.find((e) => e.event === 'Attested');
+  if (!event) {
+    throw new Error('Unable to process attestation event');
+  }
+  return event.args?.uuid;
+};

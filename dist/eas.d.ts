@@ -1,4 +1,4 @@
-import { Base } from './base';
+import { Base, SignerOrProvider } from './base';
 import { EAS as EASContract } from '@ethereum-attestation-service/eas-contracts';
 import { BigNumberish, BytesLike, ContractTransaction, Signature } from 'ethers';
 export interface Attestation {
@@ -47,7 +47,7 @@ export interface IsAttestationRevokedParams {
     uuid: string;
 }
 export declare class EAS extends Base<EASContract> {
-    constructor(address: string);
+    constructor(address: string, signerOrProvider?: SignerOrProvider);
     attest({ recipient, schema, data, expirationTime, revocable, refUUID, value }: AttestParams): Promise<string>;
     attestByDelegation({ recipient, schema, data, attester, signature, expirationTime, revocable, refUUID, value }: AttestParamsByDelegation): Promise<string>;
     revoke({ uuid, value }: RevokeParams): Promise<ContractTransaction>;

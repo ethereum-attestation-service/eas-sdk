@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getOffchainUUID = exports.getUUID = exports.getSchemaUUID = exports.ZERO_BYTES32 = exports.ZERO_BYTES = exports.ZERO_ADDRESS = void 0;
+exports.getUUIDFromAttestTx = exports.getOffchainUUID = exports.getUUID = exports.getSchemaUUID = exports.ZERO_BYTES32 = exports.ZERO_BYTES = exports.ZERO_ADDRESS = void 0;
 const ethers_1 = require("ethers");
 const { solidityKeccak256, hexlify, toUtf8Bytes } = ethers_1.utils;
 const { AddressZero } = ethers_1.constants;
@@ -13,4 +13,13 @@ const getUUID = (schema, recipient, attester, time, expirationTime, revocable, r
 exports.getUUID = getUUID;
 const getOffchainUUID = (schema, recipient, time, expirationTime, revocable, refUUID, data) => solidityKeccak256(['bytes', 'address', 'address', 'uint32', 'uint32', 'bool', 'bytes32', 'bytes', 'uint32'], [hexlify(toUtf8Bytes(schema)), recipient, exports.ZERO_ADDRESS, time, expirationTime, revocable, refUUID, data, 0]);
 exports.getOffchainUUID = getOffchainUUID;
+const getUUIDFromAttestTx = async (res) => {
+    const receipt = await (await res).wait();
+    const event = receipt.events?.find((e) => e.event === 'Attested');
+    if (!event) {
+        throw new Error('Unable to process attestation event');
+    }
+    return event.args?.uuid;
+};
+exports.getUUIDFromAttestTx = getUUIDFromAttestTx;
 //# sourceMappingURL=utils.js.map
