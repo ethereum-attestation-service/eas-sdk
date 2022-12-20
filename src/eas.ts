@@ -1,5 +1,5 @@
-import { Base } from './base';
-import { ZERO_BYTES32 } from './utils';
+import { Base, SignerOrProvider } from './base';
+import { getUUIDFromAttestTx, ZERO_BYTES32 } from './utils';
 import { EAS__factory, EAS as EASContract } from '@ethereum-attestation-service/eas-contracts';
 import { BigNumberish, BytesLike, ContractTransaction, Signature, utils } from 'ethers';
 
@@ -60,8 +60,8 @@ export interface IsAttestationRevokedParams {
 }
 
 export class EAS extends Base<EASContract> {
-  constructor(address: string) {
-    super(new EAS__factory(), address);
+  constructor(address: string, signerOrProvider?: SignerOrProvider) {
+    super(new EAS__factory(), address, signerOrProvider);
   }
 
   // Attests to a specific schema
@@ -78,14 +78,7 @@ export class EAS extends Base<EASContract> {
       value
     });
 
-    const receipt = await res.wait();
-
-    const event = receipt.events?.find((e) => e.event === 'Attested');
-    if (!event) {
-      throw new Error('Unable to process attestation event');
-    }
-
-    return event.args?.uuid;
+    return getUUIDFromAttestTx(res);
   }
 
   // Attests to a specific schema via an EIP712 delegation request
