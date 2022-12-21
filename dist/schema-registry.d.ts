@@ -1,4 +1,4 @@
-import { Base } from './base';
+import { Base, SignerOrProvider } from './base';
 import { SchemaRegistry as SchemaRegistryContract } from '@ethereum-attestation-service/eas-contracts';
 export declare type SchemaRecord = {
     uuid: string;
@@ -15,7 +15,7 @@ export interface GetSchemaParams {
     uuid: string;
 }
 export declare class SchemaRegistry extends Base<SchemaRegistryContract> {
-    constructor(address: string);
+    constructor(address: string, signerOrProvider?: SignerOrProvider);
     register({ schema, resolverAddress, revocable }: RegisterSchemaParams): Promise<string>;
     getSchema({ uuid }: GetSchemaParams): Promise<SchemaRecord>;
 }

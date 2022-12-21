@@ -1,4 +1,4 @@
-import { Base } from './base';
+import { Base, SignerOrProvider } from './base';
 import { getSchemaUUID, ZERO_ADDRESS, ZERO_BYTES32 } from './utils';
 import {
   SchemaRegistry__factory,
@@ -23,8 +23,8 @@ export interface GetSchemaParams {
 }
 
 export class SchemaRegistry extends Base<SchemaRegistryContract> {
-  constructor(address: string) {
-    super(new SchemaRegistry__factory(), address);
+  constructor(address: string, signerOrProvider?: SignerOrProvider) {
+    super(new SchemaRegistry__factory(), address, signerOrProvider);
   }
 
   // Registers a new schema and returns its UUID
