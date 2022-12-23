@@ -84,6 +84,7 @@ export class EIP712Utils {
 
   public async signDelegatedRevocation(
     attester: TypedDataSigner,
+    schema: string,
     uuid: string,
     nonce: BigNumber
   ): Promise<EIP712Request<EIP712MessageTypes, EIP712RevocationParams>> {
@@ -93,6 +94,7 @@ export class EIP712Utils {
 
     return this.delegated.signDelegatedRevocation(
       {
+        schema,
         uuid,
         nonce: nonce.toNumber()
       },

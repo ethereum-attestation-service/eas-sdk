@@ -46,6 +46,7 @@ export type EIP712AttestationParams = EIP712Params & {
 };
 
 export type EIP712RevocationParams = EIP712Params & {
+  schema: string;
   uuid: string;
 };
 

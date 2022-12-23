@@ -18,8 +18,7 @@ export interface Attestation {
 
 export const NO_EXPIRATION = 0;
 
-export interface AttestParams {
-  schema: string;
+export interface AttestationRequestData {
   recipient: string;
   data: BytesLike;
   expirationTime?: number;
@@ -28,22 +27,29 @@ export interface AttestParams {
   value?: BigNumberish;
 }
 
-export interface AttestParamsByDelegation extends AttestParams {
-  signature: Signature;
-  attester: string;
-  value?: BigNumberish;
+export interface AttestationRequest {
+  schema: string;
+  data: AttestationRequestData;
 }
 
-export interface RevokeParams {
-  schema: string;
+export interface DelegatedAttestationRequest extends AttestationRequest {
+  signature: Signature;
+  attester: string;
+}
+
+export interface RevocationRequestData {
   uuid: string;
   value?: BigNumberish;
 }
 
-export interface RevokeByDelegationParams extends RevokeParams {
+export interface RevocationRequest {
+  schema: string;
+  data: RevocationRequestData;
+}
+
+export interface DelegatedRevocationRequest extends RevocationRequest {
   signature: Signature;
   revoker: string;
-  value?: BigNumberish;
 }
 
 export interface GetAttestationParams {
@@ -66,13 +72,8 @@ export class EAS extends Base<EASContract> {
   // Attests to a specific schema
   public async attest({
     schema,
-    recipient,
-    data,
-    expirationTime = NO_EXPIRATION,
-    revocable = true,
-    refUUID = ZERO_BYTES32,
-    value = 0
-  }: AttestParams): Promise<string> {
+    data: { recipient, data, expirationTime = NO_EXPIRATION, revocable = true, refUUID = ZERO_BYTES32, value = 0 }
+  }: AttestationRequest): Promise<string> {
     const res = await this.contract.attest(
       { schema, data: { recipient, expirationTime, revocable, refUUID, data, value } },
       {
@@ -86,15 +87,10 @@ export class EAS extends Base<EASContract> {
   // Attests to a specific schema via an EIP712 delegation request
   public async attestByDelegation({
     schema,
-    recipient,
-    data,
+    data: { recipient, data, expirationTime = NO_EXPIRATION, revocable = true, refUUID = ZERO_BYTES32, value = 0 },
     attester,
-    signature,
-    expirationTime = NO_EXPIRATION,
-    revocable = true,
-    refUUID = ZERO_BYTES32,
-    value = 0
-  }: AttestParamsByDelegation): Promise<string> {
+    signature
+  }: DelegatedAttestationRequest): Promise<string> {
     const res = await this.contract.attestByDelegation(
       {
         schema,
@@ -122,18 +118,17 @@ export class EAS extends Base<EASContract> {
   }
 
   // Revokes an existing attestation
-  public async revoke({ schema, uuid, value = 0 }: RevokeParams): Promise<ContractTransaction> {
+  public async revoke({ schema, data: { uuid, value = 0 } }: RevocationRequest): Promise<ContractTransaction> {
     return this.contract.revoke({ schema, data: { uuid, value } }, { value });
   }
 
   // Revokes an existing attestation an EIP712 delegation request
   public async revokeByDelegation({
     schema,
-    uuid,
+    data: { uuid, value = 0 },
     signature,
-    revoker,
-    value = 0
-  }: RevokeByDelegationParams): Promise<ContractTransaction> {
+    revoker
+  }: DelegatedRevocationRequest): Promise<ContractTransaction> {
     return this.contract.revokeByDelegation(
       {
         schema,
