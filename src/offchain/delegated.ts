@@ -12,13 +12,18 @@ import { utils } from 'ethers';
 
 const { keccak256, toUtf8Bytes, defaultAbiCoder } = utils;
 
-export { EIP712MessageTypes, EIP712TypedData, EIP712Request } from './typed-data-handler';
+export { EIP712MessageTypes, EIP712TypedData, EIP712Request, TypedDataConfig } from './typed-data-handler';
 
+export const EIP712_DOMAIN = 'EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)';
+export const EIP712_NAME = 'EAS';
+export const ATTEST_TYPED_SIGNATURE =
+  'Attest(bytes32 schema,address recipient,uint32 expirationTime,bool revocable,bytes32 refUUID,bytes data,uint256 nonce)';
+export const REVOKE_TYPED_SIGNATURE = 'Revoke(bytes32 schema,bytes32 uuid,uint256 nonce)';
 export const ATTEST_PRIMARY_TYPE = 'Attest';
 export const REVOKE_PRIMARY_TYPE = 'Revoke';
 export const ATTEST_TYPE: TypedData[] = [
-  { name: 'recipient', type: 'address' },
   { name: 'schema', type: 'bytes32' },
+  { name: 'recipient', type: 'address' },
   { name: 'expirationTime', type: 'uint32' },
   { name: 'revocable', type: 'bool' },
   { name: 'refUUID', type: 'bytes32' },
@@ -26,15 +31,14 @@ export const ATTEST_TYPE: TypedData[] = [
   { name: 'nonce', type: 'uint256' }
 ];
 export const REVOKE_TYPE: TypedData[] = [
+  { name: 'schema', type: 'bytes32' },
   { name: 'uuid', type: 'bytes32' },
   { name: 'nonce', type: 'uint256' }
 ];
-export const EIP712_DOMAIN = 'EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)';
-export const EIP712_NAME = 'EAS';
 
 export type EIP712AttestationParams = EIP712Params & {
-  recipient: string;
   schema: string;
+  recipient: string;
   expirationTime: number;
   revocable: boolean;
   refUUID: string;

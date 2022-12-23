@@ -47,8 +47,8 @@ describe('EAS API', () => {
     verifier = await Contracts.EIP712Verifier.deploy();
     easContract = await Contracts.EAS.deploy(registry.address, verifier.address);
 
-    offchainUtils = new OffchainUtils(verifier.address);
-    eip712Utils = new EIP712Utils(verifier.address);
+    offchainUtils = await OffchainUtils.fromVerifier(verifier);
+    eip712Utils = await EIP712Utils.fromVerifier(verifier);
   });
 
   interface Options {
@@ -98,15 +98,17 @@ describe('EAS API', () => {
         let uuid: string;
 
         beforeEach(async () => {
-          const res = await easContract.attest(
-            recipient.address,
-            schemaId,
-            NO_EXPIRATION,
-            true,
-            ZERO_BYTES32,
-            ZERO_BYTES,
-            0
-          );
+          const res = await easContract.attest({
+            schema: schemaId,
+            data: {
+              recipient: recipient.address,
+              expirationTime: NO_EXPIRATION,
+              revocable: true,
+              refUUID: ZERO_BYTES32,
+              data: ZERO_BYTES,
+              value: 0
+            }
+          });
 
           uuid = await getUUIDFromAttestTx(res);
         });
@@ -139,8 +141,8 @@ describe('EAS API', () => {
       for (const signatureType of [SignatureType.Direct, SignatureType.Delegated, SignatureType.Offchain]) {
         context(`via ${signatureType} attestation`, () => {
           const expectAttestation = async (
-            recipient: string,
             schema: string,
+            recipient: string,
             expirationTime: number,
             revocable: boolean,
             refUUID: string,
@@ -154,8 +156,8 @@ describe('EAS API', () => {
             switch (signatureType) {
               case SignatureType.Direct: {
                 uuid = await eas.connect(txSender).attest({
-                  recipient,
                   schema,
+                  recipient,
                   data,
                   expirationTime,
                   revocable,
@@ -169,8 +171,8 @@ describe('EAS API', () => {
               case SignatureType.Delegated: {
                 const request = await eip712Utils.signDelegatedAttestation(
                   txSender,
-                  recipient,
                   schema,
+                  recipient,
                   expirationTime,
                   revocable,
                   refUUID,
@@ -252,28 +254,28 @@ describe('EAS API', () => {
               });
 
               it('should allow attestation to an empty recipient', async () => {
-                await expectAttestation(ZERO_ADDRESS, schemaId, expirationTime, revocable, ZERO_BYTES32, data);
+                await expectAttestation(schemaId, ZERO_ADDRESS, expirationTime, revocable, ZERO_BYTES32, data);
               });
 
               it('should allow self attestations', async () => {
-                await expectAttestation(sender.address, schemaId, expirationTime, revocable, ZERO_BYTES32, data, {
+                await expectAttestation(schemaId, sender.address, expirationTime, revocable, ZERO_BYTES32, data, {
                   from: sender
                 });
               });
 
               it('should allow multiple attestations', async () => {
-                await expectAttestation(recipient.address, schemaId, expirationTime, revocable, ZERO_BYTES32, data);
-                await expectAttestation(recipient2.address, schemaId, expirationTime, revocable, ZERO_BYTES32, data);
+                await expectAttestation(schemaId, recipient.address, expirationTime, revocable, ZERO_BYTES32, data);
+                await expectAttestation(schemaId, recipient2.address, expirationTime, revocable, ZERO_BYTES32, data);
               });
 
               it('should allow attestation without expiration time', async () => {
-                await expectAttestation(recipient.address, schemaId, NO_EXPIRATION, revocable, ZERO_BYTES32, data);
+                await expectAttestation(schemaId, recipient.address, NO_EXPIRATION, revocable, ZERO_BYTES32, data);
               });
 
               it('should allow attestation without any data', async () => {
                 await expectAttestation(
-                  recipient.address,
                   schemaId,
+                  recipient.address,
                   expirationTime,
                   revocable,
                   ZERO_BYTES32,
@@ -290,7 +292,7 @@ describe('EAS API', () => {
                   expirationTime
                 });
 
-                await expectAttestation(recipient.address, schemaId, expirationTime, revocable, uuid, data);
+                await expectAttestation(schemaId, recipient.address, expirationTime, revocable, uuid, data);
               });
 
               if (signatureType === SignatureType.Offchain) {
@@ -340,13 +342,13 @@ describe('EAS API', () => {
       });
 
       for (const signatureType of [SignatureType.Direct, SignatureType.Delegated]) {
-        context(`via ${signatureType} attestation`, () => {
+        context(`via ${signatureType} revocation`, () => {
           const expectRevocation = async (uuid: string, options?: Options) => {
             const txSender = options?.from || sender;
 
             switch (signatureType) {
               case SignatureType.Direct: {
-                await eas.connect(txSender).revoke({ uuid });
+                await eas.connect(txSender).revoke({ schema: schema1Id, uuid });
 
                 break;
               }
@@ -362,7 +364,7 @@ describe('EAS API', () => {
 
                 await eas
                   .connect(txSender)
-                  .revokeByDelegation({ uuid, attester: txSender.address, signature: request });
+                  .revokeByDelegation({ schema: schema1Id, uuid, revoker: txSender.address, signature: request });
 
                 break;
               }

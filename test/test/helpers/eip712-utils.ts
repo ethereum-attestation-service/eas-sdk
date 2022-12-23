@@ -3,42 +3,61 @@ import {
   EIP712AttestationParams,
   EIP712MessageTypes,
   EIP712Request,
-  EIP712RevocationParams
+  EIP712RevocationParams,
+  TypedDataConfig
 } from '../../../src/offchain/delegated';
-import { HARDHAT_CHAIN_ID } from '../../utils/Constants';
+import { EIP712Verifier } from '@ethereum-attestation-service/eas-contracts';
 import { TypedDataSigner } from '@ethersproject/abstract-signer';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { BigNumber } from 'ethers';
+import { network } from 'hardhat';
 
 export class EIP712Utils {
-  delegated: Delegated;
+  private verifier: EIP712Verifier;
+  private config?: TypedDataConfig;
 
-  constructor(contract: string | SignerWithAddress) {
-    const contractAddress = typeof contract === 'string' ? contract : contract.address;
+  private delegated?: Delegated;
 
-    const config = {
-      address: contractAddress,
-      version: '0.20',
-      chainId: HARDHAT_CHAIN_ID
+  private constructor(verifier: EIP712Verifier) {
+    this.verifier = verifier;
+  }
+
+  public async init() {
+    this.config = {
+      address: this.verifier.address,
+      version: await this.verifier.VERSION(),
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      chainId: network.config.chainId!
     };
 
-    this.delegated = new Delegated(config);
+    this.delegated = new Delegated(this.config);
+  }
+
+  public static async fromVerifier(verifier: EIP712Verifier) {
+    const utils = new EIP712Utils(verifier);
+    await utils.init();
+
+    return utils;
   }
 
   public async signDelegatedAttestation(
     attester: TypedDataSigner,
-    recipient: string | SignerWithAddress,
     schema: string,
+    recipient: string | SignerWithAddress,
     expirationTime: number,
     revocable: boolean,
     refUUID: string,
     data: string,
     nonce: BigNumber
   ): Promise<EIP712Request<EIP712MessageTypes, EIP712AttestationParams>> {
+    if (!this.delegated) {
+      throw new Error('EIP712Utils was not initialized');
+    }
+
     return this.delegated.signDelegatedAttestation(
       {
-        recipient: typeof recipient === 'string' ? recipient : recipient.address,
         schema,
+        recipient: typeof recipient === 'string' ? recipient : recipient.address,
         expirationTime,
         revocable,
         refUUID,
@@ -53,6 +72,10 @@ export class EIP712Utils {
     attester: string | SignerWithAddress,
     request: EIP712Request<EIP712MessageTypes, EIP712AttestationParams>
   ): Promise<boolean> {
+    if (!this.delegated) {
+      throw new Error('EIP712Utils was not initialized');
+    }
+
     return this.delegated.verifyDelegatedAttestationSignature(
       typeof attester === 'string' ? attester : attester.address,
       request
@@ -64,6 +87,10 @@ export class EIP712Utils {
     uuid: string,
     nonce: BigNumber
   ): Promise<EIP712Request<EIP712MessageTypes, EIP712RevocationParams>> {
+    if (!this.delegated) {
+      throw new Error('EIP712Utils was not initialized');
+    }
+
     return this.delegated.signDelegatedRevocation(
       {
         uuid,
@@ -77,6 +104,10 @@ export class EIP712Utils {
     attester: string | SignerWithAddress,
     request: EIP712Request<EIP712MessageTypes, EIP712RevocationParams>
   ): Promise<boolean> {
+    if (!this.delegated) {
+      throw new Error('EIP712Utils was not initialized');
+    }
+
     return this.delegated.verifyDelegatedRevocationSignature(
       typeof attester === 'string' ? attester : attester.address,
       request
