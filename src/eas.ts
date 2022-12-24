@@ -1,7 +1,7 @@
 import { Base, SignerOrProvider } from './base';
-import { getUUIDFromAttestTx, ZERO_BYTES32 } from './utils';
+import { getUUIDFromAttestTx, getUUIDFromMultiAttestTx, ZERO_BYTES32 } from './utils';
 import { EAS__factory, EAS as EASContract } from '@ethereum-attestation-service/eas-contracts';
-import { BigNumberish, BytesLike, ContractTransaction, Signature } from 'ethers';
+import { BigNumber, BigNumberish, ContractTransaction, Signature } from 'ethers';
 
 export interface Attestation {
   uuid: string;
@@ -18,9 +18,21 @@ export interface Attestation {
 
 export const NO_EXPIRATION = 0;
 
+export interface GetAttestationParams {
+  uuid: string;
+}
+
+export interface IsAttestationValidParams {
+  uuid: string;
+}
+
+export interface IsAttestationRevokedParams {
+  uuid: string;
+}
+
 export interface AttestationRequestData {
   recipient: string;
-  data: BytesLike;
+  data: string;
   expirationTime?: number;
   revocable?: boolean;
   refUUID?: string;
@@ -34,6 +46,16 @@ export interface AttestationRequest {
 
 export interface DelegatedAttestationRequest extends AttestationRequest {
   signature: Signature;
+  attester: string;
+}
+
+export interface MultiAttestationRequest {
+  schema: string;
+  data: AttestationRequestData[];
+}
+
+export interface MultiDelegatedAttestationRequest extends MultiAttestationRequest {
+  signatures: Signature[];
   attester: string;
 }
 
@@ -52,21 +74,39 @@ export interface DelegatedRevocationRequest extends RevocationRequest {
   revoker: string;
 }
 
-export interface GetAttestationParams {
-  uuid: string;
+export interface MultiRevocationRequest {
+  schema: string;
+  data: RevocationRequestData[];
 }
 
-export interface IsAttestationValidParams {
-  uuid: string;
-}
-
-export interface IsAttestationRevokedParams {
-  uuid: string;
+export interface MultiDelegatedRevocationRequest extends MultiRevocationRequest {
+  signatures: Signature[];
+  revoker: string;
 }
 
 export class EAS extends Base<EASContract> {
   constructor(address: string, signerOrProvider?: SignerOrProvider) {
     super(new EAS__factory(), address, signerOrProvider);
+  }
+
+  // Returns an existing schema by attestation UUID
+  public async getAttestation({ uuid }: GetAttestationParams): Promise<Attestation> {
+    return this.contract.getAttestation(uuid);
+  }
+
+  // Returns whether an attestation is valid
+  public async isAttestationValid({ uuid }: IsAttestationValidParams): Promise<boolean> {
+    return this.contract.isAttestationValid(uuid);
+  }
+
+  // Returns whether an attestation has been revoked
+  public async isAttestationRevoked({ uuid }: IsAttestationRevokedParams): Promise<boolean> {
+    const attestation = await this.contract.getAttestation(uuid);
+    if (attestation.uuid === ZERO_BYTES32) {
+      throw new Error('Invalid attestation');
+    }
+
+    return attestation.revocationTime != 0;
   }
 
   // Attests to a specific schema
@@ -107,14 +147,62 @@ export class EAS extends Base<EASContract> {
       },
       { value }
     );
-    const receipt = await res.wait();
 
-    const event = receipt.events?.find((e) => e.event === 'Attested');
-    if (!event) {
-      throw new Error('Unable to process attestation event');
-    }
+    return getUUIDFromAttestTx(res);
+  }
 
-    return event.args?.uuid;
+  // Multi-attests to multiple schemas
+  public async multiAttest(requests: MultiAttestationRequest[]): Promise<string[]> {
+    const multiAttestationRequests = requests.map((r) => ({
+      schema: r.schema,
+      data: r.data.map((d) => ({
+        recipient: d.recipient,
+        expirationTime: d.expirationTime ?? NO_EXPIRATION,
+        revocable: d.revocable ?? true,
+        refUUID: d.refUUID ?? ZERO_BYTES32,
+        data: d.data ?? ZERO_BYTES32,
+        value: d.value ?? 0
+      }))
+    }));
+
+    const requestedValue = multiAttestationRequests.reduce((res, { data }) => {
+      const total = data.reduce((res, r) => res.add(r.value), BigNumber.from(0));
+      return res.add(total);
+    }, BigNumber.from(0));
+
+    const res = await this.contract.multiAttest(multiAttestationRequests, {
+      value: requestedValue
+    });
+
+    return getUUIDFromMultiAttestTx(res);
+  }
+
+  // Multi-attests to multiple schemas via an EIP712 delegation requests
+  public async multiAttestByDelegation(requests: MultiDelegatedAttestationRequest[]): Promise<string[]> {
+    const multiAttestationRequests = requests.map((r) => ({
+      schema: r.schema,
+      data: r.data.map((d) => ({
+        recipient: d.recipient,
+        expirationTime: d.expirationTime ?? NO_EXPIRATION,
+        revocable: d.revocable ?? true,
+        refUUID: d.refUUID ?? ZERO_BYTES32,
+        data: d.data ?? ZERO_BYTES32,
+        value: d.value ?? 0
+      })),
+      signatures: r.signatures,
+      attester: r.attester
+    }));
+
+    const requestedValue = multiAttestationRequests.reduce((res, { data }) => {
+      const total = data.reduce((res, r) => res.add(r.value), BigNumber.from(0));
+      return res.add(total);
+    }, BigNumber.from(0));
+
+    const res = await this.contract.multiAttestByDelegation(multiAttestationRequests, {
+      value: requestedValue
+    });
+
+    return getUUIDFromMultiAttestTx(res);
   }
 
   // Revokes an existing attestation
@@ -143,23 +231,45 @@ export class EAS extends Base<EASContract> {
     );
   }
 
-  // Returns an existing schema by attestation UUID
-  public async getAttestation({ uuid }: GetAttestationParams): Promise<Attestation> {
-    return this.contract.getAttestation(uuid);
+  // Multi-revokes multiple attestations
+  public async multiRevoke(requests: MultiRevocationRequest[]): Promise<ContractTransaction> {
+    const multiRevocationRequests = requests.map((r) => ({
+      schema: r.schema,
+      data: r.data.map((d) => ({
+        uuid: d.uuid,
+        value: d.value ?? 0
+      }))
+    }));
+
+    const requestedValue = multiRevocationRequests.reduce((res, { data }) => {
+      const total = data.reduce((res, r) => res.add(r.value), BigNumber.from(0));
+      return res.add(total);
+    }, BigNumber.from(0));
+
+    return this.contract.multiRevoke(multiRevocationRequests, {
+      value: requestedValue
+    });
   }
 
-  // Returns whether an attestation is valid
-  public async isAttestationValid({ uuid }: IsAttestationValidParams): Promise<boolean> {
-    return this.contract.isAttestationValid(uuid);
-  }
+  // Multi-revokes multiple attestations via an EIP712 delegation requests
+  public async multiRevokeByDelegation(requests: MultiDelegatedRevocationRequest[]): Promise<ContractTransaction> {
+    const multiRevocationRequests = requests.map((r) => ({
+      schema: r.schema,
+      data: r.data.map((d) => ({
+        uuid: d.uuid,
+        value: d.value ?? 0
+      })),
+      signatures: r.signatures,
+      revoker: r.revoker
+    }));
 
-  // Returns whether an attestation has been revoked
-  public async isAttestationRevoked({ uuid }: IsAttestationRevokedParams): Promise<boolean> {
-    const attestation = await this.contract.getAttestation(uuid);
-    if (attestation.uuid === ZERO_BYTES32) {
-      throw new Error('Invalid attestation');
-    }
+    const requestedValue = multiRevocationRequests.reduce((res, { data }) => {
+      const total = data.reduce((res, r) => res.add(r.value), BigNumber.from(0));
+      return res.add(total);
+    }, BigNumber.from(0));
 
-    return attestation.revocationTime != 0;
+    return this.contract.multiRevokeByDelegation(multiRevocationRequests, {
+      value: requestedValue
+    });
   }
 }

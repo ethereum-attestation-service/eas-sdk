@@ -9,7 +9,7 @@ import {
 import { EIP712Verifier } from '@ethereum-attestation-service/eas-contracts';
 import { TypedDataSigner } from '@ethersproject/abstract-signer';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
-import { BigNumber } from 'ethers';
+import { BigNumber, BytesLike } from 'ethers';
 import { network } from 'hardhat';
 
 export class EIP712Utils {
@@ -47,7 +47,7 @@ export class EIP712Utils {
     expirationTime: number,
     revocable: boolean,
     refUUID: string,
-    data: string,
+    data: BytesLike,
     nonce: BigNumber
   ): Promise<EIP712Request<EIP712MessageTypes, EIP712AttestationParams>> {
     if (!this.delegated) {
@@ -61,7 +61,7 @@ export class EIP712Utils {
         expirationTime,
         revocable,
         refUUID,
-        data: Buffer.from(data.slice(2), 'hex'),
+        data: Buffer.isBuffer(data) ? data : Buffer.from((data as string).slice(2), 'hex'),
         nonce: nonce.toNumber()
       },
       attester
