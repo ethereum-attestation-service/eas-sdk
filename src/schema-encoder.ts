@@ -5,8 +5,7 @@ import { MultihashDigest } from 'multiformats/types/src/cid';
 
 const { FunctionFragment, defaultAbiCoder, isBytesLike, formatBytes32String } = utils;
 
-export type SchemaValue = string | boolean | BigNumber;
-
+export type SchemaValue = string | boolean | number | BigNumber;
 export type SchemaItem = {
   name: string;
   type: string;
@@ -44,8 +43,7 @@ export class SchemaEncoder {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  public encodeData(params: any[]) {
+  public encodeData(params: ReadonlyArray<SchemaItem>) {
     if (params.length !== this.schema.length) {
       throw new Error('Invalid number or values');
     }
@@ -53,7 +51,15 @@ export class SchemaEncoder {
     const data = [];
 
     for (const [index, schemaItem] of this.schema.entries()) {
-      const value = params[index];
+      const { type, name, value } = params[index];
+
+      if (type !== schemaItem.type && !(type === 'ipfsHash' && schemaItem.type === 'bytes32')) {
+        throw new Error(`Incompatible param type: ${type}`);
+      }
+
+      if (name !== schemaItem.name) {
+        throw new Error(`Incompatible param name: ${name}`);
+      }
 
       data.push(
         schemaItem.type === 'bytes32' && schemaItem.name === 'ipfsHash'
