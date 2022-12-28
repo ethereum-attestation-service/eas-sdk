@@ -16,7 +16,7 @@ import {
 } from '../../../src/offchain/delegated';
 import { getOffchainUUID } from '../../../src/utils';
 import { ZERO_BYTES, ZERO_BYTES32 } from '../../utils/Constants';
-import { EIP712Utils } from './EIP712Utils';
+import { EIP712Utils } from './eip712-utils2';
 import { OffchainUtils } from './offchain-utils';
 import { latest } from './time';
 import { EIP712Verifier } from '@ethereum-attestation-service/eas-contracts';

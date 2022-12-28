@@ -5,7 +5,7 @@ import Contracts from '../components/Contracts';
 import { ZERO_ADDRESS, ZERO_BYTES, ZERO_BYTES32 } from '../utils/Constants';
 import chai from './helpers/chai';
 import { expectAttestation, expectMultiAttestations, expectMultiRevocations, expectRevocation } from './helpers/eas';
-import { EIP712Utils } from './helpers/EIP712Utils';
+import { EIP712Utils } from './helpers/eip712-utils2';
 import { OffchainUtils } from './helpers/offchain-utils';
 import { duration, latest } from './helpers/time';
 import { createWallet, Wallet } from './helpers/wallet';
