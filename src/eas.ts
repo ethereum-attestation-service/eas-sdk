@@ -1,5 +1,5 @@
 import { Base, SignerOrProvider } from './base';
-import { getUUIDFromAttestTx, getUUIDFromMultiAttestTx, ZERO_BYTES32 } from './utils';
+import { getUUIDFromAttestTx, getUUIDsFromMultiAttestTx, ZERO_BYTES32 } from './utils';
 import { EAS__factory, EAS as EASContract } from '@ethereum-attestation-service/eas-contracts';
 import { BigNumber, BigNumberish, ContractTransaction, Signature } from 'ethers';
 
@@ -174,7 +174,7 @@ export class EAS extends Base<EASContract> {
       value: requestedValue
     });
 
-    return getUUIDFromMultiAttestTx(res);
+    return getUUIDsFromMultiAttestTx(res);
   }
 
   // Multi-attests to multiple schemas via an EIP712 delegation requests
@@ -202,7 +202,7 @@ export class EAS extends Base<EASContract> {
       value: requestedValue
     });
 
-    return getUUIDFromMultiAttestTx(res);
+    return getUUIDsFromMultiAttestTx(res);
   }
 
   // Revokes an existing attestation

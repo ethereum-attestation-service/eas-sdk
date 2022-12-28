@@ -70,7 +70,7 @@ class EAS extends base_1.Base {
         const res = await this.contract.multiAttest(multiAttestationRequests, {
             value: requestedValue
         });
-        return (0, utils_1.getUUIDFromMultiAttestTx)(res);
+        return (0, utils_1.getUUIDsFromMultiAttestTx)(res);
     }
     // Multi-attests to multiple schemas via an EIP712 delegation requests
     async multiAttestByDelegation(requests) {
@@ -94,7 +94,7 @@ class EAS extends base_1.Base {
         const res = await this.contract.multiAttestByDelegation(multiAttestationRequests, {
             value: requestedValue
         });
-        return (0, utils_1.getUUIDFromMultiAttestTx)(res);
+        return (0, utils_1.getUUIDsFromMultiAttestTx)(res);
     }
     // Revokes an existing attestation
     async revoke({ schema, data: { uuid, value = 0 } }) {

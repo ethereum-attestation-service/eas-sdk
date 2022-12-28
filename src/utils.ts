@@ -50,7 +50,7 @@ export const getUUIDFromAttestTx = async (res: Promise<ContractTransaction> | Co
   return event.args?.uuid;
 };
 
-export const getUUIDFromMultiAttestTx = async (res: Promise<ContractTransaction> | ContractTransaction) => {
+export const getUUIDsFromMultiAttestTx = async (res: Promise<ContractTransaction> | ContractTransaction) => {
   const receipt = await (await res).wait();
   const events = receipt.events?.filter((e) => e.event === 'Attested');
   if (!events || events?.length === 0) {

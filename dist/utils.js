@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getUUIDFromMultiAttestTx = exports.getUUIDFromAttestTx = exports.getOffchainUUID = exports.getUUID = exports.getSchemaUUID = exports.ZERO_BYTES32 = exports.ZERO_BYTES = exports.ZERO_ADDRESS = void 0;
+exports.getUUIDsFromMultiAttestTx = exports.getUUIDFromAttestTx = exports.getOffchainUUID = exports.getUUID = exports.getSchemaUUID = exports.ZERO_BYTES32 = exports.ZERO_BYTES = exports.ZERO_ADDRESS = void 0;
 const ethers_1 = require("ethers");
 const { solidityKeccak256, hexlify, toUtf8Bytes } = ethers_1.utils;
 const { AddressZero } = ethers_1.constants;
@@ -22,7 +22,7 @@ const getUUIDFromAttestTx = async (res) => {
     return event.args?.uuid;
 };
 exports.getUUIDFromAttestTx = getUUIDFromAttestTx;
-const getUUIDFromMultiAttestTx = async (res) => {
+const getUUIDsFromMultiAttestTx = async (res) => {
     const receipt = await (await res).wait();
     const events = receipt.events?.filter((e) => e.event === 'Attested');
     if (!events || events?.length === 0) {
@@ -30,5 +30,5 @@ const getUUIDFromMultiAttestTx = async (res) => {
     }
     return events.map((event) => event.args?.uuid);
 };
-exports.getUUIDFromMultiAttestTx = getUUIDFromMultiAttestTx;
+exports.getUUIDsFromMultiAttestTx = getUUIDsFromMultiAttestTx;
 //# sourceMappingURL=utils.js.map
