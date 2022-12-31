@@ -67,7 +67,7 @@ describe('ETHResolver', () => {
     const prevResolverBalance = await getBalance(resolver.address);
 
     const tip = 999;
-    const uuid = await eas.attest({ recipient: recipient.address, schema: schemaId, data, value: tip });
+    const uuid = await eas.attest({ schema: schemaId, data: { recipient: recipient.address, data, value: tip } });
     expect(await eas.isAttestationValid({ uuid })).to.be.true;
 
     expect(await getBalance(resolver.address)).to.equal(prevResolverBalance.sub(incentive).add(tip));
@@ -77,7 +77,7 @@ describe('ETHResolver', () => {
     let uuid: string;
 
     beforeEach(async () => {
-      uuid = await eas.attest({ recipient: recipient.address, schema: schemaId, data });
+      uuid = await eas.attest({ schema: schemaId, data: { recipient: recipient.address, data } });
       expect(await eas.isAttestationValid({ uuid })).to.be.true;
     });
 
@@ -85,7 +85,7 @@ describe('ETHResolver', () => {
       const prevResolverBalance = await getBalance(resolver.address);
 
       const value = incentive;
-      await eas.revoke({ uuid, value });
+      await eas.revoke({ schema: schemaId, data: { uuid, value } });
 
       expect(await eas.isAttestationRevoked({ uuid })).to.be.true;
 

@@ -1,14 +1,18 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Delegated = exports.EIP712_NAME = exports.EIP712_DOMAIN = exports.REVOKE_TYPE = exports.ATTEST_TYPE = exports.REVOKE_PRIMARY_TYPE = exports.ATTEST_PRIMARY_TYPE = void 0;
+exports.Delegated = exports.REVOKE_TYPE = exports.ATTEST_TYPE = exports.REVOKE_PRIMARY_TYPE = exports.ATTEST_PRIMARY_TYPE = exports.REVOKE_TYPED_SIGNATURE = exports.ATTEST_TYPED_SIGNATURE = exports.EIP712_NAME = exports.EIP712_DOMAIN = void 0;
 const typed_data_handler_1 = require("./typed-data-handler");
 const ethers_1 = require("ethers");
 const { keccak256, toUtf8Bytes, defaultAbiCoder } = ethers_1.utils;
+exports.EIP712_DOMAIN = 'EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)';
+exports.EIP712_NAME = 'EAS';
+exports.ATTEST_TYPED_SIGNATURE = 'Attest(bytes32 schema,address recipient,uint32 expirationTime,bool revocable,bytes32 refUUID,bytes data,uint256 nonce)';
+exports.REVOKE_TYPED_SIGNATURE = 'Revoke(bytes32 schema,bytes32 uuid,uint256 nonce)';
 exports.ATTEST_PRIMARY_TYPE = 'Attest';
 exports.REVOKE_PRIMARY_TYPE = 'Revoke';
 exports.ATTEST_TYPE = [
-    { name: 'recipient', type: 'address' },
     { name: 'schema', type: 'bytes32' },
+    { name: 'recipient', type: 'address' },
     { name: 'expirationTime', type: 'uint32' },
     { name: 'revocable', type: 'bool' },
     { name: 'refUUID', type: 'bytes32' },
@@ -16,11 +20,10 @@ exports.ATTEST_TYPE = [
     { name: 'nonce', type: 'uint256' }
 ];
 exports.REVOKE_TYPE = [
+    { name: 'schema', type: 'bytes32' },
     { name: 'uuid', type: 'bytes32' },
     { name: 'nonce', type: 'uint256' }
 ];
-exports.EIP712_DOMAIN = 'EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)';
-exports.EIP712_NAME = 'EAS';
 class Delegated extends typed_data_handler_1.TypedDataHandler {
     constructor(config) {
         super(config);

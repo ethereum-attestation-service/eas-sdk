@@ -1,6 +1,6 @@
 import { Base, SignerOrProvider } from './base';
 import { EAS as EASContract } from '@ethereum-attestation-service/eas-contracts';
-import { BigNumberish, BytesLike, ContractTransaction, Signature } from 'ethers';
+import { BigNumberish, ContractTransaction, Signature } from 'ethers';
 export interface Attestation {
     uuid: string;
     schema: string;
@@ -14,29 +14,6 @@ export interface Attestation {
     data: string;
 }
 export declare const NO_EXPIRATION = 0;
-export interface AttestParams {
-    recipient: string;
-    schema: string;
-    data: BytesLike;
-    expirationTime?: number;
-    revocable?: boolean;
-    refUUID?: string;
-    value?: BigNumberish;
-}
-export interface AttestParamsByDelegation extends AttestParams {
-    attester: string;
-    signature: Signature;
-    value?: BigNumberish;
-}
-export interface RevokeParams {
-    uuid: string;
-    value?: BigNumberish;
-}
-export interface RevokeByDelegationParams extends RevokeParams {
-    attester: string;
-    signature: Signature;
-    value?: BigNumberish;
-}
 export interface GetAttestationParams {
     uuid: string;
 }
@@ -46,13 +23,61 @@ export interface IsAttestationValidParams {
 export interface IsAttestationRevokedParams {
     uuid: string;
 }
+export interface AttestationRequestData {
+    recipient: string;
+    data: string;
+    expirationTime?: number;
+    revocable?: boolean;
+    refUUID?: string;
+    value?: BigNumberish;
+}
+export interface AttestationRequest {
+    schema: string;
+    data: AttestationRequestData;
+}
+export interface DelegatedAttestationRequest extends AttestationRequest {
+    signature: Signature;
+    attester: string;
+}
+export interface MultiAttestationRequest {
+    schema: string;
+    data: AttestationRequestData[];
+}
+export interface MultiDelegatedAttestationRequest extends MultiAttestationRequest {
+    signatures: Signature[];
+    attester: string;
+}
+export interface RevocationRequestData {
+    uuid: string;
+    value?: BigNumberish;
+}
+export interface RevocationRequest {
+    schema: string;
+    data: RevocationRequestData;
+}
+export interface DelegatedRevocationRequest extends RevocationRequest {
+    signature: Signature;
+    revoker: string;
+}
+export interface MultiRevocationRequest {
+    schema: string;
+    data: RevocationRequestData[];
+}
+export interface MultiDelegatedRevocationRequest extends MultiRevocationRequest {
+    signatures: Signature[];
+    revoker: string;
+}
 export declare class EAS extends Base<EASContract> {
     constructor(address: string, signerOrProvider?: SignerOrProvider);
-    attest({ recipient, schema, data, expirationTime, revocable, refUUID, value }: AttestParams): Promise<string>;
-    attestByDelegation({ recipient, schema, data, attester, signature, expirationTime, revocable, refUUID, value }: AttestParamsByDelegation): Promise<string>;
-    revoke({ uuid, value }: RevokeParams): Promise<ContractTransaction>;
-    revokeByDelegation({ uuid, attester, signature, value }: RevokeByDelegationParams): Promise<ContractTransaction>;
     getAttestation({ uuid }: GetAttestationParams): Promise<Attestation>;
     isAttestationValid({ uuid }: IsAttestationValidParams): Promise<boolean>;
     isAttestationRevoked({ uuid }: IsAttestationRevokedParams): Promise<boolean>;
+    attest({ schema, data: { recipient, data, expirationTime, revocable, refUUID, value } }: AttestationRequest): Promise<string>;
+    attestByDelegation({ schema, data: { recipient, data, expirationTime, revocable, refUUID, value }, attester, signature }: DelegatedAttestationRequest): Promise<string>;
+    multiAttest(requests: MultiAttestationRequest[]): Promise<string[]>;
+    multiAttestByDelegation(requests: MultiDelegatedAttestationRequest[]): Promise<string[]>;
+    revoke({ schema, data: { uuid, value } }: RevocationRequest): Promise<ContractTransaction>;
+    revokeByDelegation({ schema, data: { uuid, value }, signature, revoker }: DelegatedRevocationRequest): Promise<ContractTransaction>;
+    multiRevoke(requests: MultiRevocationRequest[]): Promise<ContractTransaction>;
+    multiRevokeByDelegation(requests: MultiDelegatedRevocationRequest[]): Promise<ContractTransaction>;
 }

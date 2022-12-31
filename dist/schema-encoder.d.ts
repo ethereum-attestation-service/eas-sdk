@@ -1,5 +1,5 @@
 import { BigNumber, utils } from 'ethers';
-export type SchemaValue = string | boolean | BigNumber;
+export type SchemaValue = string | boolean | number | BigNumber;
 export type SchemaItem = {
     name: string;
     type: string;
@@ -8,7 +8,7 @@ export type SchemaItem = {
 export declare class SchemaEncoder {
     schema: SchemaItem[];
     constructor(schema: string);
-    encodeData(params: any[]): string;
+    encodeData(params: ReadonlyArray<SchemaItem>): string;
     decodeData(data: string): utils.Result;
     isEncodedDataValid(data: string): boolean;
     static isCID(cid: string): boolean;

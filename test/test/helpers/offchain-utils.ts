@@ -5,22 +5,27 @@ import {
   Offchain,
   OffchainAttestationParams,
   SignedOffchainAttestation,
+  TypedDataConfig,
   TypedDataSigner
 } from '../../../src/offchain/offchain';
-import { HARDHAT_CHAIN_ID } from '../../utils/Constants';
+import { EIP712Verifier } from '@ethereum-attestation-service/eas-contracts';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
+import { network } from 'hardhat';
 
 export class OffchainUtils extends Offchain {
-  public constructor(contract: string | SignerWithAddress) {
-    const contractAddress = typeof contract === 'string' ? contract : contract.address;
+  public constructor(config: TypedDataConfig) {
+    super(config);
+  }
 
+  public static async fromVerifier(verifier: EIP712Verifier) {
     const config = {
-      address: contractAddress,
-      version: '0.19',
-      chainId: HARDHAT_CHAIN_ID
+      address: verifier.address,
+      version: await verifier.VERSION(),
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      chainId: network.config.chainId!
     };
 
-    super(config);
+    return new OffchainUtils(config);
   }
 
   public async signAttestation(

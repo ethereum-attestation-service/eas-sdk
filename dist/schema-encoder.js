@@ -27,14 +27,19 @@ class SchemaEncoder {
             });
         }
     }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     encodeData(params) {
         if (params.length !== this.schema.length) {
             throw new Error('Invalid number or values');
         }
         const data = [];
         for (const [index, schemaItem] of this.schema.entries()) {
-            const value = params[index];
+            const { type, name, value } = params[index];
+            if (type !== schemaItem.type && !(type === 'ipfsHash' && schemaItem.type === 'bytes32')) {
+                throw new Error(`Incompatible param type: ${type}`);
+            }
+            if (name !== schemaItem.name) {
+                throw new Error(`Incompatible param name: ${name}`);
+            }
             data.push(schemaItem.type === 'bytes32' && schemaItem.name === 'ipfsHash'
                 ? SchemaEncoder.decodeIpfsValue(value)
                 : schemaItem.type === 'bytes32' && typeof value === 'string' && !isBytesLike(value)

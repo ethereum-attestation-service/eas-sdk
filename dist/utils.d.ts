@@ -6,3 +6,4 @@ export declare const getSchemaUUID: (schema: string, resolverAddress: string, re
 export declare const getUUID: (schema: string, recipient: string, attester: string, time: number, expirationTime: number, revocable: boolean, refUUID: string, data: string, bump: number) => string;
 export declare const getOffchainUUID: (schema: string, recipient: string, time: number, expirationTime: number, revocable: boolean, refUUID: string, data: string) => string;
 export declare const getUUIDFromAttestTx: (res: Promise<ContractTransaction> | ContractTransaction) => Promise<any>;
+export declare const getUUIDsFromMultiAttestTx: (res: Promise<ContractTransaction> | ContractTransaction) => Promise<any[]>;
