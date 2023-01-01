@@ -1,6 +1,6 @@
 import { Base, SignerOrProvider } from './base';
 import { EAS as EASContract } from '@ethereum-attestation-service/eas-contracts';
-import { BigNumberish, ContractTransaction, Signature } from 'ethers';
+import { BigNumber, BigNumberish, ContractTransaction, Signature } from 'ethers';
 export interface Attestation {
     uuid: string;
     schema: string;
@@ -80,4 +80,8 @@ export declare class EAS extends Base<EASContract> {
     revokeByDelegation({ schema, data: { uuid, value }, signature, revoker }: DelegatedRevocationRequest): Promise<ContractTransaction>;
     multiRevoke(requests: MultiRevocationRequest[]): Promise<ContractTransaction>;
     multiRevokeByDelegation(requests: MultiDelegatedRevocationRequest[]): Promise<ContractTransaction>;
+    getDomainSeparator(): Promise<string>;
+    getNonce(address: string): Promise<BigNumber>;
+    getAttestTypeHash(): Promise<string>;
+    getRevokeTypeHash(): Promise<string>;
 }

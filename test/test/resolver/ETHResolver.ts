@@ -5,7 +5,6 @@ import { ETHResolver } from '../../typechain-types';
 import { createWallet } from '../helpers/wallet';
 import {
   EAS as EASContract,
-  EIP712Verifier,
   SchemaRegistry as SchemaRegistryContract
 } from '@ethereum-attestation-service/eas-contracts';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
@@ -23,7 +22,6 @@ describe('ETHResolver', () => {
   let sender: Wallet;
 
   let registry: SchemaRegistryContract;
-  let verifier: EIP712Verifier;
   let easContract: EASContract;
   let resolver: ETHResolver;
 
@@ -46,8 +44,7 @@ describe('ETHResolver', () => {
     sender = await createWallet();
 
     registry = await Contracts.SchemaRegistry.deploy();
-    verifier = await Contracts.EIP712Verifier.deploy();
-    easContract = await Contracts.EAS.deploy(registry.address, verifier.address);
+    easContract = await Contracts.EAS.deploy(registry.address);
 
     resolver = await Contracts.ETHResolver.deploy(easContract.address, incentive);
     expect(await resolver.isPayable()).to.be.true;

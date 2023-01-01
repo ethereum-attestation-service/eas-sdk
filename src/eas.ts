@@ -272,4 +272,24 @@ export class EAS extends Base<EASContract> {
       value: requestedValue
     });
   }
+
+  // Returns the domain separator used in the encoding of the signatures for attest, and revoke.
+  public async getDomainSeparator(): Promise<string> {
+    return this.contract.getDomainSeparator();
+  }
+
+  // Returns the current nonce per-account.
+  public async getNonce(address: string): Promise<BigNumber> {
+    return this.contract.getNonce(address);
+  }
+
+  // Returns the EIP712 type hash for the attest function.
+  public async getAttestTypeHash(): Promise<string> {
+    return this.contract.getAttestTypeHash();
+  }
+
+  // Returns the EIP712 type hash for the revoke function.
+  public async getRevokeTypeHash(): Promise<string> {
+    return this.contract.getRevokeTypeHash();
+  }
 }

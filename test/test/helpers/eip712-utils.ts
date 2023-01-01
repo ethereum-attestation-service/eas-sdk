@@ -6,19 +6,19 @@ import {
   EIP712RevocationParams,
   TypedDataConfig
 } from '../../../src/offchain/delegated';
-import { EIP712Verifier } from '@ethereum-attestation-service/eas-contracts';
+import { EAS } from '@ethereum-attestation-service/eas-contracts';
 import { TypedDataSigner } from '@ethersproject/abstract-signer';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { BigNumber, BytesLike } from 'ethers';
 import { network } from 'hardhat';
 
 export class EIP712Utils {
-  private verifier: EIP712Verifier;
+  private verifier: EAS;
   private config?: TypedDataConfig;
 
   private delegated?: Delegated;
 
-  private constructor(verifier: EIP712Verifier) {
+  private constructor(verifier: EAS) {
     this.verifier = verifier;
   }
 
@@ -33,7 +33,7 @@ export class EIP712Utils {
     this.delegated = new Delegated(this.config);
   }
 
-  public static async fromVerifier(verifier: EIP712Verifier) {
+  public static async fromVerifier(verifier: EAS) {
     const utils = new EIP712Utils(verifier);
     await utils.init();
 
