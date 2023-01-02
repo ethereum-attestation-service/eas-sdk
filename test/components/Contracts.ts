@@ -1,9 +1,5 @@
 import { ETHResolver__factory } from '../typechain-types';
-import {
-  EAS__factory,
-  EIP712Verifier__factory,
-  SchemaRegistry__factory
-} from '@ethereum-attestation-service/eas-contracts';
+import { EAS__factory, SchemaRegistry__factory } from '@ethereum-attestation-service/eas-contracts';
 import { ContractFactory, Signer } from 'ethers';
 import { ethers } from 'hardhat';
 
@@ -70,7 +66,6 @@ const getContracts = (signer?: Signer) => ({
   connect: (signer: Signer) => getContracts(signer),
 
   EAS: deployOrAttach('EAS', EAS__factory, signer),
-  EIP712Verifier: deployOrAttach('EIP712Verifier', EIP712Verifier__factory, signer),
   SchemaRegistry: deployOrAttach('SchemaRegistry', SchemaRegistry__factory, signer),
 
   ETHResolver: deployOrAttach('ETHResolver', ETHResolver__factory, signer)

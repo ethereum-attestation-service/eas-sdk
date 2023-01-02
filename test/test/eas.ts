@@ -5,13 +5,12 @@ import Contracts from '../components/Contracts';
 import { ZERO_ADDRESS, ZERO_BYTES, ZERO_BYTES32 } from '../utils/Constants';
 import chai from './helpers/chai';
 import { expectAttestation, expectMultiAttestations, expectMultiRevocations, expectRevocation } from './helpers/eas';
-import { EIP712Utils } from './helpers/eip712-utils2';
+import { EIP712Utils } from './helpers/eip712-utils';
 import { OffchainUtils } from './helpers/offchain-utils';
 import { duration, latest } from './helpers/time';
 import { createWallet, Wallet } from './helpers/wallet';
 import {
   EAS as EASContract,
-  EIP712Verifier,
   SchemaRegistry as SchemaRegistryContract
 } from '@ethereum-attestation-service/eas-contracts';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
@@ -26,7 +25,6 @@ describe('EAS API', () => {
   let recipient2: SignerWithAddress;
 
   let registry: SchemaRegistryContract;
-  let verifier: EIP712Verifier;
   let easContract: EASContract;
   let eip712Utils: EIP712Utils;
   let offchainUtils: OffchainUtils;
@@ -44,11 +42,10 @@ describe('EAS API', () => {
     sender = await createWallet();
 
     registry = await Contracts.SchemaRegistry.deploy();
-    verifier = await Contracts.EIP712Verifier.deploy();
-    easContract = await Contracts.EAS.deploy(registry.address, verifier.address);
+    easContract = await Contracts.EAS.deploy(registry.address);
 
-    offchainUtils = await OffchainUtils.fromVerifier(verifier);
-    eip712Utils = await EIP712Utils.fromVerifier(verifier);
+    offchainUtils = await OffchainUtils.fromVerifier(easContract);
+    eip712Utils = await EIP712Utils.fromVerifier(easContract);
   });
 
   enum SignatureType {
@@ -156,7 +153,7 @@ describe('EAS API', () => {
 
               it('should allow attestation to an empty recipient', async () => {
                 await expectAttestation(
-                  { eas, verifier, eip712Utils, offchainUtils },
+                  { eas, eip712Utils, offchainUtils },
                   schema1Id,
                   {
                     recipient: ZERO_ADDRESS,
@@ -170,7 +167,7 @@ describe('EAS API', () => {
 
               it('should allow self attestations', async () => {
                 await expectAttestation(
-                  { eas, verifier, eip712Utils, offchainUtils },
+                  { eas, eip712Utils, offchainUtils },
                   schema1Id,
                   { recipient: sender.address, expirationTime, revocable, data },
                   { signatureType, from: sender }
@@ -179,14 +176,14 @@ describe('EAS API', () => {
 
               it('should allow multiple attestations', async () => {
                 await expectAttestation(
-                  { eas, verifier, eip712Utils, offchainUtils },
+                  { eas, eip712Utils, offchainUtils },
                   schema1Id,
                   { recipient: recipient.address, expirationTime, revocable, data },
                   { signatureType, from: sender }
                 );
 
                 await expectAttestation(
-                  { eas, verifier, eip712Utils, offchainUtils },
+                  { eas, eip712Utils, offchainUtils },
                   schema1Id,
                   { recipient: recipient2.address, expirationTime, revocable, data },
                   { signatureType, from: sender }
@@ -196,7 +193,7 @@ describe('EAS API', () => {
               if (signatureType !== SignatureType.Offchain) {
                 it('should allow multi attestations', async () => {
                   await expectMultiAttestations(
-                    { eas, verifier, eip712Utils },
+                    { eas, eip712Utils },
                     [
                       {
                         schema: schema1Id,
@@ -220,7 +217,7 @@ describe('EAS API', () => {
 
               it('should allow attestation without expiration time', async () => {
                 await expectAttestation(
-                  { eas, verifier, eip712Utils, offchainUtils },
+                  { eas, eip712Utils, offchainUtils },
                   schema1Id,
                   { recipient: recipient.address, expirationTime: NO_EXPIRATION, revocable, data },
                   { signatureType, from: sender }
@@ -229,7 +226,7 @@ describe('EAS API', () => {
 
               it('should allow attestation without any data', async () => {
                 await expectAttestation(
-                  { eas, verifier, eip712Utils, offchainUtils },
+                  { eas, eip712Utils, offchainUtils },
                   schema1Id,
                   { recipient: recipient.address, expirationTime, revocable, data: ZERO_BYTES },
                   { signatureType, from: sender }
@@ -243,7 +240,7 @@ describe('EAS API', () => {
                 });
 
                 await expectAttestation(
-                  { eas, verifier, eip712Utils, offchainUtils },
+                  { eas, eip712Utils, offchainUtils },
                   schema1Id,
                   { recipient: recipient.address, expirationTime, revocable, refUUID: uuid, data },
                   { signatureType, from: sender }
@@ -316,27 +313,17 @@ describe('EAS API', () => {
 
           it('should allow to revoke existing attestations', async () => {
             for (const uuid of uuids1) {
-              await expectRevocation(
-                { eas, verifier, eip712Utils },
-                schema1Id,
-                { uuid },
-                { signatureType, from: sender }
-              );
+              await expectRevocation({ eas, eip712Utils }, schema1Id, { uuid }, { signatureType, from: sender });
             }
 
             for (const uuid of uuids2) {
-              await expectRevocation(
-                { eas, verifier, eip712Utils },
-                schema2Id,
-                { uuid },
-                { signatureType, from: sender }
-              );
+              await expectRevocation({ eas, eip712Utils }, schema2Id, { uuid }, { signatureType, from: sender });
             }
           });
 
           it('should allow to multi-revoke existing attestations', async () => {
             await expectMultiRevocations(
-              { eas, verifier, eip712Utils },
+              { eas, eip712Utils },
               [
                 {
                   schema: schema1Id,

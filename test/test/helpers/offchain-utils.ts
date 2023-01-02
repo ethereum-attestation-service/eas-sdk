@@ -8,7 +8,7 @@ import {
   TypedDataConfig,
   TypedDataSigner
 } from '../../../src/offchain/offchain';
-import { EIP712Verifier } from '@ethereum-attestation-service/eas-contracts';
+import { EAS } from '@ethereum-attestation-service/eas-contracts';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { network } from 'hardhat';
 
@@ -17,7 +17,7 @@ export class OffchainUtils extends Offchain {
     super(config);
   }
 
-  public static async fromVerifier(verifier: EIP712Verifier) {
+  public static async fromVerifier(verifier: EAS) {
     const config = {
       address: verifier.address,
       version: await verifier.VERSION(),
