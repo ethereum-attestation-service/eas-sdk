@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getUUIDsFromMultiAttestTx = exports.getUUIDFromAttestTx = exports.getOffchainUUID = exports.getUUID = exports.getSchemaUUID = exports.ZERO_BYTES32 = exports.ZERO_BYTES = exports.ZERO_ADDRESS = void 0;
+exports.getUUIDsFromAttestEvents = exports.getUUIDsFromMultiAttestTx = exports.getUUIDFromAttestTx = exports.getOffchainUUID = exports.getUUID = exports.getSchemaUUID = exports.ZERO_BYTES32 = exports.ZERO_BYTES = exports.ZERO_ADDRESS = void 0;
 const ethers_1 = require("ethers");
 const { solidityKeccak256, hexlify, toUtf8Bytes } = ethers_1.utils;
 const { AddressZero } = ethers_1.constants;
@@ -31,4 +31,15 @@ const getUUIDsFromMultiAttestTx = async (res) => {
     return events.map((event) => event.args?.uuid);
 };
 exports.getUUIDsFromMultiAttestTx = getUUIDsFromMultiAttestTx;
+const getUUIDsFromAttestEvents = async (events) => {
+    if (!events) {
+        return [];
+    }
+    const attestedEvents = events.filter((e) => e.event === 'Attested');
+    if (attestedEvents.length === 0) {
+        throw new Error('Unable to process attestation events');
+    }
+    return attestedEvents.map((event) => event.args?.uuid);
+};
+exports.getUUIDsFromAttestEvents = getUUIDsFromAttestEvents;
 //# sourceMappingURL=utils.js.map

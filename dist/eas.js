@@ -27,15 +27,15 @@ class EAS extends base_1.Base {
         return attestation.revocationTime != 0;
     }
     // Attests to a specific schema
-    async attest({ schema, data: { recipient, data, expirationTime = exports.NO_EXPIRATION, revocable = true, refUUID = utils_1.ZERO_BYTES32, value = 0 } }) {
-        const res = await this.contract.attest({ schema, data: { recipient, expirationTime, revocable, refUUID, data, value } }, {
+    attest({ schema, data: { recipient, data, expirationTime = exports.NO_EXPIRATION, revocable = true, refUUID = utils_1.ZERO_BYTES32, value = 0 } }) {
+        const tx = this.contract.attest({ schema, data: { recipient, expirationTime, revocable, refUUID, data, value } }, {
             value
         });
-        return (0, utils_1.getUUIDFromAttestTx)(res);
+        return new base_1.Transaction(tx, async (receipt) => (await (0, utils_1.getUUIDsFromAttestEvents)(receipt.events))[0]);
     }
     // Attests to a specific schema via an EIP712 delegation request
-    async attestByDelegation({ schema, data: { recipient, data, expirationTime = exports.NO_EXPIRATION, revocable = true, refUUID = utils_1.ZERO_BYTES32, value = 0 }, attester, signature }) {
-        const res = await this.contract.attestByDelegation({
+    attestByDelegation({ schema, data: { recipient, data, expirationTime = exports.NO_EXPIRATION, revocable = true, refUUID = utils_1.ZERO_BYTES32, value = 0 }, attester, signature }) {
+        const tx = this.contract.attestByDelegation({
             schema,
             data: {
                 recipient,
@@ -48,10 +48,10 @@ class EAS extends base_1.Base {
             signature,
             attester
         }, { value });
-        return (0, utils_1.getUUIDFromAttestTx)(res);
+        return new base_1.Transaction(tx, async (receipt) => (await (0, utils_1.getUUIDsFromAttestEvents)(receipt.events))[0]);
     }
     // Multi-attests to multiple schemas
-    async multiAttest(requests) {
+    multiAttest(requests) {
         const multiAttestationRequests = requests.map((r) => ({
             schema: r.schema,
             data: r.data.map((d) => ({
@@ -67,13 +67,13 @@ class EAS extends base_1.Base {
             const total = data.reduce((res, r) => res.add(r.value), ethers_1.BigNumber.from(0));
             return res.add(total);
         }, ethers_1.BigNumber.from(0));
-        const res = await this.contract.multiAttest(multiAttestationRequests, {
+        const tx = this.contract.multiAttest(multiAttestationRequests, {
             value: requestedValue
         });
-        return (0, utils_1.getUUIDsFromMultiAttestTx)(res);
+        return new base_1.Transaction(tx, async (receipt) => (0, utils_1.getUUIDsFromAttestEvents)(receipt.events));
     }
     // Multi-attests to multiple schemas via an EIP712 delegation requests
-    async multiAttestByDelegation(requests) {
+    multiAttestByDelegation(requests) {
         const multiAttestationRequests = requests.map((r) => ({
             schema: r.schema,
             data: r.data.map((d) => ({
@@ -91,18 +91,19 @@ class EAS extends base_1.Base {
             const total = data.reduce((res, r) => res.add(r.value), ethers_1.BigNumber.from(0));
             return res.add(total);
         }, ethers_1.BigNumber.from(0));
-        const res = await this.contract.multiAttestByDelegation(multiAttestationRequests, {
+        const tx = this.contract.multiAttestByDelegation(multiAttestationRequests, {
             value: requestedValue
         });
-        return (0, utils_1.getUUIDsFromMultiAttestTx)(res);
+        return new base_1.Transaction(tx, async (receipt) => (0, utils_1.getUUIDsFromAttestEvents)(receipt.events));
     }
     // Revokes an existing attestation
-    async revoke({ schema, data: { uuid, value = 0 } }) {
-        return this.contract.revoke({ schema, data: { uuid, value } }, { value });
+    revoke({ schema, data: { uuid, value = 0 } }) {
+        const tx = this.contract.revoke({ schema, data: { uuid, value } }, { value });
+        return new base_1.Transaction(tx, async () => { });
     }
     // Revokes an existing attestation an EIP712 delegation request
-    async revokeByDelegation({ schema, data: { uuid, value = 0 }, signature, revoker }) {
-        return this.contract.revokeByDelegation({
+    revokeByDelegation({ schema, data: { uuid, value = 0 }, signature, revoker }) {
+        const tx = this.contract.revokeByDelegation({
             schema,
             data: {
                 uuid,
@@ -111,9 +112,10 @@ class EAS extends base_1.Base {
             signature,
             revoker
         }, { value });
+        return new base_1.Transaction(tx, async () => { });
     }
     // Multi-revokes multiple attestations
-    async multiRevoke(requests) {
+    multiRevoke(requests) {
         const multiRevocationRequests = requests.map((r) => ({
             schema: r.schema,
             data: r.data.map((d) => ({
@@ -125,12 +127,13 @@ class EAS extends base_1.Base {
             const total = data.reduce((res, r) => res.add(r.value), ethers_1.BigNumber.from(0));
             return res.add(total);
         }, ethers_1.BigNumber.from(0));
-        return this.contract.multiRevoke(multiRevocationRequests, {
+        const tx = this.contract.multiRevoke(multiRevocationRequests, {
             value: requestedValue
         });
+        return new base_1.Transaction(tx, async () => { });
     }
     // Multi-revokes multiple attestations via an EIP712 delegation requests
-    async multiRevokeByDelegation(requests) {
+    multiRevokeByDelegation(requests) {
         const multiRevocationRequests = requests.map((r) => ({
             schema: r.schema,
             data: r.data.map((d) => ({
@@ -144,9 +147,10 @@ class EAS extends base_1.Base {
             const total = data.reduce((res, r) => res.add(r.value), ethers_1.BigNumber.from(0));
             return res.add(total);
         }, ethers_1.BigNumber.from(0));
-        return this.contract.multiRevokeByDelegation(multiRevocationRequests, {
+        const tx = this.contract.multiRevokeByDelegation(multiRevocationRequests, {
             value: requestedValue
         });
+        return new base_1.Transaction(tx, async () => { });
     }
     // Returns the domain separator used in the encoding of the signatures for attest, and revoke.
     async getDomainSeparator() {

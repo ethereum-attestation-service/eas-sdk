@@ -1,9 +1,10 @@
-import { Base, SignerOrProvider } from './base';
+import { Base, SignerOrProvider, Transaction } from './base';
 import { getSchemaUUID, ZERO_ADDRESS, ZERO_BYTES32 } from './utils';
 import {
   SchemaRegistry__factory,
   SchemaRegistry as SchemaRegistryContract
 } from '@ethereum-attestation-service/eas-contracts';
+import { ContractReceipt } from 'ethers';
 
 export declare type SchemaRecord = {
   uuid: string;
@@ -28,15 +29,14 @@ export class SchemaRegistry extends Base<SchemaRegistryContract> {
   }
 
   // Registers a new schema and returns its UUID
-  public async register({
+  public register({
     schema,
     resolverAddress = ZERO_ADDRESS,
     revocable = true
-  }: RegisterSchemaParams): Promise<string> {
-    const res = await this.contract.register(schema, resolverAddress, revocable);
-    await res.wait();
+  }: RegisterSchemaParams): Transaction<string> {
+    const tx = this.contract.register(schema, resolverAddress, revocable);
 
-    return getSchemaUUID(schema, resolverAddress, revocable);
+    return new Transaction(tx, async (_receipt: ContractReceipt) => getSchemaUUID(schema, resolverAddress, revocable));
   }
 
   // Returns an existing schema by a schema UUID

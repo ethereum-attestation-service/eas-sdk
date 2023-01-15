@@ -57,14 +57,16 @@ describe('ETHResolver', () => {
     schemaRegistry = new SchemaRegistry(registry.address);
     schemaRegistry.connect(sender);
 
-    schemaId = await schemaRegistry.register({ schema, resolverAddress: resolver.address });
+    schemaId = await schemaRegistry.register({ schema, resolverAddress: resolver.address }).wait();
   });
 
   it('should allow sending ETH during attestations', async () => {
     const prevResolverBalance = await getBalance(resolver.address);
 
     const tip = 999;
-    const uuid = await eas.attest({ schema: schemaId, data: { recipient: recipient.address, data, value: tip } });
+    const uuid = await eas
+      .attest({ schema: schemaId, data: { recipient: recipient.address, data, value: tip } })
+      .wait();
     expect(await eas.isAttestationValid({ uuid })).to.be.true;
 
     expect(await getBalance(resolver.address)).to.equal(prevResolverBalance.sub(incentive).add(tip));
@@ -74,7 +76,7 @@ describe('ETHResolver', () => {
     let uuid: string;
 
     beforeEach(async () => {
-      uuid = await eas.attest({ schema: schemaId, data: { recipient: recipient.address, data } });
+      uuid = await eas.attest({ schema: schemaId, data: { recipient: recipient.address, data } }).wait();
       expect(await eas.isAttestationValid({ uuid })).to.be.true;
     });
 
@@ -82,7 +84,7 @@ describe('ETHResolver', () => {
       const prevResolverBalance = await getBalance(resolver.address);
 
       const value = incentive;
-      await eas.revoke({ schema: schemaId, data: { uuid, value } });
+      await eas.revoke({ schema: schemaId, data: { uuid, value } }).wait();
 
       expect(await eas.isAttestationRevoked({ uuid })).to.be.true;
 

@@ -80,7 +80,7 @@ describe('EAS API', () => {
       });
 
       it('should not be able to register new schema', async () => {
-        expect(schemaRegistry.register({ schema, resolverAddress: ZERO_ADDRESS })).to.be.rejectedWith(
+        expect(schemaRegistry.register({ schema, resolverAddress: ZERO_ADDRESS }).wait()).to.be.rejectedWith(
           'Error: sending a transaction requires a signer'
         );
       });
@@ -139,8 +139,8 @@ describe('EAS API', () => {
               let schema2Id: string;
 
               beforeEach(async () => {
-                schema1Id = await schemaRegistry.register({ schema: schema1, revocable });
-                schema2Id = await schemaRegistry.register({ schema: schema2, revocable });
+                schema1Id = await schemaRegistry.register({ schema: schema1, revocable }).wait();
+                schema2Id = await schemaRegistry.register({ schema: schema2, revocable }).wait();
               });
 
               it('should be able to query the schema registry', async () => {
@@ -234,10 +234,12 @@ describe('EAS API', () => {
               });
 
               it('should store referenced attestation', async () => {
-                const uuid = await eas.attest({
-                  schema: schema1Id,
-                  data: { recipient: recipient.address, expirationTime, revocable, data }
-                });
+                const uuid = await (
+                  await eas.attest({
+                    schema: schema1Id,
+                    data: { recipient: recipient.address, expirationTime, revocable, data }
+                  })
+                ).wait();
 
                 await expectAttestation(
                   { eas, eip712Utils, offchainUtils },
@@ -294,20 +296,20 @@ describe('EAS API', () => {
       const data = '0x1234';
 
       beforeEach(async () => {
-        schema1Id = await schemaRegistry.register({ schema: schema1 });
-        schema2Id = await schemaRegistry.register({ schema: schema2 });
+        schema1Id = await schemaRegistry.register({ schema: schema1 }).wait();
+        schema2Id = await schemaRegistry.register({ schema: schema2 }).wait();
       });
 
       for (const signatureType of [SignatureType.Direct, SignatureType.Delegated]) {
         context(`via ${signatureType} revocation`, () => {
           beforeEach(async () => {
             uuids1 = [
-              await eas.attest({ schema: schema1Id, data: { recipient: recipient.address, data } }),
-              await eas.attest({ schema: schema1Id, data: { recipient: recipient.address, data } })
+              await eas.attest({ schema: schema1Id, data: { recipient: recipient.address, data } }).wait(),
+              await eas.attest({ schema: schema1Id, data: { recipient: recipient.address, data } }).wait()
             ];
             uuids2 = [
-              await eas.attest({ schema: schema2Id, data: { recipient: recipient.address, data } }),
-              await eas.attest({ schema: schema2Id, data: { recipient: recipient.address, data } })
+              await eas.attest({ schema: schema2Id, data: { recipient: recipient.address, data } }).wait(),
+              await eas.attest({ schema: schema2Id, data: { recipient: recipient.address, data } }).wait()
             ];
           });
 
