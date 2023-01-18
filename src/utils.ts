@@ -1,4 +1,4 @@
-import { constants, ContractTransaction, utils } from 'ethers';
+import { constants, ContractTransaction, Event, utils } from 'ethers';
 
 const { solidityKeccak256, hexlify, toUtf8Bytes } = utils;
 
@@ -58,4 +58,17 @@ export const getUUIDsFromMultiAttestTx = async (res: Promise<ContractTransaction
   }
 
   return events.map((event) => event.args?.uuid);
+};
+
+export const getUUIDsFromAttestEvents = async (events?: Event[]): Promise<string[]> => {
+  if (!events) {
+    return [];
+  }
+
+  const attestedEvents = events.filter((e) => e.event === 'Attested');
+  if (attestedEvents.length === 0) {
+    throw new Error('Unable to process attestation events');
+  }
+
+  return attestedEvents.map((event) => event.args?.uuid);
 };

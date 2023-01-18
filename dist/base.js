@@ -1,6 +1,19 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Base = void 0;
+exports.Base = exports.Transaction = void 0;
+class Transaction {
+    tx;
+    waitCallback;
+    constructor(tx, waitCallback) {
+        this.tx = tx;
+        this.waitCallback = waitCallback;
+    }
+    async wait(confirmations) {
+        const receipt = await (await this.tx).wait(confirmations);
+        return this.waitCallback(receipt);
+    }
+}
+exports.Transaction = Transaction;
 class Base {
     contract;
     constructor(factory, address, signerOrProvider) {
