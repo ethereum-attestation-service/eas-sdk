@@ -9,7 +9,7 @@ import {
 import { EAS } from '@ethereum-attestation-service/eas-contracts';
 import { TypedDataSigner } from '@ethersproject/abstract-signer';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
-import { BigNumber, BytesLike } from 'ethers';
+import { BigNumber, BigNumberish, BytesLike } from 'ethers';
 import { network } from 'hardhat';
 
 export class EIP712Utils {
@@ -44,7 +44,7 @@ export class EIP712Utils {
     attester: TypedDataSigner,
     schema: string,
     recipient: string | SignerWithAddress,
-    expirationTime: number,
+    expirationTime: BigNumberish,
     revocable: boolean,
     refUUID: string,
     data: BytesLike,

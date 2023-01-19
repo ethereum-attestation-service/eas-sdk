@@ -7,9 +7,9 @@ export interface Attestation {
   uuid: string;
   schema: string;
   refUUID: string;
-  time: number;
-  expirationTime: number;
-  revocationTime: number;
+  time: BigNumberish;
+  expirationTime: BigNumberish;
+  revocationTime: BigNumberish;
   recipient: string;
   revocable: boolean;
   attester: string;
@@ -33,7 +33,7 @@ export interface IsAttestationRevokedParams {
 export interface AttestationRequestData {
   recipient: string;
   data: string;
-  expirationTime?: number;
+  expirationTime?: BigNumberish;
   revocable?: boolean;
   refUUID?: string;
   value?: BigNumberish;
@@ -106,7 +106,7 @@ export class EAS extends Base<EASContract> {
       throw new Error('Invalid attestation');
     }
 
-    return attestation.revocationTime != 0;
+    return !attestation.revocationTime.isZero();
   }
 
   // Attests to a specific schema

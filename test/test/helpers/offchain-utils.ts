@@ -10,6 +10,7 @@ import {
 } from '../../../src/offchain/offchain';
 import { EAS } from '@ethereum-attestation-service/eas-contracts';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
+import { BigNumberish } from 'ethers';
 import { network } from 'hardhat';
 
 export class OffchainUtils extends Offchain {
@@ -32,8 +33,8 @@ export class OffchainUtils extends Offchain {
     attester: TypedDataSigner,
     schema: string,
     recipient: string | SignerWithAddress,
-    time: number,
-    expirationTime: number,
+    time: BigNumberish,
+    expirationTime: BigNumberish,
     revocable: boolean,
     refUUID: string,
     data: string,
