@@ -5,9 +5,9 @@ export interface Attestation {
     uuid: string;
     schema: string;
     refUUID: string;
-    time: number;
-    expirationTime: number;
-    revocationTime: number;
+    time: BigNumberish;
+    expirationTime: BigNumberish;
+    revocationTime: BigNumberish;
     recipient: string;
     revocable: boolean;
     attester: string;
@@ -26,7 +26,7 @@ export interface IsAttestationRevokedParams {
 export interface AttestationRequestData {
     recipient: string;
     data: string;
-    expirationTime?: number;
+    expirationTime?: BigNumberish;
     revocable?: boolean;
     refUUID?: string;
     value?: BigNumberish;

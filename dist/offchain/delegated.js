@@ -6,14 +6,14 @@ const ethers_1 = require("ethers");
 const { keccak256, toUtf8Bytes, defaultAbiCoder } = ethers_1.utils;
 exports.EIP712_DOMAIN = 'EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)';
 exports.EIP712_NAME = 'EAS';
-exports.ATTEST_TYPED_SIGNATURE = 'Attest(bytes32 schema,address recipient,uint32 expirationTime,bool revocable,bytes32 refUUID,bytes data,uint256 nonce)';
+exports.ATTEST_TYPED_SIGNATURE = 'Attest(bytes32 schema,address recipient,uint64 expirationTime,bool revocable,bytes32 refUUID,bytes data,uint256 nonce)';
 exports.REVOKE_TYPED_SIGNATURE = 'Revoke(bytes32 schema,bytes32 uuid,uint256 nonce)';
 exports.ATTEST_PRIMARY_TYPE = 'Attest';
 exports.REVOKE_PRIMARY_TYPE = 'Revoke';
 exports.ATTEST_TYPE = [
     { name: 'schema', type: 'bytes32' },
     { name: 'recipient', type: 'address' },
-    { name: 'expirationTime', type: 'uint32' },
+    { name: 'expirationTime', type: 'uint64' },
     { name: 'revocable', type: 'bool' },
     { name: 'refUUID', type: 'bytes32' },
     { name: 'data', type: 'bytes' },
@@ -45,7 +45,7 @@ class Delegated extends typed_data_handler_1.TypedDataHandler {
             verifyingContract: this.config.address
         };
     }
-    async signDelegatedAttestation(params, signer) {
+    signDelegatedAttestation(params, signer) {
         return this.signTypedDataRequest(params, {
             domain: this.getDomainTypedData(),
             primaryType: exports.ATTEST_PRIMARY_TYPE,
@@ -55,10 +55,10 @@ class Delegated extends typed_data_handler_1.TypedDataHandler {
             }
         }, signer);
     }
-    async verifyDelegatedAttestationSignature(attester, request) {
+    verifyDelegatedAttestationSignature(attester, request) {
         return this.verifyTypedDataRequestSignature(attester, request);
     }
-    async signDelegatedRevocation(params, signer) {
+    signDelegatedRevocation(params, signer) {
         return this.signTypedDataRequest(params, {
             domain: this.getDomainTypedData(),
             primaryType: exports.REVOKE_PRIMARY_TYPE,
@@ -68,7 +68,7 @@ class Delegated extends typed_data_handler_1.TypedDataHandler {
             }
         }, signer);
     }
-    async verifyDelegatedRevocationSignature(attester, request) {
+    verifyDelegatedRevocationSignature(attester, request) {
         return this.verifyTypedDataRequestSignature(attester, request);
     }
 }

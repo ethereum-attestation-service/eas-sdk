@@ -9,9 +9,9 @@ exports.ZERO_BYTES = '0x';
 exports.ZERO_BYTES32 = '0x0000000000000000000000000000000000000000000000000000000000000000';
 const getSchemaUUID = (schema, resolverAddress, revocable) => solidityKeccak256(['string', 'address', 'bool'], [schema, resolverAddress, revocable]);
 exports.getSchemaUUID = getSchemaUUID;
-const getUUID = (schema, recipient, attester, time, expirationTime, revocable, refUUID, data, bump) => solidityKeccak256(['bytes', 'address', 'address', 'uint32', 'uint32', 'bool', 'bytes32', 'bytes', 'uint32'], [hexlify(toUtf8Bytes(schema)), recipient, attester, time, expirationTime, revocable, refUUID, data, bump]);
+const getUUID = (schema, recipient, attester, time, expirationTime, revocable, refUUID, data, bump) => solidityKeccak256(['bytes', 'address', 'address', 'uint64', 'uint64', 'bool', 'bytes32', 'bytes', 'uint32'], [hexlify(toUtf8Bytes(schema)), recipient, attester, time, expirationTime, revocable, refUUID, data, bump]);
 exports.getUUID = getUUID;
-const getOffchainUUID = (schema, recipient, time, expirationTime, revocable, refUUID, data) => solidityKeccak256(['bytes', 'address', 'address', 'uint32', 'uint32', 'bool', 'bytes32', 'bytes', 'uint32'], [hexlify(toUtf8Bytes(schema)), recipient, exports.ZERO_ADDRESS, time, expirationTime, revocable, refUUID, data, 0]);
+const getOffchainUUID = (schema, recipient, time, expirationTime, revocable, refUUID, data) => solidityKeccak256(['bytes', 'address', 'address', 'uint64', 'uint64', 'bool', 'bytes32', 'bytes', 'uint32'], [hexlify(toUtf8Bytes(schema)), recipient, exports.ZERO_ADDRESS, time, expirationTime, revocable, refUUID, data, 0]);
 exports.getOffchainUUID = getOffchainUUID;
 const getUUIDFromAttestTx = async (res) => {
     const receipt = await (await res).wait();
@@ -31,7 +31,7 @@ const getUUIDsFromMultiAttestTx = async (res) => {
     return events.map((event) => event.args?.uuid);
 };
 exports.getUUIDsFromMultiAttestTx = getUUIDsFromMultiAttestTx;
-const getUUIDsFromAttestEvents = async (events) => {
+const getUUIDsFromAttestEvents = (events) => {
     if (!events) {
         return [];
     }

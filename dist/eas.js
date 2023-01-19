@@ -11,11 +11,11 @@ class EAS extends base_1.Base {
         super(new eas_contracts_1.EAS__factory(), address, signerOrProvider);
     }
     // Returns an existing schema by attestation UUID
-    async getAttestation({ uuid }) {
+    getAttestation({ uuid }) {
         return this.contract.getAttestation(uuid);
     }
     // Returns whether an attestation is valid
-    async isAttestationValid({ uuid }) {
+    isAttestationValid({ uuid }) {
         return this.contract.isAttestationValid(uuid);
     }
     // Returns whether an attestation has been revoked
@@ -24,7 +24,7 @@ class EAS extends base_1.Base {
         if (attestation.uuid === utils_1.ZERO_BYTES32) {
             throw new Error('Invalid attestation');
         }
-        return attestation.revocationTime != 0;
+        return !attestation.revocationTime.isZero();
     }
     // Attests to a specific schema
     attest({ schema, data: { recipient, data, expirationTime = exports.NO_EXPIRATION, revocable = true, refUUID = utils_1.ZERO_BYTES32, value = 0 } }) {
@@ -70,6 +70,7 @@ class EAS extends base_1.Base {
         const tx = this.contract.multiAttest(multiAttestationRequests, {
             value: requestedValue
         });
+        // eslint-disable-next-line require-await
         return new base_1.Transaction(tx, async (receipt) => (0, utils_1.getUUIDsFromAttestEvents)(receipt.events));
     }
     // Multi-attests to multiple schemas via an EIP712 delegation requests
@@ -94,6 +95,7 @@ class EAS extends base_1.Base {
         const tx = this.contract.multiAttestByDelegation(multiAttestationRequests, {
             value: requestedValue
         });
+        // eslint-disable-next-line require-await
         return new base_1.Transaction(tx, async (receipt) => (0, utils_1.getUUIDsFromAttestEvents)(receipt.events));
     }
     // Revokes an existing attestation
@@ -153,19 +155,19 @@ class EAS extends base_1.Base {
         return new base_1.Transaction(tx, async () => { });
     }
     // Returns the domain separator used in the encoding of the signatures for attest, and revoke.
-    async getDomainSeparator() {
+    getDomainSeparator() {
         return this.contract.getDomainSeparator();
     }
     // Returns the current nonce per-account.
-    async getNonce(address) {
+    getNonce(address) {
         return this.contract.getNonce(address);
     }
     // Returns the EIP712 type hash for the attest function.
-    async getAttestTypeHash() {
+    getAttestTypeHash() {
         return this.contract.getAttestTypeHash();
     }
     // Returns the EIP712 type hash for the revoke function.
-    async getRevokeTypeHash() {
+    getRevokeTypeHash() {
         return this.contract.getRevokeTypeHash();
     }
 }
