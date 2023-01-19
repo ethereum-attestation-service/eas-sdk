@@ -77,7 +77,7 @@ describe('SchemaEncoder', () => {
       }
     ]) {
       context(schema, () => {
-        it('should properly construct a schema encoder', async () => {
+        it('should properly construct a schema encoder', () => {
           const schemaEncoder = new SchemaEncoder(schema);
           expect(schemaEncoder.schema).to.deep.equal(decodedSchema);
         });
@@ -91,7 +91,7 @@ describe('SchemaEncoder', () => {
       'bytes32 eventId,uint8 ticketType,ticketNum'
     ]) {
       context(schema, () => {
-        it('should throw', async () => {
+        it('should throw', () => {
           expect(() => new SchemaEncoder(schema)).to.throw(Error);
         });
       });
@@ -188,11 +188,11 @@ describe('SchemaEncoder', () => {
           context(`params ${JSON.stringify(params)}`, () => {
             let schemaEncoder: SchemaEncoder;
 
-            beforeEach(async () => {
+            beforeEach(() => {
               schemaEncoder = new SchemaEncoder(schema);
             });
 
-            it('should properly encode and decode data', async () => {
+            it('should properly encode and decode data', () => {
               const encoded = schemaEncoder.encodeData(params);
               expect(encoded).to.equal(
                 defaultAbiCoder.encode(
@@ -257,11 +257,11 @@ describe('SchemaEncoder', () => {
           context(`params ${JSON.stringify(params)}`, () => {
             let schemaEncoder: SchemaEncoder;
 
-            beforeEach(async () => {
+            beforeEach(() => {
               schemaEncoder = new SchemaEncoder(schema);
             });
 
-            it('should throw on invalid type', async () => {
+            it('should throw on invalid type', () => {
               expect(() => schemaEncoder.encodeData(params)).to.throw('Incompatible param type');
             });
           });
@@ -325,11 +325,11 @@ describe('SchemaEncoder', () => {
           context(`params ${JSON.stringify(params)}`, () => {
             let schemaEncoder: SchemaEncoder;
 
-            beforeEach(async () => {
+            beforeEach(() => {
               schemaEncoder = new SchemaEncoder(schema);
             });
 
-            it('should throw on invalid name', async () => {
+            it('should throw on invalid name', () => {
               expect(() => schemaEncoder.encodeData(params)).to.throw('Incompatible param name');
             });
           });
@@ -345,7 +345,7 @@ describe('SchemaEncoder', () => {
         'QmcRD4wkPPi6dig81r5sLj9Zm1gDCL4zgpEj9CfuRrGbzF'
       ]) {
         context(cid, () => {
-          it('should be valid', async () => {
+          it('should be valid', () => {
             expect(SchemaEncoder.isCID(cid)).to.be.true;
           });
         });
@@ -357,7 +357,7 @@ describe('SchemaEncoder', () => {
         'QaaRD4wkPPi6dig81r5sLj9Zm1gDCL4zgpEj9CfuRrGbzF'
       ]) {
         context(cid, () => {
-          it('should be invalid', async () => {
+          it('should be invalid', () => {
             expect(SchemaEncoder.isCID(cid)).to.be.false;
           });
         });

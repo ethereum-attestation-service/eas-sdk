@@ -40,7 +40,7 @@ export class EIP712Utils {
     return utils;
   }
 
-  public async signDelegatedAttestation(
+  public signDelegatedAttestation(
     attester: TypedDataSigner,
     schema: string,
     recipient: string | SignerWithAddress,
@@ -68,10 +68,10 @@ export class EIP712Utils {
     );
   }
 
-  public async verifyDelegatedAttestationSignature(
+  public verifyDelegatedAttestationSignature(
     attester: string | SignerWithAddress,
     request: EIP712Request<EIP712MessageTypes, EIP712AttestationParams>
-  ): Promise<boolean> {
+  ): boolean {
     if (!this.delegated) {
       throw new Error('EIP712Utils was not initialized');
     }
@@ -82,7 +82,7 @@ export class EIP712Utils {
     );
   }
 
-  public async signDelegatedRevocation(
+  public signDelegatedRevocation(
     attester: TypedDataSigner,
     schema: string,
     uuid: string,
@@ -102,10 +102,10 @@ export class EIP712Utils {
     );
   }
 
-  public async verifyDelegatedRevocationSignature(
+  public verifyDelegatedRevocationSignature(
     attester: string | SignerWithAddress,
     request: EIP712Request<EIP712MessageTypes, EIP712RevocationParams>
-  ): Promise<boolean> {
+  ): boolean {
     if (!this.delegated) {
       throw new Error('EIP712Utils was not initialized');
     }

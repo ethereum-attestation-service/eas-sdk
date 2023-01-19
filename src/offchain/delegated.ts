@@ -79,7 +79,7 @@ export class Delegated extends TypedDataHandler {
     };
   }
 
-  public async signDelegatedAttestation(
+  public signDelegatedAttestation(
     params: EIP712AttestationParams,
     signer: TypedDataSigner
   ): Promise<EIP712Request<EIP712MessageTypes, EIP712AttestationParams>> {
@@ -97,14 +97,14 @@ export class Delegated extends TypedDataHandler {
     );
   }
 
-  public async verifyDelegatedAttestationSignature(
+  public verifyDelegatedAttestationSignature(
     attester: string,
     request: EIP712Request<EIP712MessageTypes, EIP712AttestationParams>
-  ): Promise<boolean> {
+  ): boolean {
     return this.verifyTypedDataRequestSignature(attester, request);
   }
 
-  public async signDelegatedRevocation(
+  public signDelegatedRevocation(
     params: EIP712RevocationParams,
     signer: TypedDataSigner
   ): Promise<EIP712Request<EIP712MessageTypes, EIP712RevocationParams>> {
@@ -122,10 +122,10 @@ export class Delegated extends TypedDataHandler {
     );
   }
 
-  public async verifyDelegatedRevocationSignature(
+  public verifyDelegatedRevocationSignature(
     attester: string,
     request: EIP712Request<EIP712MessageTypes, EIP712RevocationParams>
-  ): Promise<boolean> {
+  ): boolean {
     return this.verifyTypedDataRequestSignature(attester, request);
   }
 }

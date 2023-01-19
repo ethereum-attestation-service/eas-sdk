@@ -29,7 +29,7 @@ export class OffchainUtils extends Offchain {
     return new OffchainUtils(config);
   }
 
-  public async signAttestation(
+  public signAttestation(
     attester: TypedDataSigner,
     schema: string,
     recipient: string | SignerWithAddress,
@@ -55,7 +55,7 @@ export class OffchainUtils extends Offchain {
     );
   }
 
-  public async verifyAttestation(attester: string, request: SignedOffchainAttestation): Promise<boolean> {
+  public verifyAttestation(attester: string, request: SignedOffchainAttestation): boolean {
     return this.verifyOffchainAttestationSignature(attester, request);
   }
 

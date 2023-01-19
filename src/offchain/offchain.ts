@@ -94,10 +94,7 @@ export class Offchain extends TypedDataHandler {
     };
   }
 
-  public async verifyOffchainAttestationSignature(
-    attester: string,
-    request: SignedOffchainAttestation
-  ): Promise<boolean> {
+  public verifyOffchainAttestationSignature(attester: string, request: SignedOffchainAttestation): boolean {
     return (
       request.uuid === Offchain.getOffchainUUID(request.message) &&
       this.verifyTypedDataRequestSignature(attester, request)

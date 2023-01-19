@@ -60,7 +60,7 @@ export const getUUIDsFromMultiAttestTx = async (res: Promise<ContractTransaction
   return events.map((event) => event.args?.uuid);
 };
 
-export const getUUIDsFromAttestEvents = async (events?: Event[]): Promise<string[]> => {
+export const getUUIDsFromAttestEvents = (events?: Event[]): string[] => {
   if (!events) {
     return [];
   }
