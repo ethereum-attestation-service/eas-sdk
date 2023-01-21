@@ -35,7 +35,7 @@ describe('utils', () => {
                       context(
                         `schema=${schema},recipient=${recipient},attester=${attester},time=${time},expirationTime=${expirationTime},revocable=${revocable},data=${data},bump=${bump}`,
                         () => {
-                          it('should properly derive uuid', async () => {
+                          it('should properly derive uuid', () => {
                             expect(
                               getUUID(schema, recipient, attester, time, expirationTime, revocable, refUUID, data, bump)
                             ).to.equal(
@@ -44,8 +44,8 @@ describe('utils', () => {
                                   'bytes',
                                   'address',
                                   'address',
-                                  'uint32',
-                                  'uint32',
+                                  'uint64',
+                                  'uint64',
                                   'bool',
                                   'bytes32',
                                   'bytes',
@@ -91,7 +91,7 @@ describe('utils', () => {
       ]) {
         for (const revocable of [true, false]) {
           context(`schema=${schema},resolver=${resolver}},revocable=${revocable}`, () => {
-            it('should properly derive uuid', async () => {
+            it('should properly derive uuid', () => {
               expect(getSchemaUUID(schema, resolver, revocable)).to.equal(
                 solidityKeccak256(['string', 'address', 'bool'], [schema, resolver, revocable])
               );

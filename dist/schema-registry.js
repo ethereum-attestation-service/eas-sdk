@@ -11,6 +11,7 @@ class SchemaRegistry extends base_1.Base {
     // Registers a new schema and returns its UUID
     register({ schema, resolverAddress = utils_1.ZERO_ADDRESS, revocable = true }) {
         const tx = this.contract.register(schema, resolverAddress, revocable);
+        // eslint-disable-next-line require-await
         return new base_1.Transaction(tx, async (_receipt) => (0, utils_1.getSchemaUUID)(schema, resolverAddress, revocable));
     }
     // Returns an existing schema by a schema UUID

@@ -9,8 +9,8 @@ exports.ATTESTATION_PRIMARY_TYPE = 'Attestation';
 exports.ATTESTATION_TYPE = [
     { name: 'schema', type: 'bytes32' },
     { name: 'recipient', type: 'address' },
-    { name: 'time', type: 'uint32' },
-    { name: 'expirationTime', type: 'uint32' },
+    { name: 'time', type: 'uint64' },
+    { name: 'expirationTime', type: 'uint64' },
     { name: 'revocable', type: 'bool' },
     { name: 'refUUID', type: 'bytes32' },
     { name: 'data', type: 'bytes' }
@@ -50,7 +50,7 @@ class Offchain extends typed_data_handler_1.TypedDataHandler {
             uuid
         };
     }
-    async verifyOffchainAttestationSignature(attester, request) {
+    verifyOffchainAttestationSignature(attester, request) {
         return (request.uuid === Offchain.getOffchainUUID(request.message) &&
             this.verifyTypedDataRequestSignature(attester, request));
     }

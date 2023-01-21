@@ -7,9 +7,9 @@ export interface Attestation {
   uuid: string;
   schema: string;
   refUUID: string;
-  time: number;
-  expirationTime: number;
-  revocationTime: number;
+  time: BigNumberish;
+  expirationTime: BigNumberish;
+  revocationTime: BigNumberish;
   recipient: string;
   revocable: boolean;
   attester: string;
@@ -33,7 +33,7 @@ export interface IsAttestationRevokedParams {
 export interface AttestationRequestData {
   recipient: string;
   data: string;
-  expirationTime?: number;
+  expirationTime?: BigNumberish;
   revocable?: boolean;
   refUUID?: string;
   value?: BigNumberish;
@@ -90,12 +90,12 @@ export class EAS extends Base<EASContract> {
   }
 
   // Returns an existing schema by attestation UUID
-  public async getAttestation({ uuid }: GetAttestationParams): Promise<Attestation> {
+  public getAttestation({ uuid }: GetAttestationParams): Promise<Attestation> {
     return this.contract.getAttestation(uuid);
   }
 
   // Returns whether an attestation is valid
-  public async isAttestationValid({ uuid }: IsAttestationValidParams): Promise<boolean> {
+  public isAttestationValid({ uuid }: IsAttestationValidParams): Promise<boolean> {
     return this.contract.isAttestationValid(uuid);
   }
 
@@ -106,7 +106,7 @@ export class EAS extends Base<EASContract> {
       throw new Error('Invalid attestation');
     }
 
-    return attestation.revocationTime != 0;
+    return !attestation.revocationTime.isZero();
   }
 
   // Attests to a specific schema
@@ -174,6 +174,7 @@ export class EAS extends Base<EASContract> {
       value: requestedValue
     });
 
+    // eslint-disable-next-line require-await
     return new Transaction(tx, async (receipt: ContractReceipt) => getUUIDsFromAttestEvents(receipt.events));
   }
 
@@ -202,6 +203,7 @@ export class EAS extends Base<EASContract> {
       value: requestedValue
     });
 
+    // eslint-disable-next-line require-await
     return new Transaction(tx, async (receipt: ContractReceipt) => getUUIDsFromAttestEvents(receipt.events));
   }
 
@@ -282,22 +284,22 @@ export class EAS extends Base<EASContract> {
   }
 
   // Returns the domain separator used in the encoding of the signatures for attest, and revoke.
-  public async getDomainSeparator(): Promise<string> {
+  public getDomainSeparator(): Promise<string> {
     return this.contract.getDomainSeparator();
   }
 
   // Returns the current nonce per-account.
-  public async getNonce(address: string): Promise<BigNumber> {
+  public getNonce(address: string): Promise<BigNumber> {
     return this.contract.getNonce(address);
   }
 
   // Returns the EIP712 type hash for the attest function.
-  public async getAttestTypeHash(): Promise<string> {
+  public getAttestTypeHash(): Promise<string> {
     return this.contract.getAttestTypeHash();
   }
 
   // Returns the EIP712 type hash for the revoke function.
-  public async getRevokeTypeHash(): Promise<string> {
+  public getRevokeTypeHash(): Promise<string> {
     return this.contract.getRevokeTypeHash();
   }
 }

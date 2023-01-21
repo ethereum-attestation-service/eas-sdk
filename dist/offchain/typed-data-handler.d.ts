@@ -44,5 +44,5 @@ export declare abstract class TypedDataHandler {
     abstract getDomainSeparator(): string;
     abstract getDomainTypedData(): DomainTypedData;
     signTypedDataRequest<T extends EIP712MessageTypes, P extends EIP712Params>(params: P, types: EIP712TypedData<T, P>, signer: TypedDataSigner): Promise<EIP712Request<T, P>>;
-    verifyTypedDataRequestSignature<T extends EIP712MessageTypes, P extends EIP712Params>(attester: string, request: EIP712Request<T, P>): Promise<boolean>;
+    verifyTypedDataRequestSignature<T extends EIP712MessageTypes, P extends EIP712Params>(attester: string, request: EIP712Request<T, P>): boolean;
 }

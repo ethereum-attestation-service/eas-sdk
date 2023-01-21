@@ -13,7 +13,7 @@ class TypedDataHandler {
         const rawSignature = await signer._signTypedData(types.domain, types.types, params);
         return { ...types, ...splitSignature(rawSignature) };
     }
-    async verifyTypedDataRequestSignature(attester, request) {
+    verifyTypedDataRequestSignature(attester, request) {
         if (attester === utils_1.ZERO_ADDRESS) {
             throw new Error('Invalid address');
         }

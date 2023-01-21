@@ -82,10 +82,10 @@ export abstract class TypedDataHandler {
     return { ...types, ...splitSignature(rawSignature) };
   }
 
-  public async verifyTypedDataRequestSignature<T extends EIP712MessageTypes, P extends EIP712Params>(
+  public verifyTypedDataRequestSignature<T extends EIP712MessageTypes, P extends EIP712Params>(
     attester: string,
     request: EIP712Request<T, P>
-  ): Promise<boolean> {
+  ): boolean {
     if (attester === ZERO_ADDRESS) {
       throw new Error('Invalid address');
     }

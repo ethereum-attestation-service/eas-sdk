@@ -55,7 +55,7 @@ describe('EAS API', () => {
   }
 
   context('with a provider', () => {
-    beforeEach(async () => {
+    beforeEach(() => {
       eas = new EAS(easContract.address, waffle.provider);
 
       expect(eas.contract.signer).to.be.null;
@@ -79,7 +79,7 @@ describe('EAS API', () => {
         expect((await schemaRegistry.getSchema({ uuid: schemaId })).uuid).to.equal(schemaId);
       });
 
-      it('should not be able to register new schema', async () => {
+      it('should not be able to register new schema', () => {
         expect(schemaRegistry.register({ schema, resolverAddress: ZERO_ADDRESS }).wait()).to.be.rejectedWith(
           'Error: sending a transaction requires a signer'
         );
@@ -108,7 +108,7 @@ describe('EAS API', () => {
           expect((await eas.getAttestation({ uuid })).uuid).to.equal(uuid);
         });
 
-        it('should not be able to make new attestations new schema', async () => {
+        it('should not be able to make new attestations new schema', () => {
           expect(eas.getAttestation({ uuid })).to.be.rejectedWith('Error: sending a transaction requires a signer');
         });
       });
@@ -116,7 +116,7 @@ describe('EAS API', () => {
   });
 
   context('with a signer', () => {
-    beforeEach(async () => {
+    beforeEach(() => {
       eas = new EAS(easContract.address, sender);
       schemaRegistry = new SchemaRegistry(registry.address, sender);
     });

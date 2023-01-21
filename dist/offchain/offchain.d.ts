@@ -1,5 +1,6 @@
 import { DomainTypedData, EIP712MessageTypes, EIP712Params, EIP712Request, TypedData, TypedDataConfig, TypedDataHandler } from './typed-data-handler';
 import { TypedDataSigner } from '@ethersproject/abstract-signer';
+import { BigNumberish } from 'ethers';
 export { EIP712Request, TypedDataConfig, EIP712MessageTypes } from './typed-data-handler';
 export { TypedDataSigner } from '@ethersproject/abstract-signer';
 export declare const ATTESTATION_PRIMARY_TYPE = "Attestation";
@@ -8,8 +9,8 @@ export declare const DOMAIN_NAME = "EAS Attestation";
 export type OffchainAttestationParams = {
     schema: string;
     recipient: string;
-    time: number;
-    expirationTime: number;
+    time: BigNumberish;
+    expirationTime: BigNumberish;
     revocable: boolean;
     refUUID: string;
     data: string;
@@ -22,6 +23,6 @@ export declare class Offchain extends TypedDataHandler {
     getDomainSeparator(): string;
     getDomainTypedData(): DomainTypedData;
     signOffchainAttestation(params: OffchainAttestationParams, signer: TypedDataSigner): Promise<SignedOffchainAttestation>;
-    verifyOffchainAttestationSignature(attester: string, request: SignedOffchainAttestation): Promise<boolean>;
+    verifyOffchainAttestationSignature(attester: string, request: SignedOffchainAttestation): boolean;
     static getOffchainUUID(params: OffchainAttestationParams): string;
 }

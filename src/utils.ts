@@ -1,4 +1,4 @@
-import { constants, ContractTransaction, Event, utils } from 'ethers';
+import { BigNumberish, constants, ContractTransaction, Event, utils } from 'ethers';
 
 const { solidityKeccak256, hexlify, toUtf8Bytes } = utils;
 
@@ -15,29 +15,29 @@ export const getUUID = (
   schema: string,
   recipient: string,
   attester: string,
-  time: number,
-  expirationTime: number,
+  time: BigNumberish,
+  expirationTime: BigNumberish,
   revocable: boolean,
   refUUID: string,
   data: string,
   bump: number
 ) =>
   solidityKeccak256(
-    ['bytes', 'address', 'address', 'uint32', 'uint32', 'bool', 'bytes32', 'bytes', 'uint32'],
+    ['bytes', 'address', 'address', 'uint64', 'uint64', 'bool', 'bytes32', 'bytes', 'uint32'],
     [hexlify(toUtf8Bytes(schema)), recipient, attester, time, expirationTime, revocable, refUUID, data, bump]
   );
 
 export const getOffchainUUID = (
   schema: string,
   recipient: string,
-  time: number,
-  expirationTime: number,
+  time: BigNumberish,
+  expirationTime: BigNumberish,
   revocable: boolean,
   refUUID: string,
   data: string
 ) =>
   solidityKeccak256(
-    ['bytes', 'address', 'address', 'uint32', 'uint32', 'bool', 'bytes32', 'bytes', 'uint32'],
+    ['bytes', 'address', 'address', 'uint64', 'uint64', 'bool', 'bytes32', 'bytes', 'uint32'],
     [hexlify(toUtf8Bytes(schema)), recipient, ZERO_ADDRESS, time, expirationTime, revocable, refUUID, data, 0]
   );
 
@@ -60,7 +60,7 @@ export const getUUIDsFromMultiAttestTx = async (res: Promise<ContractTransaction
   return events.map((event) => event.args?.uuid);
 };
 
-export const getUUIDsFromAttestEvents = async (events?: Event[]): Promise<string[]> => {
+export const getUUIDsFromAttestEvents = (events?: Event[]): string[] => {
   if (!events) {
     return [];
   }

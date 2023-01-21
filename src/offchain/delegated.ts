@@ -8,7 +8,7 @@ import {
   TypedDataHandler
 } from './typed-data-handler';
 import { TypedDataSigner } from '@ethersproject/abstract-signer';
-import { utils } from 'ethers';
+import { BigNumberish, utils } from 'ethers';
 
 const { keccak256, toUtf8Bytes, defaultAbiCoder } = utils;
 
@@ -17,14 +17,14 @@ export { EIP712MessageTypes, EIP712TypedData, EIP712Request, TypedDataConfig } f
 export const EIP712_DOMAIN = 'EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)';
 export const EIP712_NAME = 'EAS';
 export const ATTEST_TYPED_SIGNATURE =
-  'Attest(bytes32 schema,address recipient,uint32 expirationTime,bool revocable,bytes32 refUUID,bytes data,uint256 nonce)';
+  'Attest(bytes32 schema,address recipient,uint64 expirationTime,bool revocable,bytes32 refUUID,bytes data,uint256 nonce)';
 export const REVOKE_TYPED_SIGNATURE = 'Revoke(bytes32 schema,bytes32 uuid,uint256 nonce)';
 export const ATTEST_PRIMARY_TYPE = 'Attest';
 export const REVOKE_PRIMARY_TYPE = 'Revoke';
 export const ATTEST_TYPE: TypedData[] = [
   { name: 'schema', type: 'bytes32' },
   { name: 'recipient', type: 'address' },
-  { name: 'expirationTime', type: 'uint32' },
+  { name: 'expirationTime', type: 'uint64' },
   { name: 'revocable', type: 'bool' },
   { name: 'refUUID', type: 'bytes32' },
   { name: 'data', type: 'bytes' },
@@ -39,7 +39,7 @@ export const REVOKE_TYPE: TypedData[] = [
 export type EIP712AttestationParams = EIP712Params & {
   schema: string;
   recipient: string;
-  expirationTime: number;
+  expirationTime: BigNumberish;
   revocable: boolean;
   refUUID: string;
   data: Buffer;
@@ -79,7 +79,7 @@ export class Delegated extends TypedDataHandler {
     };
   }
 
-  public async signDelegatedAttestation(
+  public signDelegatedAttestation(
     params: EIP712AttestationParams,
     signer: TypedDataSigner
   ): Promise<EIP712Request<EIP712MessageTypes, EIP712AttestationParams>> {
@@ -97,14 +97,14 @@ export class Delegated extends TypedDataHandler {
     );
   }
 
-  public async verifyDelegatedAttestationSignature(
+  public verifyDelegatedAttestationSignature(
     attester: string,
     request: EIP712Request<EIP712MessageTypes, EIP712AttestationParams>
-  ): Promise<boolean> {
+  ): boolean {
     return this.verifyTypedDataRequestSignature(attester, request);
   }
 
-  public async signDelegatedRevocation(
+  public signDelegatedRevocation(
     params: EIP712RevocationParams,
     signer: TypedDataSigner
   ): Promise<EIP712Request<EIP712MessageTypes, EIP712RevocationParams>> {
@@ -122,10 +122,10 @@ export class Delegated extends TypedDataHandler {
     );
   }
 
-  public async verifyDelegatedRevocationSignature(
+  public verifyDelegatedRevocationSignature(
     attester: string,
     request: EIP712Request<EIP712MessageTypes, EIP712RevocationParams>
-  ): Promise<boolean> {
+  ): boolean {
     return this.verifyTypedDataRequestSignature(attester, request);
   }
 }

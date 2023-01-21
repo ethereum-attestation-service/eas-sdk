@@ -9,7 +9,7 @@ import {
   TypedDataHandler
 } from './typed-data-handler';
 import { TypedDataSigner } from '@ethersproject/abstract-signer';
-import { utils } from 'ethers';
+import { BigNumberish, utils } from 'ethers';
 
 const { keccak256, toUtf8Bytes, defaultAbiCoder } = utils;
 
@@ -20,8 +20,8 @@ export const ATTESTATION_PRIMARY_TYPE = 'Attestation';
 export const ATTESTATION_TYPE: TypedData[] = [
   { name: 'schema', type: 'bytes32' },
   { name: 'recipient', type: 'address' },
-  { name: 'time', type: 'uint32' },
-  { name: 'expirationTime', type: 'uint32' },
+  { name: 'time', type: 'uint64' },
+  { name: 'expirationTime', type: 'uint64' },
   { name: 'revocable', type: 'bool' },
   { name: 'refUUID', type: 'bytes32' },
   { name: 'data', type: 'bytes' }
@@ -32,8 +32,8 @@ export const DOMAIN_NAME = 'EAS Attestation';
 export type OffchainAttestationParams = {
   schema: string;
   recipient: string;
-  time: number;
-  expirationTime: number;
+  time: BigNumberish;
+  expirationTime: BigNumberish;
   revocable: boolean;
   refUUID: string;
   data: string;
@@ -94,10 +94,7 @@ export class Offchain extends TypedDataHandler {
     };
   }
 
-  public async verifyOffchainAttestationSignature(
-    attester: string,
-    request: SignedOffchainAttestation
-  ): Promise<boolean> {
+  public verifyOffchainAttestationSignature(attester: string, request: SignedOffchainAttestation): boolean {
     return (
       request.uuid === Offchain.getOffchainUUID(request.message) &&
       this.verifyTypedDataRequestSignature(attester, request)

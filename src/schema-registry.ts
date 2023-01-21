@@ -36,6 +36,7 @@ export class SchemaRegistry extends Base<SchemaRegistryContract> {
   }: RegisterSchemaParams): Transaction<string> {
     const tx = this.contract.register(schema, resolverAddress, revocable);
 
+    // eslint-disable-next-line require-await
     return new Transaction(tx, async (_receipt: ContractReceipt) => getSchemaUUID(schema, resolverAddress, revocable));
   }
 
