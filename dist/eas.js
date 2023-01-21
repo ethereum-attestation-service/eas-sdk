@@ -10,6 +10,10 @@ class EAS extends base_1.Base {
     constructor(address, signerOrProvider) {
         super(new eas_contracts_1.EAS__factory(), address, signerOrProvider);
     }
+    // Returns the version of the contract
+    getVersion() {
+        return this.contract.VERSION();
+    }
     // Returns an existing schema by attestation UUID
     getAttestation({ uuid }) {
         return this.contract.getAttestation(uuid);

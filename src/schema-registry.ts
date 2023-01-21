@@ -28,6 +28,11 @@ export class SchemaRegistry extends Base<SchemaRegistryContract> {
     super(new SchemaRegistry__factory(), address, signerOrProvider);
   }
 
+  // Returns the version of the contract
+  public getVersion(): Promise<string> {
+    return this.contract.VERSION();
+  }
+
   // Registers a new schema and returns its UUID
   public register({
     schema,

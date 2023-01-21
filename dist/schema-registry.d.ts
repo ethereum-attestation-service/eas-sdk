@@ -16,6 +16,7 @@ export interface GetSchemaParams {
 }
 export declare class SchemaRegistry extends Base<SchemaRegistryContract> {
     constructor(address: string, signerOrProvider?: SignerOrProvider);
+    getVersion(): Promise<string>;
     register({ schema, resolverAddress, revocable }: RegisterSchemaParams): Transaction<string>;
     getSchema({ uuid }: GetSchemaParams): Promise<SchemaRecord>;
 }

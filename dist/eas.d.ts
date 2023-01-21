@@ -69,6 +69,7 @@ export interface MultiDelegatedRevocationRequest extends MultiRevocationRequest 
 }
 export declare class EAS extends Base<EASContract> {
     constructor(address: string, signerOrProvider?: SignerOrProvider);
+    getVersion(): Promise<string>;
     getAttestation({ uuid }: GetAttestationParams): Promise<Attestation>;
     isAttestationValid({ uuid }: IsAttestationValidParams): Promise<boolean>;
     isAttestationRevoked({ uuid }: IsAttestationRevokedParams): Promise<boolean>;
