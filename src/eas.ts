@@ -89,6 +89,11 @@ export class EAS extends Base<EASContract> {
     super(new EAS__factory(), address, signerOrProvider);
   }
 
+  // Returns the version of the contract
+  public getVersion(): Promise<string> {
+    return this.contract.VERSION();
+  }
+
   // Returns an existing schema by attestation UUID
   public getAttestation({ uuid }: GetAttestationParams): Promise<Attestation> {
     return this.contract.getAttestation(uuid);

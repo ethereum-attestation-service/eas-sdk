@@ -8,6 +8,10 @@ class SchemaRegistry extends base_1.Base {
     constructor(address, signerOrProvider) {
         super(new eas_contracts_1.SchemaRegistry__factory(), address, signerOrProvider);
     }
+    // Returns the version of the contract
+    getVersion() {
+        return this.contract.VERSION();
+    }
     // Registers a new schema and returns its UUID
     register({ schema, resolverAddress = utils_1.ZERO_ADDRESS, revocable = true }) {
         const tx = this.contract.register(schema, resolverAddress, revocable);

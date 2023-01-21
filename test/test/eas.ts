@@ -58,13 +58,16 @@ describe('EAS API', () => {
     beforeEach(() => {
       eas = new EAS(easContract.address, waffle.provider);
 
-      expect(eas.contract.signer).to.be.null;
-      expect(eas.contract.provider).not.to.be.null;
-
       schemaRegistry = new SchemaRegistry(registry.address, waffle.provider);
+    });
 
-      expect(schemaRegistry.contract.signer).to.be.null;
-      expect(schemaRegistry.contract.provider).not.to.be.null;
+    describe('construction', () => {
+      it('should properly create an EAS API', async () => {
+        expect(eas.contract.signer).to.be.null;
+        expect(eas.contract.provider).not.to.be.null;
+
+        expect(await eas.getVersion()).to.equal(await easContract.VERSION());
+      });
     });
 
     context('with a registered schema', () => {
