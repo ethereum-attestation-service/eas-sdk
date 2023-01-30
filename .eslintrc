@@ -4,8 +4,8 @@
   "plugins": ["@typescript-eslint"],
   "root": true,
   "rules": {
-    "semi": "error",
-    "quotes": ["error", "single"],
+    "semi": ["error", "always"],
+    "quotes": ["error", "single", { "avoidEscape": true }],
     "no-console": "error",
     "require-await": "error",
     "no-return-await": "error",

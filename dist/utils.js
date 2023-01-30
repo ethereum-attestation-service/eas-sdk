@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getUUIDsFromAttestEvents = exports.getUUIDsFromMultiAttestTx = exports.getUUIDFromAttestTx = exports.getOffchainUUID = exports.getUUID = exports.getSchemaUUID = exports.ZERO_BYTES32 = exports.ZERO_BYTES = exports.ZERO_ADDRESS = void 0;
+exports.getTimestampFromTimestampEvents = exports.getUUIDsFromAttestEvents = exports.getUUIDsFromMultiAttestTx = exports.getUUIDFromAttestTx = exports.getOffchainUUID = exports.getUUID = exports.getSchemaUUID = exports.ZERO_BYTES32 = exports.ZERO_BYTES = exports.ZERO_ADDRESS = void 0;
 const ethers_1 = require("ethers");
 const { solidityKeccak256, hexlify, toUtf8Bytes } = ethers_1.utils;
 const { AddressZero } = ethers_1.constants;
@@ -42,4 +42,15 @@ const getUUIDsFromAttestEvents = (events) => {
     return attestedEvents.map((event) => event.args?.uuid);
 };
 exports.getUUIDsFromAttestEvents = getUUIDsFromAttestEvents;
+const getTimestampFromTimestampEvents = (events) => {
+    if (!events) {
+        return [];
+    }
+    const timestampedEvents = events.filter((e) => e.event === 'Timestamped');
+    if (timestampedEvents.length === 0) {
+        throw new Error('Unable to process attestation events');
+    }
+    return timestampedEvents.map((event) => event.args?.timestamp);
+};
+exports.getTimestampFromTimestampEvents = getTimestampFromTimestampEvents;
 //# sourceMappingURL=utils.js.map

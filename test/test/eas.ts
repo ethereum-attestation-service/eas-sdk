@@ -18,6 +18,10 @@ import { ethers, waffle } from 'hardhat';
 
 const { expect } = chai;
 
+const {
+  utils: { formatBytes32String }
+} = ethers;
+
 describe('EAS API', () => {
   let accounts: SignerWithAddress[];
   let sender: Wallet;
@@ -344,6 +348,42 @@ describe('EAS API', () => {
           });
         });
       }
+    });
+
+    describe('timestamping', () => {
+      const data1 = formatBytes32String('0x1234');
+      const data2 = formatBytes32String('0x4567');
+      const data3 = formatBytes32String('0x6666');
+
+      it('should timestamp a single data', async () => {
+        const timestamp = await eas.timestamp({ data: data1 }).wait();
+        expect(timestamp).to.equal(await latest());
+
+        expect(await eas.getTimestamp({ data: data1 })).to.equal(timestamp);
+
+        const timestamp2 = await eas.timestamp({ data: data2 }).wait();
+        expect(timestamp2).to.equal(await latest());
+
+        expect(await eas.getTimestamp({ data: data2 })).to.equal(timestamp2);
+      });
+
+      it('should timestamp multiple data', async () => {
+        const data = [data1, data2];
+        const timestamps = await eas.multiTimestamp({ data: [data1, data2] }).wait();
+
+        const currentTime = await latest();
+
+        for (const [i, d] of data.entries()) {
+          const timestamp = timestamps[i];
+          expect(timestamp).to.equal(currentTime);
+
+          expect(await eas.getTimestamp({ data: d })).to.equal(timestamp);
+        }
+      });
+
+      it("should return 0 for any data that wasn't timestamped multiple data", async () => {
+        expect(await eas.getTimestamp({ data: data3 })).to.equal(0);
+      });
     });
   });
 });

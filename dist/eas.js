@@ -30,6 +30,10 @@ class EAS extends base_1.Base {
         }
         return !attestation.revocationTime.isZero();
     }
+    // Returns the timestamp that the specified data was timestamped with.
+    getTimestamp({ data }) {
+        return this.contract.getTimestamp(data);
+    }
     // Attests to a specific schema
     attest({ schema, data: { recipient, data, expirationTime = exports.NO_EXPIRATION, revocable = true, refUUID = utils_1.ZERO_BYTES32, value = 0 } }) {
         const tx = this.contract.attest({ schema, data: { recipient, expirationTime, revocable, refUUID, data, value } }, {
@@ -157,6 +161,17 @@ class EAS extends base_1.Base {
             value: requestedValue
         });
         return new base_1.Transaction(tx, async () => { });
+    }
+    // Timestamps the specified bytes32 data.
+    timestamp({ data }) {
+        const tx = this.contract.timestamp(data);
+        return new base_1.Transaction(tx, async (receipt) => (await (0, utils_1.getTimestampFromTimestampEvents)(receipt.events))[0]);
+    }
+    // Timestamps the specified multiple bytes32 data.
+    multiTimestamp({ data }) {
+        const tx = this.contract.multiTimestamp(data);
+        // eslint-disable-next-line require-await
+        return new base_1.Transaction(tx, async (receipt) => (0, utils_1.getTimestampFromTimestampEvents)(receipt.events));
     }
     // Returns the domain separator used in the encoding of the signatures for attest, and revoke.
     getDomainSeparator() {

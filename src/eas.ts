@@ -1,5 +1,5 @@
 import { Base, SignerOrProvider, Transaction } from './base';
-import { getUUIDsFromAttestEvents, ZERO_BYTES32 } from './utils';
+import { getTimestampFromTimestampEvents, getUUIDsFromAttestEvents, ZERO_BYTES32 } from './utils';
 import { EAS__factory, EAS as EASContract } from '@ethereum-attestation-service/eas-contracts';
 import { BigNumber, BigNumberish, ContractReceipt, Signature } from 'ethers';
 
@@ -28,6 +28,10 @@ export interface IsAttestationValidParams {
 
 export interface IsAttestationRevokedParams {
   uuid: string;
+}
+
+export interface GetTimestampParams {
+  data: string;
 }
 
 export interface AttestationRequestData {
@@ -84,6 +88,14 @@ export interface MultiDelegatedRevocationRequest extends MultiRevocationRequest 
   revoker: string;
 }
 
+export interface TimestampParams {
+  data: string;
+}
+
+export interface MultiTimestampParams {
+  data: string[];
+}
+
 export class EAS extends Base<EASContract> {
   constructor(address: string, signerOrProvider?: SignerOrProvider) {
     super(new EAS__factory(), address, signerOrProvider);
@@ -112,6 +124,11 @@ export class EAS extends Base<EASContract> {
     }
 
     return !attestation.revocationTime.isZero();
+  }
+
+  // Returns the timestamp that the specified data was timestamped with.
+  public getTimestamp({ data }: GetTimestampParams): Promise<BigNumberish> {
+    return this.contract.getTimestamp(data);
   }
 
   // Attests to a specific schema
@@ -286,6 +303,24 @@ export class EAS extends Base<EASContract> {
     });
 
     return new Transaction(tx, async () => {});
+  }
+
+  // Timestamps the specified bytes32 data.
+  public timestamp({ data }: TimestampParams): Transaction<BigNumberish> {
+    const tx = this.contract.timestamp(data);
+
+    return new Transaction(
+      tx,
+      async (receipt: ContractReceipt) => (await getTimestampFromTimestampEvents(receipt.events))[0]
+    );
+  }
+
+  // Timestamps the specified multiple bytes32 data.
+  public multiTimestamp({ data }: MultiTimestampParams): Transaction<BigNumberish[]> {
+    const tx = this.contract.multiTimestamp(data);
+
+    // eslint-disable-next-line require-await
+    return new Transaction(tx, async (receipt: ContractReceipt) => getTimestampFromTimestampEvents(receipt.events));
   }
 
   // Returns the domain separator used in the encoding of the signatures for attest, and revoke.
