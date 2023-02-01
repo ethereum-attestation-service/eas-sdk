@@ -18,22 +18,6 @@ export interface Attestation {
 
 export const NO_EXPIRATION = 0;
 
-export interface GetAttestationParams {
-  uuid: string;
-}
-
-export interface IsAttestationValidParams {
-  uuid: string;
-}
-
-export interface IsAttestationRevokedParams {
-  uuid: string;
-}
-
-export interface GetTimestampParams {
-  data: string;
-}
-
 export interface AttestationRequestData {
   recipient: string;
   data: string;
@@ -88,14 +72,6 @@ export interface MultiDelegatedRevocationRequest extends MultiRevocationRequest 
   revoker: string;
 }
 
-export interface TimestampParams {
-  data: string;
-}
-
-export interface MultiTimestampParams {
-  data: string[];
-}
-
 export class EAS extends Base<EASContract> {
   constructor(address: string, signerOrProvider?: SignerOrProvider) {
     super(new EAS__factory(), address, signerOrProvider);
@@ -107,17 +83,17 @@ export class EAS extends Base<EASContract> {
   }
 
   // Returns an existing schema by attestation UUID
-  public getAttestation({ uuid }: GetAttestationParams): Promise<Attestation> {
+  public getAttestation(uuid: string): Promise<Attestation> {
     return this.contract.getAttestation(uuid);
   }
 
   // Returns whether an attestation is valid
-  public isAttestationValid({ uuid }: IsAttestationValidParams): Promise<boolean> {
+  public isAttestationValid(uuid: string): Promise<boolean> {
     return this.contract.isAttestationValid(uuid);
   }
 
   // Returns whether an attestation has been revoked
-  public async isAttestationRevoked({ uuid }: IsAttestationRevokedParams): Promise<boolean> {
+  public async isAttestationRevoked(uuid: string): Promise<boolean> {
     const attestation = await this.contract.getAttestation(uuid);
     if (attestation.uuid === ZERO_BYTES32) {
       throw new Error('Invalid attestation');
@@ -127,7 +103,7 @@ export class EAS extends Base<EASContract> {
   }
 
   // Returns the timestamp that the specified data was timestamped with.
-  public getTimestamp({ data }: GetTimestampParams): Promise<BigNumberish> {
+  public getTimestamp(data: string): Promise<BigNumberish> {
     return this.contract.getTimestamp(data);
   }
 
@@ -306,7 +282,7 @@ export class EAS extends Base<EASContract> {
   }
 
   // Timestamps the specified bytes32 data.
-  public timestamp({ data }: TimestampParams): Transaction<BigNumberish> {
+  public timestamp(data: string): Transaction<BigNumberish> {
     const tx = this.contract.timestamp(data);
 
     return new Transaction(
@@ -316,7 +292,7 @@ export class EAS extends Base<EASContract> {
   }
 
   // Timestamps the specified multiple bytes32 data.
-  public multiTimestamp({ data }: MultiTimestampParams): Transaction<BigNumberish[]> {
+  public multiTimestamp(data: string[]): Transaction<BigNumberish[]> {
     const tx = this.contract.multiTimestamp(data);
 
     // eslint-disable-next-line require-await

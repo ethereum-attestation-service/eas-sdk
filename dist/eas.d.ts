@@ -14,18 +14,6 @@ export interface Attestation {
     data: string;
 }
 export declare const NO_EXPIRATION = 0;
-export interface GetAttestationParams {
-    uuid: string;
-}
-export interface IsAttestationValidParams {
-    uuid: string;
-}
-export interface IsAttestationRevokedParams {
-    uuid: string;
-}
-export interface GetTimestampParams {
-    data: string;
-}
 export interface AttestationRequestData {
     recipient: string;
     data: string;
@@ -70,19 +58,13 @@ export interface MultiDelegatedRevocationRequest extends MultiRevocationRequest 
     signatures: Signature[];
     revoker: string;
 }
-export interface TimestampParams {
-    data: string;
-}
-export interface MultiTimestampParams {
-    data: string[];
-}
 export declare class EAS extends Base<EASContract> {
     constructor(address: string, signerOrProvider?: SignerOrProvider);
     getVersion(): Promise<string>;
-    getAttestation({ uuid }: GetAttestationParams): Promise<Attestation>;
-    isAttestationValid({ uuid }: IsAttestationValidParams): Promise<boolean>;
-    isAttestationRevoked({ uuid }: IsAttestationRevokedParams): Promise<boolean>;
-    getTimestamp({ data }: GetTimestampParams): Promise<BigNumberish>;
+    getAttestation(uuid: string): Promise<Attestation>;
+    isAttestationValid(uuid: string): Promise<boolean>;
+    isAttestationRevoked(uuid: string): Promise<boolean>;
+    getTimestamp(data: string): Promise<BigNumberish>;
     attest({ schema, data: { recipient, data, expirationTime, revocable, refUUID, value } }: AttestationRequest): Transaction<string>;
     attestByDelegation({ schema, data: { recipient, data, expirationTime, revocable, refUUID, value }, attester, signature }: DelegatedAttestationRequest): Transaction<string>;
     multiAttest(requests: MultiAttestationRequest[]): Transaction<string[]>;
@@ -91,8 +73,8 @@ export declare class EAS extends Base<EASContract> {
     revokeByDelegation({ schema, data: { uuid, value }, signature, revoker }: DelegatedRevocationRequest): Transaction<void>;
     multiRevoke(requests: MultiRevocationRequest[]): Transaction<void>;
     multiRevokeByDelegation(requests: MultiDelegatedRevocationRequest[]): Transaction<void>;
-    timestamp({ data }: TimestampParams): Transaction<BigNumberish>;
-    multiTimestamp({ data }: MultiTimestampParams): Transaction<BigNumberish[]>;
+    timestamp(data: string): Transaction<BigNumberish>;
+    multiTimestamp(data: string[]): Transaction<BigNumberish[]>;
     getDomainSeparator(): Promise<string>;
     getNonce(address: string): Promise<BigNumber>;
     getAttestTypeHash(): Promise<string>;

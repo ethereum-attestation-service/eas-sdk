@@ -67,7 +67,7 @@ describe('ETHResolver', () => {
     const uuid = await eas
       .attest({ schema: schemaId, data: { recipient: recipient.address, data, value: tip } })
       .wait();
-    expect(await eas.isAttestationValid({ uuid })).to.be.true;
+    expect(await eas.isAttestationValid(uuid)).to.be.true;
 
     expect(await getBalance(resolver.address)).to.equal(prevResolverBalance.sub(incentive).add(tip));
   });
@@ -77,7 +77,7 @@ describe('ETHResolver', () => {
 
     beforeEach(async () => {
       uuid = await eas.attest({ schema: schemaId, data: { recipient: recipient.address, data } }).wait();
-      expect(await eas.isAttestationValid({ uuid })).to.be.true;
+      expect(await eas.isAttestationValid(uuid)).to.be.true;
     });
 
     it('should allow sending ETH during revocation', async () => {
@@ -86,7 +86,7 @@ describe('ETHResolver', () => {
       const value = incentive;
       await eas.revoke({ schema: schemaId, data: { uuid, value } }).wait();
 
-      expect(await eas.isAttestationRevoked({ uuid })).to.be.true;
+      expect(await eas.isAttestationRevoked(uuid)).to.be.true;
 
       expect(await getBalance(resolver.address)).to.equal(prevResolverBalance.add(incentive));
     });

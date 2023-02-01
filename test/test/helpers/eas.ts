@@ -132,7 +132,7 @@ export const expectAttestation = async (
     }
   }
 
-  expect(await eas.isAttestationValid({ uuid })).to.be.true;
+  expect(await eas.isAttestationValid(uuid)).to.be.true;
 };
 
 export const expectMultiAttestations = async (
@@ -198,7 +198,7 @@ export const expectMultiAttestations = async (
   }
 
   for (const uuid of uuids) {
-    expect(await eas.isAttestationValid({ uuid })).to.be.true;
+    expect(await eas.isAttestationValid(uuid)).to.be.true;
   }
 };
 
@@ -244,7 +244,7 @@ export const expectRevocation = async (
     }
   }
 
-  expect(await eas.isAttestationRevoked({ uuid })).to.be.true;
+  expect(await eas.isAttestationRevoked(uuid)).to.be.true;
 };
 
 export const expectMultiRevocations = async (
@@ -296,8 +296,8 @@ export const expectMultiRevocations = async (
 
   for (const data of requests) {
     for (const { uuid } of data.data) {
-      expect(await eas.isAttestationValid({ uuid })).to.be.true;
-      expect(await eas.isAttestationRevoked({ uuid })).to.be.true;
+      expect(await eas.isAttestationValid(uuid)).to.be.true;
+      expect(await eas.isAttestationRevoked(uuid)).to.be.true;
     }
   }
 };
