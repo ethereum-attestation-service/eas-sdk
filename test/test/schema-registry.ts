@@ -14,7 +14,7 @@ describe('SchemaRegistry API', () => {
   let sender: SignerWithAddress;
 
   let schemaRegistryContract: SchemaRegistryContract;
-  let schemaRegistr: SchemaRegistry;
+  let schemaRegistry: SchemaRegistry;
 
   before(async () => {
     accounts = await ethers.getSigners();
@@ -25,13 +25,13 @@ describe('SchemaRegistry API', () => {
   beforeEach(async () => {
     schemaRegistryContract = await Contracts.SchemaRegistry.deploy();
 
-    schemaRegistr = new SchemaRegistry(schemaRegistryContract.address);
-    schemaRegistr.connect(sender);
+    schemaRegistry = new SchemaRegistry(schemaRegistryContract.address);
+    schemaRegistry.connect(sender);
   });
 
   describe('construction', () => {
     it('should properly create an EAS API', async () => {
-      expect(await schemaRegistr.getVersion()).to.equal(await schemaRegistryContract.VERSION());
+      expect(await schemaRegistry.getVersion()).to.equal(await schemaRegistryContract.VERSION());
     });
   });
 
@@ -40,11 +40,11 @@ describe('SchemaRegistry API', () => {
       const resolverAddress = typeof resolver === 'string' ? resolver : resolver.address;
 
       const uuid = getSchemaUUID(schema, resolverAddress, revocable);
-      expect(schemaRegistr.getSchema({ uuid })).to.be.rejectedWith(new Error('Schema not found'));
+      expect(schemaRegistry.getSchema({ uuid })).to.be.rejectedWith(new Error('Schema not found'));
 
-      const uuid2 = await schemaRegistr.register({ schema, resolverAddress, revocable }).wait();
+      const uuid2 = await schemaRegistry.register({ schema, resolverAddress, revocable }).wait();
 
-      const schemaRecord = await schemaRegistr.getSchema({ uuid });
+      const schemaRecord = await schemaRegistry.getSchema({ uuid });
       expect(schemaRecord.uuid).to.equal(uuid);
       expect(schemaRecord.uuid).to.equal(uuid2);
       expect(schemaRecord.schema).to.equal(schema);

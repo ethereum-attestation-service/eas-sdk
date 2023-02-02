@@ -8,3 +8,4 @@ export declare const getOffchainUUID: (schema: string, recipient: string, time: 
 export declare const getUUIDFromAttestTx: (res: Promise<ContractTransaction> | ContractTransaction) => Promise<any>;
 export declare const getUUIDsFromMultiAttestTx: (res: Promise<ContractTransaction> | ContractTransaction) => Promise<any[]>;
 export declare const getUUIDsFromAttestEvents: (events?: Event[]) => string[];
+export declare const getTimestampFromTimestampEvents: (events?: Event[]) => BigNumberish[];

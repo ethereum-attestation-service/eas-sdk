@@ -72,3 +72,16 @@ export const getUUIDsFromAttestEvents = (events?: Event[]): string[] => {
 
   return attestedEvents.map((event) => event.args?.uuid);
 };
+
+export const getTimestampFromTimestampEvents = (events?: Event[]): BigNumberish[] => {
+  if (!events) {
+    return [];
+  }
+
+  const timestampedEvents = events.filter((e) => e.event === 'Timestamped');
+  if (timestampedEvents.length === 0) {
+    throw new Error('Unable to process attestation events');
+  }
+
+  return timestampedEvents.map((event) => event.args?.timestamp);
+};
