@@ -3,16 +3,16 @@ import { Contract, ContractFactory, ContractReceipt, ContractTransaction, provid
 export declare type SignerOrProvider = Signer | providers.Provider;
 
 export class Transaction<T> {
-  private tx: Promise<ContractTransaction>;
-  private waitCallback: (receipt: ContractReceipt) => Promise<T>;
+  public readonly tx: ContractTransaction;
+  private readonly waitCallback: (receipt: ContractReceipt) => Promise<T>;
 
-  constructor(tx: Promise<ContractTransaction>, waitCallback: (receipt: ContractReceipt) => Promise<T>) {
+  constructor(tx: ContractTransaction, waitCallback: (receipt: ContractReceipt) => Promise<T>) {
     this.tx = tx;
     this.waitCallback = waitCallback;
   }
 
   public async wait(confirmations?: number): Promise<T> {
-    const receipt = await (await this.tx).wait(confirmations);
+    const receipt = await this.tx.wait(confirmations);
 
     return this.waitCallback(receipt);
   }

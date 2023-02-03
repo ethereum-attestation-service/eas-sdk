@@ -1,4 +1,4 @@
-import { Base, SignerOrProvider, Transaction } from './base';
+import { Base, SignerOrProvider, Transaction } from './transaction';
 import { getSchemaUUID, ZERO_ADDRESS, ZERO_BYTES32 } from './utils';
 import {
   SchemaRegistry__factory,
@@ -34,12 +34,12 @@ export class SchemaRegistry extends Base<SchemaRegistryContract> {
   }
 
   // Registers a new schema and returns its UUID
-  public register({
+  public async register({
     schema,
     resolverAddress = ZERO_ADDRESS,
     revocable = true
-  }: RegisterSchemaParams): Transaction<string> {
-    const tx = this.contract.register(schema, resolverAddress, revocable);
+  }: RegisterSchemaParams): Promise<Transaction<string>> {
+    const tx = await this.contract.register(schema, resolverAddress, revocable);
 
     // eslint-disable-next-line require-await
     return new Transaction(tx, async (_receipt: ContractReceipt) => getSchemaUUID(schema, resolverAddress, revocable));
