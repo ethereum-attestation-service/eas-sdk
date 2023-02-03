@@ -9,7 +9,7 @@ class Transaction {
         this.waitCallback = waitCallback;
     }
     async wait(confirmations) {
-        const receipt = await (await this.tx).wait(confirmations);
+        const receipt = await this.tx.wait(confirmations);
         return this.waitCallback(receipt);
     }
 }
@@ -29,4 +29,4 @@ class Base {
     }
 }
 exports.Base = Base;
-//# sourceMappingURL=base.js.map
+//# sourceMappingURL=transaction.js.map

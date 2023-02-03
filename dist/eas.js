@@ -1,12 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EAS = exports.NO_EXPIRATION = void 0;
-const base_1 = require("./base");
+const transaction_1 = require("./transaction");
 const utils_1 = require("./utils");
 const eas_contracts_1 = require("@ethereum-attestation-service/eas-contracts");
 const ethers_1 = require("ethers");
 exports.NO_EXPIRATION = 0;
-class EAS extends base_1.Base {
+class EAS extends transaction_1.Base {
     constructor(address, signerOrProvider) {
         super(new eas_contracts_1.EAS__factory(), address, signerOrProvider);
     }
@@ -35,15 +35,15 @@ class EAS extends base_1.Base {
         return this.contract.getTimestamp(data);
     }
     // Attests to a specific schema
-    attest({ schema, data: { recipient, data, expirationTime = exports.NO_EXPIRATION, revocable = true, refUUID = utils_1.ZERO_BYTES32, value = 0 } }) {
-        const tx = this.contract.attest({ schema, data: { recipient, expirationTime, revocable, refUUID, data, value } }, {
+    async attest({ schema, data: { recipient, data, expirationTime = exports.NO_EXPIRATION, revocable = true, refUUID = utils_1.ZERO_BYTES32, value = 0 } }) {
+        const tx = await this.contract.attest({ schema, data: { recipient, expirationTime, revocable, refUUID, data, value } }, {
             value
         });
-        return new base_1.Transaction(tx, async (receipt) => (await (0, utils_1.getUUIDsFromAttestEvents)(receipt.events))[0]);
+        return new transaction_1.Transaction(tx, async (receipt) => (await (0, utils_1.getUUIDsFromAttestEvents)(receipt.events))[0]);
     }
     // Attests to a specific schema via an EIP712 delegation request
-    attestByDelegation({ schema, data: { recipient, data, expirationTime = exports.NO_EXPIRATION, revocable = true, refUUID = utils_1.ZERO_BYTES32, value = 0 }, attester, signature }) {
-        const tx = this.contract.attestByDelegation({
+    async attestByDelegation({ schema, data: { recipient, data, expirationTime = exports.NO_EXPIRATION, revocable = true, refUUID = utils_1.ZERO_BYTES32, value = 0 }, attester, signature }) {
+        const tx = await this.contract.attestByDelegation({
             schema,
             data: {
                 recipient,
@@ -56,10 +56,10 @@ class EAS extends base_1.Base {
             signature,
             attester
         }, { value });
-        return new base_1.Transaction(tx, async (receipt) => (await (0, utils_1.getUUIDsFromAttestEvents)(receipt.events))[0]);
+        return new transaction_1.Transaction(tx, async (receipt) => (await (0, utils_1.getUUIDsFromAttestEvents)(receipt.events))[0]);
     }
     // Multi-attests to multiple schemas
-    multiAttest(requests) {
+    async multiAttest(requests) {
         const multiAttestationRequests = requests.map((r) => ({
             schema: r.schema,
             data: r.data.map((d) => ({
@@ -75,14 +75,14 @@ class EAS extends base_1.Base {
             const total = data.reduce((res, r) => res.add(r.value), ethers_1.BigNumber.from(0));
             return res.add(total);
         }, ethers_1.BigNumber.from(0));
-        const tx = this.contract.multiAttest(multiAttestationRequests, {
+        const tx = await this.contract.multiAttest(multiAttestationRequests, {
             value: requestedValue
         });
         // eslint-disable-next-line require-await
-        return new base_1.Transaction(tx, async (receipt) => (0, utils_1.getUUIDsFromAttestEvents)(receipt.events));
+        return new transaction_1.Transaction(tx, async (receipt) => (0, utils_1.getUUIDsFromAttestEvents)(receipt.events));
     }
     // Multi-attests to multiple schemas via an EIP712 delegation requests
-    multiAttestByDelegation(requests) {
+    async multiAttestByDelegation(requests) {
         const multiAttestationRequests = requests.map((r) => ({
             schema: r.schema,
             data: r.data.map((d) => ({
@@ -100,20 +100,20 @@ class EAS extends base_1.Base {
             const total = data.reduce((res, r) => res.add(r.value), ethers_1.BigNumber.from(0));
             return res.add(total);
         }, ethers_1.BigNumber.from(0));
-        const tx = this.contract.multiAttestByDelegation(multiAttestationRequests, {
+        const tx = await this.contract.multiAttestByDelegation(multiAttestationRequests, {
             value: requestedValue
         });
         // eslint-disable-next-line require-await
-        return new base_1.Transaction(tx, async (receipt) => (0, utils_1.getUUIDsFromAttestEvents)(receipt.events));
+        return new transaction_1.Transaction(tx, async (receipt) => (0, utils_1.getUUIDsFromAttestEvents)(receipt.events));
     }
     // Revokes an existing attestation
-    revoke({ schema, data: { uuid, value = 0 } }) {
-        const tx = this.contract.revoke({ schema, data: { uuid, value } }, { value });
-        return new base_1.Transaction(tx, async () => { });
+    async revoke({ schema, data: { uuid, value = 0 } }) {
+        const tx = await this.contract.revoke({ schema, data: { uuid, value } }, { value });
+        return new transaction_1.Transaction(tx, async () => { });
     }
     // Revokes an existing attestation an EIP712 delegation request
-    revokeByDelegation({ schema, data: { uuid, value = 0 }, signature, revoker }) {
-        const tx = this.contract.revokeByDelegation({
+    async revokeByDelegation({ schema, data: { uuid, value = 0 }, signature, revoker }) {
+        const tx = await this.contract.revokeByDelegation({
             schema,
             data: {
                 uuid,
@@ -122,10 +122,10 @@ class EAS extends base_1.Base {
             signature,
             revoker
         }, { value });
-        return new base_1.Transaction(tx, async () => { });
+        return new transaction_1.Transaction(tx, async () => { });
     }
     // Multi-revokes multiple attestations
-    multiRevoke(requests) {
+    async multiRevoke(requests) {
         const multiRevocationRequests = requests.map((r) => ({
             schema: r.schema,
             data: r.data.map((d) => ({
@@ -137,13 +137,13 @@ class EAS extends base_1.Base {
             const total = data.reduce((res, r) => res.add(r.value), ethers_1.BigNumber.from(0));
             return res.add(total);
         }, ethers_1.BigNumber.from(0));
-        const tx = this.contract.multiRevoke(multiRevocationRequests, {
+        const tx = await this.contract.multiRevoke(multiRevocationRequests, {
             value: requestedValue
         });
-        return new base_1.Transaction(tx, async () => { });
+        return new transaction_1.Transaction(tx, async () => { });
     }
     // Multi-revokes multiple attestations via an EIP712 delegation requests
-    multiRevokeByDelegation(requests) {
+    async multiRevokeByDelegation(requests) {
         const multiRevocationRequests = requests.map((r) => ({
             schema: r.schema,
             data: r.data.map((d) => ({
@@ -157,21 +157,21 @@ class EAS extends base_1.Base {
             const total = data.reduce((res, r) => res.add(r.value), ethers_1.BigNumber.from(0));
             return res.add(total);
         }, ethers_1.BigNumber.from(0));
-        const tx = this.contract.multiRevokeByDelegation(multiRevocationRequests, {
+        const tx = await this.contract.multiRevokeByDelegation(multiRevocationRequests, {
             value: requestedValue
         });
-        return new base_1.Transaction(tx, async () => { });
+        return new transaction_1.Transaction(tx, async () => { });
     }
     // Timestamps the specified bytes32 data.
-    timestamp(data) {
-        const tx = this.contract.timestamp(data);
-        return new base_1.Transaction(tx, async (receipt) => (await (0, utils_1.getTimestampFromTimestampEvents)(receipt.events))[0]);
+    async timestamp(data) {
+        const tx = await this.contract.timestamp(data);
+        return new transaction_1.Transaction(tx, async (receipt) => (await (0, utils_1.getTimestampFromTimestampEvents)(receipt.events))[0]);
     }
     // Timestamps the specified multiple bytes32 data.
-    multiTimestamp(data) {
-        const tx = this.contract.multiTimestamp(data);
+    async multiTimestamp(data) {
+        const tx = await this.contract.multiTimestamp(data);
         // eslint-disable-next-line require-await
-        return new base_1.Transaction(tx, async (receipt) => (0, utils_1.getTimestampFromTimestampEvents)(receipt.events));
+        return new transaction_1.Transaction(tx, async (receipt) => (0, utils_1.getTimestampFromTimestampEvents)(receipt.events));
     }
     // Returns the domain separator used in the encoding of the signatures for attest, and revoke.
     getDomainSeparator() {

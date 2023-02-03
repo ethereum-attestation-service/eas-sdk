@@ -148,7 +148,8 @@ export const expectMultiAttestations = async (
 
   switch (signatureType) {
     case SignatureType.Direct: {
-      uuids = await eas.connect(txSender).multiAttest(requests).wait();
+      const tx = await eas.connect(txSender).multiAttest(requests);
+      uuids = await tx.wait();
 
       break;
     }
@@ -187,7 +188,8 @@ export const expectMultiAttestations = async (
         multiDelegatedAttestationRequests.push({ schema, data, signatures, attester: txSender.address });
       }
 
-      uuids = await eas.connect(txSender).multiAttestByDelegation(multiDelegatedAttestationRequests).wait();
+      const tx = await eas.connect(txSender).multiAttestByDelegation(multiDelegatedAttestationRequests);
+      uuids = await tx.wait();
 
       break;
     }
@@ -214,7 +216,7 @@ export const expectRevocation = async (
 
   switch (signatureType) {
     case SignatureType.Direct: {
-      await eas.connect(txSender).revoke({ schema, data: { uuid, value } }).wait();
+      await eas.connect(txSender).revoke({ schema, data: { uuid, value } });
 
       break;
     }
@@ -258,7 +260,7 @@ export const expectMultiRevocations = async (
 
   switch (signatureType) {
     case SignatureType.Direct: {
-      await eas.connect(txSender).multiRevoke(requests).wait();
+      await eas.connect(txSender).multiRevoke(requests);
 
       break;
     }
@@ -288,7 +290,7 @@ export const expectMultiRevocations = async (
         multiDelegatedRevocationRequests.push({ schema, data, signatures, revoker: txSender.address });
       }
 
-      await eas.connect(txSender).multiRevokeByDelegation(multiDelegatedRevocationRequests).wait();
+      await eas.connect(txSender).multiRevokeByDelegation(multiDelegatedRevocationRequests);
 
       break;
     }

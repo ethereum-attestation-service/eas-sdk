@@ -87,7 +87,7 @@ describe('EAS API', () => {
       });
 
       it('should not be able to register new schema', () => {
-        expect(schemaRegistry.register({ schema, resolverAddress: ZERO_ADDRESS }).wait()).to.be.rejectedWith(
+        expect(schemaRegistry.register({ schema, resolverAddress: ZERO_ADDRESS })).to.be.rejectedWith(
           'Error: sending a transaction requires a signer'
         );
       });
@@ -146,8 +146,11 @@ describe('EAS API', () => {
               let schema2Id: string;
 
               beforeEach(async () => {
-                schema1Id = await schemaRegistry.register({ schema: schema1, revocable }).wait();
-                schema2Id = await schemaRegistry.register({ schema: schema2, revocable }).wait();
+                const tx1 = await schemaRegistry.register({ schema: schema1, revocable });
+                const tx2 = await schemaRegistry.register({ schema: schema2, revocable });
+
+                schema1Id = await tx1.wait();
+                schema2Id = await tx2.wait();
               });
 
               it('should be able to query the schema registry', async () => {
@@ -303,21 +306,25 @@ describe('EAS API', () => {
       const data = '0x1234';
 
       beforeEach(async () => {
-        schema1Id = await schemaRegistry.register({ schema: schema1 }).wait();
-        schema2Id = await schemaRegistry.register({ schema: schema2 }).wait();
+        const tx1 = await schemaRegistry.register({ schema: schema1 });
+        const tx2 = await schemaRegistry.register({ schema: schema2 });
+
+        schema1Id = await tx1.wait();
+        schema2Id = await tx2.wait();
       });
 
       for (const signatureType of [SignatureType.Direct, SignatureType.Delegated]) {
         context(`via ${signatureType} revocation`, () => {
           beforeEach(async () => {
-            uuids1 = [
-              await eas.attest({ schema: schema1Id, data: { recipient: recipient.address, data } }).wait(),
-              await eas.attest({ schema: schema1Id, data: { recipient: recipient.address, data } }).wait()
-            ];
-            uuids2 = [
-              await eas.attest({ schema: schema2Id, data: { recipient: recipient.address, data } }).wait(),
-              await eas.attest({ schema: schema2Id, data: { recipient: recipient.address, data } }).wait()
-            ];
+            const tx1 = await eas.attest({ schema: schema1Id, data: { recipient: recipient.address, data } });
+            const tx2 = await eas.attest({ schema: schema1Id, data: { recipient: recipient.address, data } });
+
+            uuids1 = [await tx1.wait(), await tx2.wait()];
+
+            const tx3 = await eas.attest({ schema: schema2Id, data: { recipient: recipient.address, data } });
+            const tx4 = await eas.attest({ schema: schema2Id, data: { recipient: recipient.address, data } });
+
+            uuids2 = [await tx3.wait(), await tx4.wait()];
           });
 
           it('should allow to revoke existing attestations', async () => {
@@ -356,12 +363,14 @@ describe('EAS API', () => {
       const data3 = formatBytes32String('0x6666');
 
       it('should timestamp a single data', async () => {
-        const timestamp = await eas.timestamp(data1).wait();
+        const tx = await eas.timestamp(data1);
+        const timestamp = await tx.wait();
         expect(timestamp).to.equal(await latest());
 
         expect(await eas.getTimestamp(data1)).to.equal(timestamp);
 
-        const timestamp2 = await eas.timestamp(data2).wait();
+        const tx2 = await eas.timestamp(data2);
+        const timestamp2 = await tx2.wait();
         expect(timestamp2).to.equal(await latest());
 
         expect(await eas.getTimestamp(data2)).to.equal(timestamp2);
@@ -369,7 +378,8 @@ describe('EAS API', () => {
 
       it('should timestamp multiple data', async () => {
         const data = [data1, data2];
-        const timestamps = await eas.multiTimestamp([data1, data2]).wait();
+        const tx = await eas.multiTimestamp([data1, data2]);
+        const timestamps = await tx.wait();
 
         const currentTime = await latest();
 
