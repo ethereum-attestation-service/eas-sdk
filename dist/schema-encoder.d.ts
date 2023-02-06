@@ -1,12 +1,15 @@
 import { BigNumber, utils } from 'ethers';
-export type SchemaValue = string | boolean | number | BigNumber;
-export type SchemaItem = {
+export type SchemaValue = string | boolean | number | BigNumber | Record<string, unknown> | Record<string, unknown>[] | unknown[];
+export interface SchemaItem {
     name: string;
     type: string;
-    value: SchemaValue | SchemaValue[];
-};
+    value: SchemaValue;
+}
+interface SchemaFullItem extends SchemaItem {
+    signature: string;
+}
 export declare class SchemaEncoder {
-    schema: SchemaItem[];
+    schema: SchemaFullItem[];
     constructor(schema: string);
     encodeData(params: ReadonlyArray<SchemaItem>): string;
     decodeData(data: string): utils.Result;
@@ -17,5 +20,6 @@ export declare class SchemaEncoder {
     private static getDefaultValueForTypeName;
     private static decodeIpfsValue;
     private static encodeBytes32Value;
-    private types;
+    private fullTypes;
 }
+export {};

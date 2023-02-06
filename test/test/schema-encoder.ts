@@ -16,6 +16,7 @@ describe('SchemaEncoder', () => {
           {
             name: 'like',
             type: 'bool',
+            signature: 'bool like',
             value: false
           }
         ]
@@ -26,11 +27,13 @@ describe('SchemaEncoder', () => {
           {
             name: 'contractAddress',
             type: 'address',
+            signature: 'address contractAddress',
             value: ZERO_ADDRESS
           },
           {
             name: 'trusted',
             type: 'bool',
+            signature: 'bool trusted',
             value: false
           }
         ]
@@ -41,16 +44,19 @@ describe('SchemaEncoder', () => {
           {
             name: 'eventId',
             type: 'bytes32',
+            signature: 'bytes32 eventId',
             value: ''
           },
           {
             name: 'ticketType',
             type: 'uint8',
+            signature: 'uint8 ticketType',
             value: '0'
           },
           {
             name: 'ticketNum',
             type: 'uint32',
+            signature: 'uint32 ticketNum',
             value: '0'
           }
         ]
@@ -61,16 +67,19 @@ describe('SchemaEncoder', () => {
           {
             name: null,
             type: 'bytes32',
+            signature: 'bytes32',
             value: ''
           },
           {
             name: null,
             type: 'uint8',
+            signature: 'uint8',
             value: '0'
           },
           {
             name: null,
             type: 'uint32',
+            signature: 'uint32',
             value: '0'
           }
         ]
@@ -181,6 +190,66 @@ describe('SchemaEncoder', () => {
             }
           ]
         ]
+      },
+      {
+        schema: 'uint8 voteIndex,(string key,uint8 value)[] map',
+        types: ['uint8', '(string key,uint8 value)[]'],
+        inputs: [
+          [
+            { type: 'uint8', name: 'voteIndex', value: 123 },
+            {
+              type: '(string,uint8)[]',
+              name: 'map',
+              value: [{ key: 'voter1', value: 1 }]
+            }
+          ],
+          [
+            { type: 'uint8', name: 'voteIndex', value: 123 },
+            {
+              type: '(string,uint8)[]',
+              name: 'map',
+              value: [
+                { key: 'voter1', value: 1 },
+                { key: 'voter2', value: 2 },
+                { key: 'voter3', value: 3 }
+              ]
+            }
+          ],
+          [
+            { type: 'uint8', name: 'voteIndex', value: 123 },
+            {
+              type: '(string,uint8)[]',
+              name: 'map',
+              value: [
+                ['voter1', 1],
+                ['voter2', 2],
+                ['voter3', 3]
+              ]
+            }
+          ],
+          [
+            { type: 'uint8', name: 'voteIndex', value: 123 },
+            {
+              type: '(string,uint8)[]',
+              name: 'map',
+              value: []
+            }
+          ]
+        ]
+      },
+      {
+        schema: 'string name,(string key,string value) entry',
+        types: ['string', '(string key,string value)'],
+        inputs: [
+          [
+            { type: 'string', name: 'name', value: 'Entry 1' },
+            {
+              type: '(string,string)',
+              name: 'entry',
+              value: { key: 'entry1', value: 'data1' }
+            }
+          ]
+        ]
       }
     ]) {
       for (const params of inputs) {
@@ -204,7 +273,15 @@ describe('SchemaEncoder', () => {
 
               const decoded = schemaEncoder.decodeData(encoded);
               for (const [i, param] of decoded.entries()) {
-                expect(param).to.deep.equal(params[i].value);
+                let { value } = params[i];
+                if (Array.isArray(value)) {
+                  value = value.map((v) => (typeof v === 'object' ? Object.values(v) : v));
+                } else {
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  value = typeof value === 'object' ? Object.values(value) : (value as any);
+                }
+
+                expect(param).to.deep.equal(value);
               }
             });
           });
@@ -261,7 +338,7 @@ describe('SchemaEncoder', () => {
               schemaEncoder = new SchemaEncoder(schema);
             });
 
-            it('should throw on invalid type', () => {
+            it('should throw on an invalid type', () => {
               expect(() => schemaEncoder.encodeData(params)).to.throw('Incompatible param type');
             });
           });
@@ -329,7 +406,7 @@ describe('SchemaEncoder', () => {
               schemaEncoder = new SchemaEncoder(schema);
             });
 
-            it('should throw on invalid name', () => {
+            it('should throw on an invalid name', () => {
               expect(() => schemaEncoder.encodeData(params)).to.throw('Incompatible param name');
             });
           });
