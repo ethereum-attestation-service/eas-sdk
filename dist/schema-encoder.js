@@ -5,6 +5,8 @@ const utils_1 = require("./utils");
 const ethers_1 = require("ethers");
 const multiformats_1 = require("multiformats");
 const { FunctionFragment, defaultAbiCoder, isBytesLike, formatBytes32String } = ethers_1.utils;
+const TUPLE_TYPE = 'tuple';
+const TUPLE_ARRAY_TYPE = 'tuple[]';
 class SchemaEncoder {
     schema;
     constructor(schema) {
@@ -14,15 +16,30 @@ class SchemaEncoder {
         // The following verification will throw in case of an incorrect schema
         defaultAbiCoder.getDefaultValue(fragment.inputs);
         for (const paramType of fragment.inputs) {
-            const { name, type } = paramType;
+            const { name, components } = paramType;
+            let { type } = paramType;
+            let signature = name ? `${type} ${name}` : type;
             let typeName = type;
-            if (typeName.includes('[]')) {
+            const componentsType = `(${(components || []).map((c) => c.type).join(',')})`;
+            const componentsFullType = `(${(components || [])
+                .map((c) => (c.name ? `${c.type} ${c.name}` : c.type))
+                .join(',')})`;
+            if (type === TUPLE_TYPE) {
+                type = componentsType;
+                signature = componentsFullType;
+            }
+            else if (type === TUPLE_ARRAY_TYPE) {
+                type = `${componentsType}[]`;
+                signature = `${componentsFullType}[]`;
+            }
+            else if (type.includes('[]')) {
                 typeName = typeName.replace('[]', '');
             }
             const singleValue = SchemaEncoder.getDefaultValueForTypeName(typeName);
             this.schema.push({
                 name,
                 type,
+                signature,
                 value: type.includes('[]') ? [] : singleValue
             });
         }
@@ -34,7 +51,9 @@ class SchemaEncoder {
         const data = [];
         for (const [index, schemaItem] of this.schema.entries()) {
             const { type, name, value } = params[index];
-            if (type !== schemaItem.type && !(type === 'ipfsHash' && schemaItem.type === 'bytes32')) {
+            if (type !== schemaItem.type &&
+                type !== schemaItem.signature &&
+                !(type === 'ipfsHash' && schemaItem.type === 'bytes32')) {
                 throw new Error(`Incompatible param type: ${type}`);
             }
             if (name !== schemaItem.name) {
@@ -46,10 +65,10 @@ class SchemaEncoder {
                     ? formatBytes32String(value)
                     : value);
         }
-        return defaultAbiCoder.encode(this.types(), data);
+        return defaultAbiCoder.encode(this.fullTypes(), data);
     }
     decodeData(data) {
-        return defaultAbiCoder.decode(this.types(), data);
+        return defaultAbiCoder.decode(this.fullTypes(), data);
     }
     isEncodedDataValid(data) {
         try {
@@ -109,8 +128,8 @@ class SchemaEncoder {
             return formatBytes32String(value);
         }
     }
-    types() {
-        return this.schema.map((i) => i.type);
+    fullTypes() {
+        return this.schema.map((i) => i.signature);
     }
 }
 exports.SchemaEncoder = SchemaEncoder;
