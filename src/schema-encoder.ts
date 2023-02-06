@@ -42,6 +42,7 @@ export class SchemaEncoder {
       const { name, components } = paramType;
       let { type } = paramType;
       let signature = name ? `${type} ${name}` : type;
+      const signatureSuffix = name ? ` ${name}` : '';
       let typeName = type;
 
       const componentsType = `(${(components || []).map((c) => c.type).join(',')})`;
@@ -51,10 +52,10 @@ export class SchemaEncoder {
 
       if (type === TUPLE_TYPE) {
         type = componentsType;
-        signature = componentsFullType;
+        signature = `${componentsFullType}${signatureSuffix}`;
       } else if (type === TUPLE_ARRAY_TYPE) {
         type = `${componentsType}[]`;
-        signature = `${componentsFullType}[]`;
+        signature = `${componentsFullType}[]${signatureSuffix}`;
       } else if (type.includes('[]')) {
         typeName = typeName.replace('[]', '');
       }
@@ -79,13 +80,14 @@ export class SchemaEncoder {
 
     for (const [index, schemaItem] of this.schema.entries()) {
       const { type, name, value } = params[index];
+      const sanitizedType = type.replace(/\s/g, '');
 
       if (
-        type !== schemaItem.type &&
-        type !== schemaItem.signature &&
-        !(type === 'ipfsHash' && schemaItem.type === 'bytes32')
+        sanitizedType !== schemaItem.type &&
+        sanitizedType !== schemaItem.signature &&
+        !(sanitizedType === 'ipfsHash' && schemaItem.type === 'bytes32')
       ) {
-        throw new Error(`Incompatible param type: ${type}`);
+        throw new Error(`Incompatible param type: ${sanitizedType}`);
       }
 
       if (name !== schemaItem.name) {

@@ -83,6 +83,40 @@ describe('SchemaEncoder', () => {
             value: '0'
           }
         ]
+      },
+      {
+        schema: 'uint8 voteIndex,(string key,uint8 value)[] map',
+        decodedSchema: [
+          {
+            name: 'voteIndex',
+            type: 'uint8',
+            signature: 'uint8 voteIndex',
+            value: '0'
+          },
+          {
+            name: 'map',
+            type: '(string,uint8)[]',
+            signature: '(string key,uint8 value)[] map',
+            value: []
+          }
+        ]
+      },
+      {
+        schema: 'uint8  voteIndex,        (string key,   uint8 value)[]      map',
+        decodedSchema: [
+          {
+            name: 'voteIndex',
+            type: 'uint8',
+            signature: 'uint8 voteIndex',
+            value: '0'
+          },
+          {
+            name: 'map',
+            type: '(string,uint8)[]',
+            signature: '(string key,uint8 value)[] map',
+            value: []
+          }
+        ]
       }
     ]) {
       context(schema, () => {
@@ -245,6 +279,20 @@ describe('SchemaEncoder', () => {
             { type: 'string', name: 'name', value: 'Entry 1' },
             {
               type: '(string,string)',
+              name: 'entry',
+              value: { key: 'entry1', value: 'data1' }
+            }
+          ]
+        ]
+      },
+      {
+        schema: 'string     name,      (string    key, string value   ) entry',
+        types: ['string', '(string   key,  string value)'],
+        inputs: [
+          [
+            { type: 'string', name: 'name', value: 'Entry 1' },
+            {
+              type: '(string,    string)',
               name: 'entry',
               value: { key: 'entry1', value: 'data1' }
             }
