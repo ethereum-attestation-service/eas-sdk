@@ -16,7 +16,7 @@ describe('SchemaEncoder', () => {
           {
             name: 'like',
             type: 'bool',
-            fullType: 'bool like',
+            signature: 'bool like',
             value: false
           }
         ]
@@ -27,13 +27,13 @@ describe('SchemaEncoder', () => {
           {
             name: 'contractAddress',
             type: 'address',
-            fullType: 'address contractAddress',
+            signature: 'address contractAddress',
             value: ZERO_ADDRESS
           },
           {
             name: 'trusted',
             type: 'bool',
-            fullType: 'bool trusted',
+            signature: 'bool trusted',
             value: false
           }
         ]
@@ -44,19 +44,19 @@ describe('SchemaEncoder', () => {
           {
             name: 'eventId',
             type: 'bytes32',
-            fullType: 'bytes32 eventId',
+            signature: 'bytes32 eventId',
             value: ''
           },
           {
             name: 'ticketType',
             type: 'uint8',
-            fullType: 'uint8 ticketType',
+            signature: 'uint8 ticketType',
             value: '0'
           },
           {
             name: 'ticketNum',
             type: 'uint32',
-            fullType: 'uint32 ticketNum',
+            signature: 'uint32 ticketNum',
             value: '0'
           }
         ]
@@ -67,19 +67,19 @@ describe('SchemaEncoder', () => {
           {
             name: null,
             type: 'bytes32',
-            fullType: 'bytes32',
+            signature: 'bytes32',
             value: ''
           },
           {
             name: null,
             type: 'uint8',
-            fullType: 'uint8',
+            signature: 'uint8',
             value: '0'
           },
           {
             name: null,
             type: 'uint32',
-            fullType: 'uint32',
+            signature: 'uint32',
             value: '0'
           }
         ]

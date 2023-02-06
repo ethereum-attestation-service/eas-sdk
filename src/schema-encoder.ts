@@ -20,7 +20,7 @@ export interface SchemaItem {
 }
 
 interface SchemaFullItem extends SchemaItem {
-  fullType: string;
+  signature: string;
 }
 
 const TUPLE_TYPE = 'tuple';
@@ -41,7 +41,7 @@ export class SchemaEncoder {
     for (const paramType of fragment.inputs) {
       const { name, components } = paramType;
       let { type } = paramType;
-      let fullType = name ? `${type} ${name}` : type;
+      let signature = name ? `${type} ${name}` : type;
       let typeName = type;
 
       const componentsType = `(${(components || []).map((c) => c.type).join(',')})`;
@@ -51,10 +51,10 @@ export class SchemaEncoder {
 
       if (type === TUPLE_TYPE) {
         type = componentsType;
-        fullType = componentsFullType;
+        signature = componentsFullType;
       } else if (type === TUPLE_ARRAY_TYPE) {
         type = `${componentsType}[]`;
-        fullType = `${componentsFullType}[]`;
+        signature = `${componentsFullType}[]`;
       } else if (type.includes('[]')) {
         typeName = typeName.replace('[]', '');
       }
@@ -64,7 +64,7 @@ export class SchemaEncoder {
       this.schema.push({
         name,
         type,
-        fullType,
+        signature,
         value: type.includes('[]') ? [] : singleValue
       });
     }
@@ -82,7 +82,7 @@ export class SchemaEncoder {
 
       if (
         type !== schemaItem.type &&
-        type !== schemaItem.fullType &&
+        type !== schemaItem.signature &&
         !(type === 'ipfsHash' && schemaItem.type === 'bytes32')
       ) {
         throw new Error(`Incompatible param type: ${type}`);
@@ -174,6 +174,6 @@ export class SchemaEncoder {
   }
 
   private fullTypes() {
-    return this.schema.map((i) => i.fullType);
+    return this.schema.map((i) => i.signature);
   }
 }
