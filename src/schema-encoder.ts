@@ -41,11 +41,13 @@ export class SchemaEncoder {
     for (const paramType of fragment.inputs) {
       const { name, components } = paramType;
       let { type } = paramType;
-      let fullType = `${type} ${name}`;
+      let fullType = name ? `${type} ${name}` : type;
       let typeName = type;
 
       const componentsType = `(${(components || []).map((c) => c.type).join(',')})`;
-      const componentsFullType = `(${(components || []).map((c) => `${c.type} ${c.name}`).join(',')})`;
+      const componentsFullType = `(${(components || [])
+        .map((c) => (c.name ? `${c.type} ${c.name}` : c.type))
+        .join(',')})`;
 
       if (type === TUPLE_TYPE) {
         type = componentsType;
