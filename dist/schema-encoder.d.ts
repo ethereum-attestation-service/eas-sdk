@@ -12,7 +12,7 @@ export declare class SchemaEncoder {
     schema: SchemaItemWithSignature[];
     constructor(schema: string);
     encodeData(params: ReadonlyArray<SchemaItem>): string;
-    decodeData(data: string): ReadonlyArray<SchemaItem>;
+    decodeData(data: string): ReadonlyArray<SchemaItemWithSignature>;
     isEncodedDataValid(data: string): boolean;
     static isCID(cid: string): boolean;
     static encodeQmHash(hash: string): string;

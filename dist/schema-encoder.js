@@ -74,6 +74,7 @@ class SchemaEncoder {
         return this.schema.map((s, i) => ({
             name: s.name,
             type: s.type,
+            signature: s.signature,
             value: values[i]
         }));
     }
