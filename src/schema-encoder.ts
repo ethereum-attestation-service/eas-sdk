@@ -106,12 +106,13 @@ export class SchemaEncoder {
     return defaultAbiCoder.encode(this.fullTypes(), data);
   }
 
-  public decodeData(data: string): ReadonlyArray<SchemaItem> {
+  public decodeData(data: string): ReadonlyArray<SchemaItemWithSignature> {
     const values = defaultAbiCoder.decode(this.fullTypes(), data);
 
     return this.schema.map((s, i) => ({
       name: s.name,
       type: s.type,
+      signature: s.signature,
       value: values[i]
     }));
   }

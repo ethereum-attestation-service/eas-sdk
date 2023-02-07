@@ -329,7 +329,7 @@ describe('SchemaEncoder', () => {
 
               const decoded = schemaEncoder.decodeData(encoded);
 
-              for (const [i, { name, type, value }] of decoded.entries()) {
+              for (const [i, { name, type, signature, value }] of decoded.entries()) {
                 let decodedValue;
                 if (Array.isArray(value)) {
                   decodedValue = value;
@@ -342,6 +342,7 @@ describe('SchemaEncoder', () => {
                 const schema = schemaEncoder.schema[i];
                 expect(name).to.equal(schema.name);
                 expect(type).to.equal(schema.type);
+                expect(signature).to.equal(schema.signature);
                 expect(value).to.deep.equal(decodedValue);
               }
             });
