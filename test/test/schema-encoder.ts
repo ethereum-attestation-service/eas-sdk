@@ -268,6 +268,14 @@ describe('SchemaEncoder', () => {
               name: 'map',
               value: []
             }
+          ],
+          [
+            { type: 'uint8', name: 'voteIndex', value: 123 },
+            {
+              type: '(string,    uint8)[]',
+              name: 'map',
+              value: []
+            }
           ]
         ]
       },
