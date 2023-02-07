@@ -71,7 +71,7 @@ export class SchemaEncoder {
     }
   }
 
-  public encodeData(params: ReadonlyArray<SchemaItem>): string {
+  public encodeData(params: SchemaItem[]): string {
     if (params.length !== this.schema.length) {
       throw new Error('Invalid number or values');
     }
@@ -106,7 +106,7 @@ export class SchemaEncoder {
     return defaultAbiCoder.encode(this.fullTypes(), data);
   }
 
-  public decodeData(data: string): ReadonlyArray<SchemaItemWithSignature> {
+  public decodeData(data: string): SchemaItemWithSignature[] {
     const values = defaultAbiCoder.decode(this.fullTypes(), data);
 
     return this.schema.map((s, i) => ({

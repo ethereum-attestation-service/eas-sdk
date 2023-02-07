@@ -11,8 +11,8 @@ export interface SchemaItemWithSignature extends SchemaItem {
 export declare class SchemaEncoder {
     schema: SchemaItemWithSignature[];
     constructor(schema: string);
-    encodeData(params: ReadonlyArray<SchemaItem>): string;
-    decodeData(data: string): ReadonlyArray<SchemaItemWithSignature>;
+    encodeData(params: SchemaItem[]): string;
+    decodeData(data: string): SchemaItemWithSignature[];
     isEncodedDataValid(data: string): boolean;
     static isCID(cid: string): boolean;
     static encodeQmHash(hash: string): string;
