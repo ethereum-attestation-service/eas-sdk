@@ -20,7 +20,7 @@
   "devDependencies": {
     "@ethersproject/wallet": "^5.7.0",
     "@trivago/prettier-plugin-sort-imports": "^4.0.0",
-    "@types/node": "^18.11.19",
+    "@types/node": "^18.13.0",
     "@typescript-eslint/eslint-plugin": "^5.51.0",
     "@typescript-eslint/parser": "^5.51.0",
     "eslint": "^8.33.0",
