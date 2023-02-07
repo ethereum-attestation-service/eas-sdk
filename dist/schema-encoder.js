@@ -70,7 +70,12 @@ class SchemaEncoder {
         return defaultAbiCoder.encode(this.fullTypes(), data);
     }
     decodeData(data) {
-        return defaultAbiCoder.decode(this.fullTypes(), data);
+        const values = defaultAbiCoder.decode(this.fullTypes(), data);
+        return this.schema.map((s, i) => ({
+            name: s.name,
+            type: s.type,
+            value: values[i]
+        }));
     }
     isEncodedDataValid(data) {
         try {
