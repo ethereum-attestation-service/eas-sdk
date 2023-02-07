@@ -19,7 +19,7 @@ export interface SchemaItem {
   value: SchemaValue;
 }
 
-interface SchemaFullItem extends SchemaItem {
+export interface SchemaItemWithSignature extends SchemaItem {
   signature: string;
 }
 
@@ -27,7 +27,7 @@ const TUPLE_TYPE = 'tuple';
 const TUPLE_ARRAY_TYPE = 'tuple[]';
 
 export class SchemaEncoder {
-  public schema: SchemaFullItem[];
+  public schema: SchemaItemWithSignature[];
 
   constructor(schema: string) {
     this.schema = [];
@@ -71,7 +71,7 @@ export class SchemaEncoder {
     }
   }
 
-  public encodeData(params: ReadonlyArray<SchemaItem>) {
+  public encodeData(params: ReadonlyArray<SchemaItem>): string {
     if (params.length !== this.schema.length) {
       throw new Error('Invalid number or values');
     }
@@ -106,8 +106,15 @@ export class SchemaEncoder {
     return defaultAbiCoder.encode(this.fullTypes(), data);
   }
 
-  public decodeData(data: string) {
-    return defaultAbiCoder.decode(this.fullTypes(), data);
+  public decodeData(data: string): ReadonlyArray<SchemaItemWithSignature> {
+    const values = defaultAbiCoder.decode(this.fullTypes(), data);
+
+    return this.schema.map((s, i) => ({
+      name: s.name,
+      type: s.type,
+      signature: s.signature,
+      value: values[i]
+    }));
   }
 
   public isEncodedDataValid(data: string) {

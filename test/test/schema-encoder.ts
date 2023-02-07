@@ -1,7 +1,7 @@
 import { SchemaEncoder } from '../../src/schema-encoder';
 import { ZERO_ADDRESS } from '../utils/Constants';
 import chai from './helpers/chai';
-import { utils } from 'ethers';
+import { BigNumber, utils } from 'ethers';
 
 const { defaultAbiCoder } = utils;
 
@@ -268,6 +268,14 @@ describe('SchemaEncoder', () => {
               name: 'map',
               value: []
             }
+          ],
+          [
+            { type: 'uint8', name: 'voteIndex', value: 123 },
+            {
+              type: '(string,    uint8)[]',
+              name: 'map',
+              value: []
+            }
           ]
         ]
       },
@@ -320,16 +328,22 @@ describe('SchemaEncoder', () => {
               expect(schemaEncoder.isEncodedDataValid(encoded)).to.be.true;
 
               const decoded = schemaEncoder.decodeData(encoded);
-              for (const [i, param] of decoded.entries()) {
-                let { value } = params[i];
+
+              for (const [i, { name, type, signature, value }] of decoded.entries()) {
+                let decodedValue;
                 if (Array.isArray(value)) {
-                  value = value.map((v) => (typeof v === 'object' ? Object.values(v) : v));
+                  decodedValue = value;
+                } else if (BigNumber.isBigNumber(value)) {
+                  decodedValue = value;
                 } else {
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  value = typeof value === 'object' ? Object.values(value) : (value as any);
+                  decodedValue = typeof value === 'object' ? Object.values(value) : value;
                 }
 
-                expect(param).to.deep.equal(value);
+                const schema = schemaEncoder.schema[i];
+                expect(name).to.equal(schema.name);
+                expect(type).to.equal(schema.type);
+                expect(signature).to.equal(schema.signature);
+                expect(value).to.deep.equal(decodedValue);
               }
             });
           });
