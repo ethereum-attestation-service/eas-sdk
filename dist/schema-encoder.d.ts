@@ -21,4 +21,5 @@ export declare class SchemaEncoder {
     private static decodeIpfsValue;
     private static encodeBytes32Value;
     private fullTypes;
+    private static toNamedValue;
 }
