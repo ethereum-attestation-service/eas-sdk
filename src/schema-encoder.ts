@@ -109,12 +109,37 @@ export class SchemaEncoder {
   public decodeData(data: string): SchemaItemWithSignature[] {
     const values = defaultAbiCoder.decode(this.fullTypes(), data);
 
-    return this.schema.map((s, i) => ({
-      name: s.name,
-      type: s.type,
-      signature: s.signature,
-      value: values[i]
-    }));
+    return this.schema.map((s, i) => {
+      const fragment = FunctionFragment.from(`func(${s.signature})`);
+
+      if (fragment.inputs.length !== 1) {
+        throw new Error(`Unexpected inputs: ${fragment.inputs}`);
+      }
+
+      let value = values[i];
+      const input = fragment.inputs[0];
+
+      if (value.length > 0 && input.components) {
+        if (Array.isArray(value[0])) {
+          const namedValues = [];
+
+          for (const v of value) {
+            namedValues.push(SchemaEncoder.toNamedValue(input.components, v));
+          }
+
+          value = namedValues;
+        } else {
+          value = SchemaEncoder.toNamedValue(input.components, value);
+        }
+      }
+
+      return {
+        name: s.name,
+        type: s.type,
+        signature: s.signature,
+        value
+      };
+    });
   }
 
   public isEncodedDataValid(data: string) {
@@ -184,5 +209,16 @@ export class SchemaEncoder {
 
   private fullTypes() {
     return this.schema.map((i) => i.signature);
+  }
+
+  private static toNamedValue(components: utils.ParamType[], value: Record<string, unknown>) {
+    const namedValue: Record<string, unknown> = {};
+
+    components.forEach((c) => {
+      namedValue.type = c.type;
+      namedValue[c.name] = value[c.name];
+    });
+
+    return namedValue;
   }
 }

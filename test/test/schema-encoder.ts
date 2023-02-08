@@ -1,7 +1,7 @@
-import { SchemaEncoder } from '../../src/schema-encoder';
+import { SchemaEncoder, SchemaItem } from '../../src/schema-encoder';
 import { ZERO_ADDRESS } from '../utils/Constants';
 import chai from './helpers/chai';
-import { BigNumber, utils } from 'ethers';
+import { utils } from 'ethers';
 
 const { defaultAbiCoder } = utils;
 
@@ -330,20 +330,37 @@ describe('SchemaEncoder', () => {
               const decoded = schemaEncoder.decodeData(encoded);
 
               for (const [i, { name, type, signature, value }] of decoded.entries()) {
-                let decodedValue;
-                if (Array.isArray(value)) {
-                  decodedValue = value;
-                } else if (BigNumber.isBigNumber(value)) {
-                  decodedValue = value;
-                } else {
-                  decodedValue = typeof value === 'object' ? Object.values(value) : value;
-                }
-
                 const schema = schemaEncoder.schema[i];
                 expect(name).to.equal(schema.name);
                 expect(type).to.equal(schema.type);
                 expect(signature).to.equal(schema.signature);
-                expect(value).to.deep.equal(decodedValue);
+
+                const actualValues = value;
+                const expectedValues = params[i].value;
+
+                if (Array.isArray(actualValues) && Array.isArray(expectedValues)) {
+                  let j = 0;
+                  for (let actualValue of actualValues) {
+                    let expectedValue = expectedValues[j++];
+
+                    if (typeof actualValues === 'object') {
+                      delete (actualValue as Record<string, SchemaItem>).type;
+                      actualValue = Object.values(actualValue);
+                    }
+
+                    if (typeof expectedValue === 'object') {
+                      expectedValue = Object.values(expectedValue);
+                    }
+
+                    expect(actualValue).to.deep.equal(expectedValue);
+                  }
+                } else {
+                  if (typeof actualValues === 'object') {
+                    delete (actualValues as Record<string, SchemaItem>).type;
+                  }
+
+                  expect(actualValues).to.deep.equal(expectedValues);
+                }
               }
             });
           });
