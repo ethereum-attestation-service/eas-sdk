@@ -146,165 +146,319 @@ describe('SchemaEncoder', () => {
       {
         schema: 'bool like',
         types: ['bool'],
-        inputs: [[{ type: 'bool', name: 'like', value: true }], [{ type: 'bool', name: 'like', value: false }]]
+        inputs: [
+          {
+            in: [{ type: 'bool', name: 'like', value: true }]
+          },
+          {
+            in: [{ type: 'bool', name: 'like', value: false }]
+          }
+        ]
       },
       {
         schema: 'address contractAddress,bool trusted',
         types: ['address', 'bool'],
         inputs: [
-          [
-            { type: 'address', name: 'contractAddress', value: '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266' },
-            { type: 'bool', name: 'trusted', value: true }
-          ],
-          [
-            { type: 'address', name: 'contractAddress', value: '0x70997970C51812dc3A010C7d01b50e0d17dc79C8' },
-            { type: 'bool', name: 'trusted', value: false }
-          ]
+          {
+            in: [
+              { type: 'address', name: 'contractAddress', value: '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266' },
+              { type: 'bool', name: 'trusted', value: true }
+            ]
+          },
+          {
+            in: [
+              { type: 'address', name: 'contractAddress', value: '0x70997970C51812dc3A010C7d01b50e0d17dc79C8' },
+              { type: 'bool', name: 'trusted', value: false }
+            ]
+          }
         ]
       },
       {
         schema: 'bytes32 eventId,uint8 ticketType,uint32 ticketNum',
         types: ['bytes32', 'uint8', 'uint32'],
         inputs: [
-          [
-            {
-              type: 'bytes32',
-              name: 'eventId',
-              value: '0x2bbd66db77a761a69195c2ee81b158a0e15e02d47d4528098ae059e0937b9cf2'
-            },
-            { type: 'uint8', name: 'ticketType', value: 8 },
-            { type: 'uint32', name: 'ticketNum', value: 100_000 }
-          ],
-          [
-            {
-              type: 'bytes32',
-              name: 'eventId',
-              value: '0xcacdee2a5c6a7e013524774dd74ed464ac260e97e6c8d6b5da2ba8d6eb775946'
-            },
-            { type: 'uint8', name: 'ticketType', value: 0 },
-            { type: 'uint32', name: 'ticketNum', value: 0 }
-          ],
-          [
-            {
-              type: 'bytes32',
-              name: 'eventId',
-              value: '0x98f9b0ef313ddecf10200c3943bdd8f2347e151f9ae814a286bde35e323b564d'
-            },
-            { type: 'uint8', name: 'ticketType', value: 255 },
-            { type: 'uint32', name: 'ticketNum', value: 1_000_000 }
-          ]
+          {
+            in: [
+              {
+                type: 'bytes32',
+                name: 'eventId',
+                value: '0x2bbd66db77a761a69195c2ee81b158a0e15e02d47d4528098ae059e0937b9cf2'
+              },
+              { type: 'uint8', name: 'ticketType', value: 8 },
+              { type: 'uint32', name: 'ticketNum', value: 100_000 }
+            ]
+          },
+          {
+            in: [
+              {
+                type: 'bytes32',
+                name: 'eventId',
+                value: '0xcacdee2a5c6a7e013524774dd74ed464ac260e97e6c8d6b5da2ba8d6eb775946'
+              },
+              { type: 'uint8', name: 'ticketType', value: 0 },
+              { type: 'uint32', name: 'ticketNum', value: 0 }
+            ]
+          },
+          {
+            in: [
+              {
+                type: 'bytes32',
+                name: 'eventId',
+                value: '0x98f9b0ef313ddecf10200c3943bdd8f2347e151f9ae814a286bde35e323b564d'
+              },
+              { type: 'uint8', name: 'ticketType', value: 255 },
+              { type: 'uint32', name: 'ticketNum', value: 1_000_000 }
+            ]
+          }
         ]
       },
       {
         schema: 'uint256 id,ipfsHash hash',
         types: ['uint256', 'bytes32'],
         inputs: [
-          [
-            { type: 'uint256', name: 'id', value: 123 },
-            {
-              type: 'ipfsHash',
-              name: 'hash',
-              value: '0x55f51668121cf19209d29b2a5a36c34f38c66d65e42135e67e914b6aed448bf7'
-            }
-          ],
-          [
-            { type: 'uint256', name: 'id', value: 0 },
-            {
-              type: 'ipfsHash',
-              name: 'hash',
-              value: '0x778d1b0841d47524bf882bbe8e23993f1cf41ccfaea0769fe5215e7008b10655'
-            }
-          ],
-          [
-            { type: 'uint256', name: 'id', value: 1_000_000 },
-            {
-              type: 'ipfsHash',
-              name: 'hash',
-              value: '0x822c3d2fc4181bc4eddd792c1b7c18790f8d0b4d207eb0f1d2a2474d0b9baefa'
-            }
-          ]
+          {
+            in: [
+              { type: 'uint256', name: 'id', value: BigNumber.from(123) },
+              {
+                type: 'ipfsHash',
+                name: 'hash',
+                value: '0x55f51668121cf19209d29b2a5a36c34f38c66d65e42135e67e914b6aed448bf7'
+              }
+            ],
+            out: [
+              { type: 'uint256', name: 'id', value: BigNumber.from(123) },
+              {
+                type: 'bytes32',
+                name: 'hash',
+                value: '0x55f51668121cf19209d29b2a5a36c34f38c66d65e42135e67e914b6aed448bf7'
+              }
+            ]
+          },
+          {
+            in: [
+              { type: 'uint256', name: 'id', value: BigNumber.from(0) },
+              {
+                type: 'ipfsHash',
+                name: 'hash',
+                value: '0x778d1b0841d47524bf882bbe8e23993f1cf41ccfaea0769fe5215e7008b10655'
+              }
+            ],
+            out: [
+              { type: 'uint256', name: 'id', value: BigNumber.from(0) },
+              {
+                type: 'bytes32',
+                name: 'hash',
+                value: '0x778d1b0841d47524bf882bbe8e23993f1cf41ccfaea0769fe5215e7008b10655'
+              }
+            ]
+          },
+          {
+            in: [
+              { type: 'uint256', name: 'id', value: BigNumber.from(1_000_000) },
+              {
+                type: 'ipfsHash',
+                name: 'hash',
+                value: '0x822c3d2fc4181bc4eddd792c1b7c18790f8d0b4d207eb0f1d2a2474d0b9baefa'
+              }
+            ],
+            out: [
+              { type: 'uint256', name: 'id', value: BigNumber.from(1_000_000) },
+              {
+                type: 'bytes32',
+                name: 'hash',
+                value: '0x822c3d2fc4181bc4eddd792c1b7c18790f8d0b4d207eb0f1d2a2474d0b9baefa'
+              }
+            ]
+          }
         ]
       },
       {
         schema: 'uint8 voteIndex,(string key,uint8 value)[] map',
         types: ['uint8', '(string key,uint8 value)[]'],
         inputs: [
-          [
-            { type: 'uint8', name: 'voteIndex', value: 123 },
-            {
-              type: '(string,uint8)[]',
-              name: 'map',
-              value: [{ key: 'voter1', value: 1 }]
-            }
-          ],
-          [
-            { type: 'uint8', name: 'voteIndex', value: 123 },
-            {
-              type: '(string,uint8)[]',
-              name: 'map',
-              value: [
-                { key: 'voter1', value: 1 },
-                { key: 'voter2', value: 2 },
-                { key: 'voter3', value: 3 }
-              ]
-            }
-          ],
-          [
-            { type: 'uint8', name: 'voteIndex', value: 123 },
-            {
-              type: '(string,uint8)[]',
-              name: 'map',
-              value: [
-                ['voter1', 1],
-                ['voter2', 2],
-                ['voter3', 3]
-              ]
-            }
-          ],
-          [
-            { type: 'uint8', name: 'voteIndex', value: 123 },
-            {
-              type: '(string,uint8)[]',
-              name: 'map',
-              value: []
-            }
-          ],
-          [
-            { type: 'uint8', name: 'voteIndex', value: 123 },
-            {
-              type: '(string,    uint8)[]',
-              name: 'map',
-              value: []
-            }
-          ]
+          {
+            in: [
+              { type: 'uint8', name: 'voteIndex', value: 123 },
+              {
+                type: '(string,uint8)[]',
+                name: 'map',
+                value: [{ key: 'voter1', value: 1 }]
+              }
+            ],
+            out: [
+              { type: 'uint8', name: 'voteIndex', value: 123 },
+              {
+                type: '(string,uint8)[]',
+                name: 'map',
+                value: [
+                  [
+                    { name: 'key', type: 'string', value: 'voter1' },
+                    { name: 'value', type: 'uint8', value: 1 }
+                  ]
+                ]
+              }
+            ]
+          },
+          {
+            in: [
+              { type: 'uint8', name: 'voteIndex', value: 100 },
+              {
+                type: '(string,uint8)[]',
+                name: 'map',
+                value: [
+                  { key: 'voter1', value: 1 },
+                  { key: 'voter2', value: 2 },
+                  { key: 'voter3', value: 3 }
+                ]
+              }
+            ],
+            out: [
+              { type: 'uint8', name: 'voteIndex', value: 100 },
+              {
+                type: '(string,uint8)[]',
+                name: 'map',
+                value: [
+                  [
+                    { name: 'key', type: 'string', value: 'voter1' },
+                    { name: 'value', type: 'uint8', value: 1 }
+                  ],
+                  [
+                    { name: 'key', type: 'string', value: 'voter2' },
+                    { name: 'value', type: 'uint8', value: 2 }
+                  ],
+                  [
+                    { name: 'key', type: 'string', value: 'voter3' },
+                    { name: 'value', type: 'uint8', value: 3 }
+                  ]
+                ]
+              }
+            ]
+          },
+          {
+            in: [
+              { type: 'uint8', name: 'voteIndex', value: 7 },
+              {
+                type: '(string,uint8)[]',
+                name: 'map',
+                value: [
+                  ['voter1', 10],
+                  ['voter2', 20],
+                  ['voter3', 30]
+                ]
+              }
+            ],
+            out: [
+              { type: 'uint8', name: 'voteIndex', value: 7 },
+              {
+                type: '(string,uint8)[]',
+                name: 'map',
+                value: [
+                  [
+                    { name: 'key', type: 'string', value: 'voter1' },
+                    { name: 'value', type: 'uint8', value: 10 }
+                  ],
+                  [
+                    { name: 'key', type: 'string', value: 'voter2' },
+                    { name: 'value', type: 'uint8', value: 20 }
+                  ],
+                  [
+                    { name: 'key', type: 'string', value: 'voter3' },
+                    { name: 'value', type: 'uint8', value: 30 }
+                  ]
+                ]
+              }
+            ]
+          },
+          {
+            in: [
+              { type: 'uint8', name: 'voteIndex', value: 9 },
+              {
+                type: '(string,uint8)[]',
+                name: 'map',
+                value: []
+              }
+            ],
+            out: [
+              { type: 'uint8', name: 'voteIndex', value: 9 },
+              {
+                type: '(string,uint8)[]',
+                name: 'map',
+                value: []
+              }
+            ]
+          },
+          {
+            in: [
+              { type: 'uint8', name: 'voteIndex', value: 222 },
+              {
+                type: '(string,    uint8)[]',
+                name: 'map',
+                value: []
+              }
+            ],
+            out: [
+              { type: 'uint8', name: 'voteIndex', value: 222 },
+              {
+                type: '(string,uint8)[]',
+                name: 'map',
+                value: []
+              }
+            ]
+          }
         ]
       },
       {
         schema: 'string name,(string key,string value) entry',
         types: ['string', '(string key,string value)'],
         inputs: [
-          [
-            { type: 'string', name: 'name', value: 'Entry 1' },
-            {
-              type: '(string,string)',
-              name: 'entry',
-              value: { key: 'entry1', value: 'data1' }
-            }
-          ]
+          {
+            in: [
+              { type: 'string', name: 'name', value: 'Entry 1' },
+              {
+                type: '(string,string)',
+                name: 'entry',
+                value: { key: 'entry1', value: 'data1' }
+              }
+            ],
+            out: [
+              { type: 'string', name: 'name', value: 'Entry 1' },
+              {
+                type: '(string,string)',
+                name: 'entry',
+                value: [
+                  { name: 'key', type: 'string', value: 'entry1' },
+                  { name: 'value', type: 'string', value: 'data1' }
+                ]
+              }
+            ]
+          }
         ]
       },
       {
         schema: 'string     name,      (string    key, string value   ) entry',
         types: ['string', '(string   key,  string value)'],
         inputs: [
-          [
-            { type: 'string', name: 'name', value: 'Entry 1' },
-            {
-              type: '(string,    string)',
-              name: 'entry',
-              value: { key: 'entry1', value: 'data1' }
-            }
-          ]
+          {
+            in: [
+              { type: 'string', name: 'name', value: 'Entry 1' },
+              {
+                type: '(string,    string)',
+                name: 'entry',
+                value: { key: 'entry1', value: 'data1' }
+              }
+            ],
+            out: [
+              { type: 'string', name: 'name', value: 'Entry 1' },
+              {
+                type: '(string,string)',
+                name: 'entry',
+                value: [
+                  { name: 'key', type: 'string', value: 'entry1' },
+                  { name: 'value', type: 'string', value: 'data1' }
+                ]
+              }
+            ]
+          }
         ]
       }
     ]) {
@@ -318,32 +472,26 @@ describe('SchemaEncoder', () => {
             });
 
             it('should properly encode and decode data', () => {
-              const encoded = schemaEncoder.encodeData(params);
+              const encoded = schemaEncoder.encodeData(params.in);
               expect(encoded).to.equal(
                 defaultAbiCoder.encode(
                   types,
-                  params.map((p) => p.value)
+                  params.in.map((p) => p.value)
                 )
               );
+              const decoded = schemaEncoder.decodeData(encoded);
               expect(schemaEncoder.isEncodedDataValid(encoded)).to.be.true;
 
-              const decoded = schemaEncoder.decodeData(encoded);
-
               for (const [i, { name, type, signature, value }] of decoded.entries()) {
-                let decodedValue;
-                if (Array.isArray(value)) {
-                  decodedValue = value;
-                } else if (BigNumber.isBigNumber(value)) {
-                  decodedValue = value;
-                } else {
-                  decodedValue = typeof value === 'object' ? Object.values(value) : value;
-                }
-
                 const schema = schemaEncoder.schema[i];
                 expect(name).to.equal(schema.name);
                 expect(type).to.equal(schema.type);
                 expect(signature).to.equal(schema.signature);
-                expect(value).to.deep.equal(decodedValue);
+
+                const expectedValue = params.out ? params.out[i] : params.in[i];
+                expect(value.name).to.equal(expectedValue.name);
+                expect(value.type).to.equal(expectedValue.type);
+                expect(value.value).to.deep.equal(expectedValue.value);
               }
             });
           });
@@ -373,7 +521,7 @@ describe('SchemaEncoder', () => {
         schema: 'uint256 id,ipfsHash hash',
         inputs: [
           [
-            { type: 'uint128', name: 'id', value: 123 },
+            { type: 'uint128', name: 'id', value: BigNumber.from(123) },
             {
               type: 'ipfsHash',
               name: 'hash',
@@ -381,7 +529,7 @@ describe('SchemaEncoder', () => {
             }
           ],
           [
-            { type: 'uint256', name: 'id', value: 0 },
+            { type: 'uint256', name: 'id', value: BigNumber.from(0) },
             {
               type: 'ipfsHash222',
               name: 'hash',

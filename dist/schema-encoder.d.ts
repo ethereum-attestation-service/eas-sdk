@@ -8,11 +8,17 @@ export interface SchemaItem {
 export interface SchemaItemWithSignature extends SchemaItem {
     signature: string;
 }
+export interface SchemaDecodedItem {
+    name: string;
+    type: string;
+    signature: string;
+    value: SchemaItem;
+}
 export declare class SchemaEncoder {
     schema: SchemaItemWithSignature[];
     constructor(schema: string);
     encodeData(params: SchemaItem[]): string;
-    decodeData(data: string): SchemaItemWithSignature[];
+    decodeData(data: string): SchemaDecodedItem[];
     isEncodedDataValid(data: string): boolean;
     static isCID(cid: string): boolean;
     static encodeQmHash(hash: string): string;
@@ -20,5 +26,5 @@ export declare class SchemaEncoder {
     private static getDefaultValueForTypeName;
     private static decodeIpfsValue;
     private static encodeBytes32Value;
-    private fullTypes;
+    private signatures;
 }

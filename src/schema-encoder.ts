@@ -23,6 +23,13 @@ export interface SchemaItemWithSignature extends SchemaItem {
   signature: string;
 }
 
+export interface SchemaDecodedItem {
+  name: string;
+  type: string;
+  signature: string;
+  value: SchemaItem;
+}
+
 const TUPLE_TYPE = 'tuple';
 const TUPLE_ARRAY_TYPE = 'tuple[]';
 
@@ -103,18 +110,71 @@ export class SchemaEncoder {
       );
     }
 
-    return defaultAbiCoder.encode(this.fullTypes(), data);
+    return defaultAbiCoder.encode(this.signatures(), data);
   }
 
-  public decodeData(data: string): SchemaItemWithSignature[] {
-    const values = defaultAbiCoder.decode(this.fullTypes(), data);
+  public decodeData(data: string): SchemaDecodedItem[] {
+    const values = defaultAbiCoder.decode(this.signatures(), data);
 
-    return this.schema.map((s, i) => ({
-      name: s.name,
-      type: s.type,
-      signature: s.signature,
-      value: values[i]
-    }));
+    return this.schema.map((s, i) => {
+      const fragment = FunctionFragment.from(`func(${s.signature})`);
+
+      if (fragment.inputs.length !== 1) {
+        throw new Error(`Unexpected inputs: ${fragment.inputs}`);
+      }
+
+      let value = values[i];
+      const input = fragment.inputs[0];
+      const { components } = input;
+      if (value.length > 0 && components) {
+        if (Array.isArray(value[0])) {
+          const namedValues = [];
+
+          for (const val of value) {
+            const namedValue = [];
+            const rawValues = val.filter((v: unknown) => typeof v !== 'object');
+
+            for (const [k, v] of rawValues.entries()) {
+              const component = components[k];
+
+              namedValue.push({ name: component.name, type: component.type, value: v });
+            }
+
+            namedValues.push(namedValue);
+          }
+
+          value = {
+            name: s.name,
+            type: s.type,
+            value: namedValues
+          };
+        } else {
+          const namedValue = [];
+          const rawValues = value.filter((v: unknown) => typeof v !== 'object');
+
+          for (const [k, v] of rawValues.entries()) {
+            const component = components[k];
+
+            namedValue.push({ name: component.name, type: component.type, value: v });
+          }
+
+          value = {
+            name: s.name,
+            type: s.type,
+            value: namedValue
+          };
+        }
+      } else {
+        value = { name: s.name, type: s.type, value };
+      }
+
+      return {
+        name: s.name,
+        type: s.type,
+        signature: s.signature,
+        value
+      };
+    });
   }
 
   public isEncodedDataValid(data: string) {
@@ -182,7 +242,7 @@ export class SchemaEncoder {
     }
   }
 
-  private fullTypes() {
+  private signatures() {
     return this.schema.map((i) => i.signature);
   }
 }
