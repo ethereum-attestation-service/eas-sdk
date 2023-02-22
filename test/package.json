@@ -8,7 +8,7 @@
     "test": "hardhat test"
   },
   "devDependencies": {
-    "@ethereum-attestation-service/eas-contracts": "^0.26.0",
+    "@ethereum-attestation-service/eas-contracts": "^0.26.1",
     "@nomiclabs/hardhat-ethers": "^2.2.2",
     "@nomiclabs/hardhat-waffle": "^2.0.5",
     "@openzeppelin/contracts": "4.8.1",
