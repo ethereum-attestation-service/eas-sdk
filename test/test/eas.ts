@@ -1,6 +1,6 @@
 import { EAS, NO_EXPIRATION } from '../../src/eas';
 import { SchemaRegistry } from '../../src/schema-registry';
-import { getSchemaUUID, getUUIDFromAttestTx } from '../../src/utils';
+import { getSchemaUID, getUIDFromAttestTx } from '../../src/utils';
 import Contracts from '../components/Contracts';
 import { ZERO_ADDRESS, ZERO_BYTES, ZERO_BYTES32 } from '../utils/Constants';
 import chai from './helpers/chai';
@@ -76,14 +76,14 @@ describe('EAS API', () => {
 
     context('with a registered schema', () => {
       const schema = 'bool like';
-      const schemaId = getSchemaUUID(schema, ZERO_ADDRESS, true);
+      const schemaId = getSchemaUID(schema, ZERO_ADDRESS, true);
 
       beforeEach(async () => {
         await registry.register(schema, ZERO_ADDRESS, true);
       });
 
       it('should be able to query the schema registry', async () => {
-        expect((await schemaRegistry.getSchema({ uuid: schemaId })).uuid).to.equal(schemaId);
+        expect((await schemaRegistry.getSchema({ uid: schemaId })).uid).to.equal(schemaId);
       });
 
       it('should not be able to register new schema', () => {
@@ -93,7 +93,7 @@ describe('EAS API', () => {
       });
 
       context('with an attestation', () => {
-        let uuid: string;
+        let uid: string;
 
         beforeEach(async () => {
           const res = await easContract.attest({
@@ -102,21 +102,21 @@ describe('EAS API', () => {
               recipient: recipient.address,
               expirationTime: NO_EXPIRATION,
               revocable: true,
-              refUUID: ZERO_BYTES32,
+              refUID: ZERO_BYTES32,
               data: ZERO_BYTES,
               value: 0
             }
           });
 
-          uuid = await getUUIDFromAttestTx(res);
+          uid = await getUIDFromAttestTx(res);
         });
 
         it('should be able to query the EAS', async () => {
-          expect((await eas.getAttestation(uuid)).uuid).to.equal(uuid);
+          expect((await eas.getAttestation(uid)).uid).to.equal(uid);
         });
 
         it('should not be able to make new attestations new schema', () => {
-          expect(eas.getAttestation(uuid)).to.be.rejectedWith('Error: sending a transaction requires a signer');
+          expect(eas.getAttestation(uid)).to.be.rejectedWith('Error: sending a transaction requires a signer');
         });
       });
     });
@@ -155,7 +155,7 @@ describe('EAS API', () => {
 
               it('should be able to query the schema registry', async () => {
                 const schemaData = await registry.getSchema(schema1Id);
-                expect(schemaData.uuid).to.equal(schema1Id);
+                expect(schemaData.uid).to.equal(schema1Id);
                 expect(schemaData.resolver).to.equal(ZERO_ADDRESS);
                 expect(schemaData.revocable).to.equal(revocable);
                 expect(schemaData.schema).to.equal(schema1);
@@ -244,7 +244,7 @@ describe('EAS API', () => {
               });
 
               it('should store referenced attestation', async () => {
-                const uuid = await (
+                const uid = await (
                   await eas.attest({
                     schema: schema1Id,
                     data: { recipient: recipient.address, expirationTime, revocable, data }
@@ -254,13 +254,13 @@ describe('EAS API', () => {
                 await expectAttestation(
                   { eas, eip712Utils, offchainUtils },
                   schema1Id,
-                  { recipient: recipient.address, expirationTime, revocable, refUUID: uuid, data },
+                  { recipient: recipient.address, expirationTime, revocable, refUID: uid, data },
                   { signatureType, from: sender }
                 );
               });
 
               if (signatureType === SignatureType.Offchain) {
-                it('should verify the uuid of an offchain attestation', async () => {
+                it('should verify the uid of an offchain attestation', async () => {
                   const request = await offchainUtils.signAttestation(
                     sender,
                     schema1Id,
@@ -301,8 +301,8 @@ describe('EAS API', () => {
       let schema1Id: string;
       let schema2Id: string;
 
-      let uuids1: string[];
-      let uuids2: string[];
+      let uids1: string[];
+      let uids2: string[];
       const data = '0x1234';
 
       beforeEach(async () => {
@@ -319,21 +319,21 @@ describe('EAS API', () => {
             const tx1 = await eas.attest({ schema: schema1Id, data: { recipient: recipient.address, data } });
             const tx2 = await eas.attest({ schema: schema1Id, data: { recipient: recipient.address, data } });
 
-            uuids1 = [await tx1.wait(), await tx2.wait()];
+            uids1 = [await tx1.wait(), await tx2.wait()];
 
             const tx3 = await eas.attest({ schema: schema2Id, data: { recipient: recipient.address, data } });
             const tx4 = await eas.attest({ schema: schema2Id, data: { recipient: recipient.address, data } });
 
-            uuids2 = [await tx3.wait(), await tx4.wait()];
+            uids2 = [await tx3.wait(), await tx4.wait()];
           });
 
           it('should allow to revoke existing attestations', async () => {
-            for (const uuid of uuids1) {
-              await expectRevocation({ eas, eip712Utils }, schema1Id, { uuid }, { signatureType, from: sender });
+            for (const uid of uids1) {
+              await expectRevocation({ eas, eip712Utils }, schema1Id, { uid }, { signatureType, from: sender });
             }
 
-            for (const uuid of uuids2) {
-              await expectRevocation({ eas, eip712Utils }, schema2Id, { uuid }, { signatureType, from: sender });
+            for (const uid of uids2) {
+              await expectRevocation({ eas, eip712Utils }, schema2Id, { uid }, { signatureType, from: sender });
             }
           });
 
@@ -343,11 +343,11 @@ describe('EAS API', () => {
               [
                 {
                   schema: schema1Id,
-                  data: [{ uuid: uuids1[0] }, { uuid: uuids1[1] }]
+                  data: [{ uid: uids1[0] }, { uid: uids1[1] }]
                 },
                 {
                   schema: schema2Id,
-                  data: [{ uuid: uuids2[0] }, { uuid: uuids2[1] }]
+                  data: [{ uid: uids2[0] }, { uid: uids2[1] }]
                 }
               ],
               { signatureType, from: sender }

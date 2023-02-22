@@ -14,18 +14,18 @@ class EAS extends transaction_1.Base {
     getVersion() {
         return this.contract.VERSION();
     }
-    // Returns an existing schema by attestation UUID
-    getAttestation(uuid) {
-        return this.contract.getAttestation(uuid);
+    // Returns an existing schema by attestation UID
+    getAttestation(uid) {
+        return this.contract.getAttestation(uid);
     }
     // Returns whether an attestation is valid
-    isAttestationValid(uuid) {
-        return this.contract.isAttestationValid(uuid);
+    isAttestationValid(uid) {
+        return this.contract.isAttestationValid(uid);
     }
     // Returns whether an attestation has been revoked
-    async isAttestationRevoked(uuid) {
-        const attestation = await this.contract.getAttestation(uuid);
-        if (attestation.uuid === utils_1.ZERO_BYTES32) {
+    async isAttestationRevoked(uid) {
+        const attestation = await this.contract.getAttestation(uid);
+        if (attestation.uid === utils_1.ZERO_BYTES32) {
             throw new Error('Invalid attestation');
         }
         return !attestation.revocationTime.isZero();
@@ -35,28 +35,28 @@ class EAS extends transaction_1.Base {
         return this.contract.getTimestamp(data);
     }
     // Attests to a specific schema
-    async attest({ schema, data: { recipient, data, expirationTime = exports.NO_EXPIRATION, revocable = true, refUUID = utils_1.ZERO_BYTES32, value = 0 } }) {
-        const tx = await this.contract.attest({ schema, data: { recipient, expirationTime, revocable, refUUID, data, value } }, {
+    async attest({ schema, data: { recipient, data, expirationTime = exports.NO_EXPIRATION, revocable = true, refUID = utils_1.ZERO_BYTES32, value = 0 } }) {
+        const tx = await this.contract.attest({ schema, data: { recipient, expirationTime, revocable, refUID, data, value } }, {
             value
         });
-        return new transaction_1.Transaction(tx, async (receipt) => (await (0, utils_1.getUUIDsFromAttestEvents)(receipt.events))[0]);
+        return new transaction_1.Transaction(tx, async (receipt) => (await (0, utils_1.getUIDsFromAttestEvents)(receipt.events))[0]);
     }
     // Attests to a specific schema via an EIP712 delegation request
-    async attestByDelegation({ schema, data: { recipient, data, expirationTime = exports.NO_EXPIRATION, revocable = true, refUUID = utils_1.ZERO_BYTES32, value = 0 }, attester, signature }) {
+    async attestByDelegation({ schema, data: { recipient, data, expirationTime = exports.NO_EXPIRATION, revocable = true, refUID = utils_1.ZERO_BYTES32, value = 0 }, attester, signature }) {
         const tx = await this.contract.attestByDelegation({
             schema,
             data: {
                 recipient,
                 expirationTime,
                 revocable,
-                refUUID,
+                refUID,
                 data,
                 value
             },
             signature,
             attester
         }, { value });
-        return new transaction_1.Transaction(tx, async (receipt) => (await (0, utils_1.getUUIDsFromAttestEvents)(receipt.events))[0]);
+        return new transaction_1.Transaction(tx, async (receipt) => (await (0, utils_1.getUIDsFromAttestEvents)(receipt.events))[0]);
     }
     // Multi-attests to multiple schemas
     async multiAttest(requests) {
@@ -66,7 +66,7 @@ class EAS extends transaction_1.Base {
                 recipient: d.recipient,
                 expirationTime: d.expirationTime ?? exports.NO_EXPIRATION,
                 revocable: d.revocable ?? true,
-                refUUID: d.refUUID ?? utils_1.ZERO_BYTES32,
+                refUID: d.refUID ?? utils_1.ZERO_BYTES32,
                 data: d.data ?? utils_1.ZERO_BYTES32,
                 value: d.value ?? 0
             }))
@@ -79,7 +79,7 @@ class EAS extends transaction_1.Base {
             value: requestedValue
         });
         // eslint-disable-next-line require-await
-        return new transaction_1.Transaction(tx, async (receipt) => (0, utils_1.getUUIDsFromAttestEvents)(receipt.events));
+        return new transaction_1.Transaction(tx, async (receipt) => (0, utils_1.getUIDsFromAttestEvents)(receipt.events));
     }
     // Multi-attests to multiple schemas via an EIP712 delegation requests
     async multiAttestByDelegation(requests) {
@@ -89,7 +89,7 @@ class EAS extends transaction_1.Base {
                 recipient: d.recipient,
                 expirationTime: d.expirationTime ?? exports.NO_EXPIRATION,
                 revocable: d.revocable ?? true,
-                refUUID: d.refUUID ?? utils_1.ZERO_BYTES32,
+                refUID: d.refUID ?? utils_1.ZERO_BYTES32,
                 data: d.data ?? utils_1.ZERO_BYTES32,
                 value: d.value ?? 0
             })),
@@ -104,19 +104,19 @@ class EAS extends transaction_1.Base {
             value: requestedValue
         });
         // eslint-disable-next-line require-await
-        return new transaction_1.Transaction(tx, async (receipt) => (0, utils_1.getUUIDsFromAttestEvents)(receipt.events));
+        return new transaction_1.Transaction(tx, async (receipt) => (0, utils_1.getUIDsFromAttestEvents)(receipt.events));
     }
     // Revokes an existing attestation
-    async revoke({ schema, data: { uuid, value = 0 } }) {
-        const tx = await this.contract.revoke({ schema, data: { uuid, value } }, { value });
+    async revoke({ schema, data: { uid, value = 0 } }) {
+        const tx = await this.contract.revoke({ schema, data: { uid, value } }, { value });
         return new transaction_1.Transaction(tx, async () => { });
     }
     // Revokes an existing attestation an EIP712 delegation request
-    async revokeByDelegation({ schema, data: { uuid, value = 0 }, signature, revoker }) {
+    async revokeByDelegation({ schema, data: { uid, value = 0 }, signature, revoker }) {
         const tx = await this.contract.revokeByDelegation({
             schema,
             data: {
-                uuid,
+                uid,
                 value
             },
             signature,
@@ -129,7 +129,7 @@ class EAS extends transaction_1.Base {
         const multiRevocationRequests = requests.map((r) => ({
             schema: r.schema,
             data: r.data.map((d) => ({
-                uuid: d.uuid,
+                uid: d.uid,
                 value: d.value ?? 0
             }))
         }));
@@ -147,7 +147,7 @@ class EAS extends transaction_1.Base {
         const multiRevocationRequests = requests.map((r) => ({
             schema: r.schema,
             data: r.data.map((d) => ({
-                uuid: d.uuid,
+                uid: d.uid,
                 value: d.value ?? 0
             })),
             signatures: r.signatures,

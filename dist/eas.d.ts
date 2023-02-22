@@ -2,9 +2,9 @@ import { Base, SignerOrProvider, Transaction } from './transaction';
 import { EAS as EASContract } from '@ethereum-attestation-service/eas-contracts';
 import { BigNumber, BigNumberish, Signature } from 'ethers';
 export interface Attestation {
-    uuid: string;
+    uid: string;
     schema: string;
-    refUUID: string;
+    refUID: string;
     time: BigNumberish;
     expirationTime: BigNumberish;
     revocationTime: BigNumberish;
@@ -19,7 +19,7 @@ export interface AttestationRequestData {
     data: string;
     expirationTime?: BigNumberish;
     revocable?: boolean;
-    refUUID?: string;
+    refUID?: string;
     value?: BigNumberish;
 }
 export interface AttestationRequest {
@@ -39,7 +39,7 @@ export interface MultiDelegatedAttestationRequest extends MultiAttestationReques
     attester: string;
 }
 export interface RevocationRequestData {
-    uuid: string;
+    uid: string;
     value?: BigNumberish;
 }
 export interface RevocationRequest {
@@ -61,16 +61,16 @@ export interface MultiDelegatedRevocationRequest extends MultiRevocationRequest 
 export declare class EAS extends Base<EASContract> {
     constructor(address: string, signerOrProvider?: SignerOrProvider);
     getVersion(): Promise<string>;
-    getAttestation(uuid: string): Promise<Attestation>;
-    isAttestationValid(uuid: string): Promise<boolean>;
-    isAttestationRevoked(uuid: string): Promise<boolean>;
+    getAttestation(uid: string): Promise<Attestation>;
+    isAttestationValid(uid: string): Promise<boolean>;
+    isAttestationRevoked(uid: string): Promise<boolean>;
     getTimestamp(data: string): Promise<BigNumberish>;
-    attest({ schema, data: { recipient, data, expirationTime, revocable, refUUID, value } }: AttestationRequest): Promise<Transaction<string>>;
-    attestByDelegation({ schema, data: { recipient, data, expirationTime, revocable, refUUID, value }, attester, signature }: DelegatedAttestationRequest): Promise<Transaction<string>>;
+    attest({ schema, data: { recipient, data, expirationTime, revocable, refUID, value } }: AttestationRequest): Promise<Transaction<string>>;
+    attestByDelegation({ schema, data: { recipient, data, expirationTime, revocable, refUID, value }, attester, signature }: DelegatedAttestationRequest): Promise<Transaction<string>>;
     multiAttest(requests: MultiAttestationRequest[]): Promise<Transaction<string[]>>;
     multiAttestByDelegation(requests: MultiDelegatedAttestationRequest[]): Promise<Transaction<string[]>>;
-    revoke({ schema, data: { uuid, value } }: RevocationRequest): Promise<Transaction<void>>;
-    revokeByDelegation({ schema, data: { uuid, value }, signature, revoker }: DelegatedRevocationRequest): Promise<Transaction<void>>;
+    revoke({ schema, data: { uid, value } }: RevocationRequest): Promise<Transaction<void>>;
+    revokeByDelegation({ schema, data: { uid, value }, signature, revoker }: DelegatedRevocationRequest): Promise<Transaction<void>>;
     multiRevoke(requests: MultiRevocationRequest[]): Promise<Transaction<void>>;
     multiRevokeByDelegation(requests: MultiDelegatedRevocationRequest[]): Promise<Transaction<void>>;
     timestamp(data: string): Promise<Transaction<BigNumberish>>;

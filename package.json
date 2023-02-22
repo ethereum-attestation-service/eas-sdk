@@ -1,6 +1,6 @@
 {
   "name": "@ethereum-attestation-service/eas-sdk",
-  "version": "0.25.9",
+  "version": "0.26.0",
   "description": "Ethereum Attestation Service - TypeScript/JavaScript SDK",
   "repository": "git@github.com:ethereum-attestation-service/eas-sdk.git",
   "author": "Leonid Beder <leonid.beder@gmail.com>",
@@ -20,9 +20,9 @@
   "devDependencies": {
     "@ethersproject/wallet": "^5.7.0",
     "@trivago/prettier-plugin-sort-imports": "^4.0.0",
-    "@types/node": "^18.13.0",
-    "@typescript-eslint/eslint-plugin": "^5.51.0",
-    "@typescript-eslint/parser": "^5.51.0",
+    "@types/node": "^18.14.0",
+    "@typescript-eslint/eslint-plugin": "^5.53.0",
+    "@typescript-eslint/parser": "^5.53.0",
     "eslint": "^8.34.0",
     "eslint-plugin-import": "^2.27.5",
     "eslint-plugin-prefer-arrow": "^1.2.3",
@@ -34,7 +34,7 @@
     "typescript": "^4.9.5"
   },
   "dependencies": {
-    "@ethereum-attestation-service/eas-contracts": "^0.25.2",
+    "@ethereum-attestation-service/eas-contracts": "^0.26.0",
     "ethers": "^5.7.2",
     "multiformats": "9.9.0"
   }

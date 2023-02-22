@@ -1,5 +1,5 @@
 import { SchemaRegistry } from '../../src/schema-registry';
-import { getSchemaUUID } from '../../src/utils';
+import { getSchemaUID } from '../../src/utils';
 import Contracts from '../components/Contracts';
 import { ZERO_ADDRESS, ZERO_BYTES } from '../utils/Constants';
 import chai from './helpers/chai';
@@ -39,15 +39,15 @@ describe('SchemaRegistry API', () => {
     const testRegister = async (schema: string, resolver: string | SignerWithAddress, revocable: boolean) => {
       const resolverAddress = typeof resolver === 'string' ? resolver : resolver.address;
 
-      const uuid = getSchemaUUID(schema, resolverAddress, revocable);
-      expect(schemaRegistry.getSchema({ uuid })).to.be.rejectedWith(new Error('Schema not found'));
+      const uid = getSchemaUID(schema, resolverAddress, revocable);
+      expect(schemaRegistry.getSchema({ uid })).to.be.rejectedWith(new Error('Schema not found'));
 
       const tx = await schemaRegistry.register({ schema, resolverAddress, revocable });
-      const uuid2 = await tx.wait();
+      const uid2 = await tx.wait();
 
-      const schemaRecord = await schemaRegistry.getSchema({ uuid });
-      expect(schemaRecord.uuid).to.equal(uuid);
-      expect(schemaRecord.uuid).to.equal(uuid2);
+      const schemaRecord = await schemaRegistry.getSchema({ uid });
+      expect(schemaRecord.uid).to.equal(uid);
+      expect(schemaRecord.uid).to.equal(uid2);
       expect(schemaRecord.schema).to.equal(schema);
       expect(schemaRecord.revocable).to.equal(revocable);
       expect(schemaRecord.resolver).to.equal(resolverAddress);

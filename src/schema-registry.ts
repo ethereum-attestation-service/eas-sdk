@@ -1,5 +1,5 @@
 import { Base, SignerOrProvider, Transaction } from './transaction';
-import { getSchemaUUID, ZERO_ADDRESS, ZERO_BYTES32 } from './utils';
+import { getSchemaUID, ZERO_ADDRESS, ZERO_BYTES32 } from './utils';
 import {
   SchemaRegistry__factory,
   SchemaRegistry as SchemaRegistryContract
@@ -7,7 +7,7 @@ import {
 import { ContractReceipt } from 'ethers';
 
 export declare type SchemaRecord = {
-  uuid: string;
+  uid: string;
   resolver: string;
   revocable: boolean;
   schema: string;
@@ -20,7 +20,7 @@ export interface RegisterSchemaParams {
 }
 
 export interface GetSchemaParams {
-  uuid: string;
+  uid: string;
 }
 
 export class SchemaRegistry extends Base<SchemaRegistryContract> {
@@ -33,7 +33,7 @@ export class SchemaRegistry extends Base<SchemaRegistryContract> {
     return this.contract.VERSION();
   }
 
-  // Registers a new schema and returns its UUID
+  // Registers a new schema and returns its UID
   public async register({
     schema,
     resolverAddress = ZERO_ADDRESS,
@@ -42,13 +42,13 @@ export class SchemaRegistry extends Base<SchemaRegistryContract> {
     const tx = await this.contract.register(schema, resolverAddress, revocable);
 
     // eslint-disable-next-line require-await
-    return new Transaction(tx, async (_receipt: ContractReceipt) => getSchemaUUID(schema, resolverAddress, revocable));
+    return new Transaction(tx, async (_receipt: ContractReceipt) => getSchemaUID(schema, resolverAddress, revocable));
   }
 
-  // Returns an existing schema by a schema UUID
-  public async getSchema({ uuid }: GetSchemaParams): Promise<SchemaRecord> {
-    const schema = await this.contract.getSchema(uuid);
-    if (schema.uuid === ZERO_BYTES32) {
+  // Returns an existing schema by a schema UID
+  public async getSchema({ uid }: GetSchemaParams): Promise<SchemaRecord> {
+    const schema = await this.contract.getSchema(uid);
+    if (schema.uid === ZERO_BYTES32) {
       throw new Error('Schema not found');
     }
 

@@ -1,12 +1,12 @@
 import { Base, SignerOrProvider, Transaction } from './transaction';
-import { getTimestampFromTimestampEvents, getUUIDsFromAttestEvents, ZERO_BYTES32 } from './utils';
+import { getTimestampFromTimestampEvents, getUIDsFromAttestEvents, ZERO_BYTES32 } from './utils';
 import { EAS__factory, EAS as EASContract } from '@ethereum-attestation-service/eas-contracts';
 import { BigNumber, BigNumberish, ContractReceipt, Signature } from 'ethers';
 
 export interface Attestation {
-  uuid: string;
+  uid: string;
   schema: string;
-  refUUID: string;
+  refUID: string;
   time: BigNumberish;
   expirationTime: BigNumberish;
   revocationTime: BigNumberish;
@@ -23,7 +23,7 @@ export interface AttestationRequestData {
   data: string;
   expirationTime?: BigNumberish;
   revocable?: boolean;
-  refUUID?: string;
+  refUID?: string;
   value?: BigNumberish;
 }
 
@@ -48,7 +48,7 @@ export interface MultiDelegatedAttestationRequest extends MultiAttestationReques
 }
 
 export interface RevocationRequestData {
-  uuid: string;
+  uid: string;
   value?: BigNumberish;
 }
 
@@ -82,20 +82,20 @@ export class EAS extends Base<EASContract> {
     return this.contract.VERSION();
   }
 
-  // Returns an existing schema by attestation UUID
-  public getAttestation(uuid: string): Promise<Attestation> {
-    return this.contract.getAttestation(uuid);
+  // Returns an existing schema by attestation UID
+  public getAttestation(uid: string): Promise<Attestation> {
+    return this.contract.getAttestation(uid);
   }
 
   // Returns whether an attestation is valid
-  public isAttestationValid(uuid: string): Promise<boolean> {
-    return this.contract.isAttestationValid(uuid);
+  public isAttestationValid(uid: string): Promise<boolean> {
+    return this.contract.isAttestationValid(uid);
   }
 
   // Returns whether an attestation has been revoked
-  public async isAttestationRevoked(uuid: string): Promise<boolean> {
-    const attestation = await this.contract.getAttestation(uuid);
-    if (attestation.uuid === ZERO_BYTES32) {
+  public async isAttestationRevoked(uid: string): Promise<boolean> {
+    const attestation = await this.contract.getAttestation(uid);
+    if (attestation.uid === ZERO_BYTES32) {
       throw new Error('Invalid attestation');
     }
 
@@ -110,22 +110,22 @@ export class EAS extends Base<EASContract> {
   // Attests to a specific schema
   public async attest({
     schema,
-    data: { recipient, data, expirationTime = NO_EXPIRATION, revocable = true, refUUID = ZERO_BYTES32, value = 0 }
+    data: { recipient, data, expirationTime = NO_EXPIRATION, revocable = true, refUID = ZERO_BYTES32, value = 0 }
   }: AttestationRequest): Promise<Transaction<string>> {
     const tx = await this.contract.attest(
-      { schema, data: { recipient, expirationTime, revocable, refUUID, data, value } },
+      { schema, data: { recipient, expirationTime, revocable, refUID, data, value } },
       {
         value
       }
     );
 
-    return new Transaction(tx, async (receipt: ContractReceipt) => (await getUUIDsFromAttestEvents(receipt.events))[0]);
+    return new Transaction(tx, async (receipt: ContractReceipt) => (await getUIDsFromAttestEvents(receipt.events))[0]);
   }
 
   // Attests to a specific schema via an EIP712 delegation request
   public async attestByDelegation({
     schema,
-    data: { recipient, data, expirationTime = NO_EXPIRATION, revocable = true, refUUID = ZERO_BYTES32, value = 0 },
+    data: { recipient, data, expirationTime = NO_EXPIRATION, revocable = true, refUID = ZERO_BYTES32, value = 0 },
     attester,
     signature
   }: DelegatedAttestationRequest): Promise<Transaction<string>> {
@@ -136,7 +136,7 @@ export class EAS extends Base<EASContract> {
           recipient,
           expirationTime,
           revocable,
-          refUUID,
+          refUID,
           data,
           value
         },
@@ -146,7 +146,7 @@ export class EAS extends Base<EASContract> {
       { value }
     );
 
-    return new Transaction(tx, async (receipt: ContractReceipt) => (await getUUIDsFromAttestEvents(receipt.events))[0]);
+    return new Transaction(tx, async (receipt: ContractReceipt) => (await getUIDsFromAttestEvents(receipt.events))[0]);
   }
 
   // Multi-attests to multiple schemas
@@ -157,7 +157,7 @@ export class EAS extends Base<EASContract> {
         recipient: d.recipient,
         expirationTime: d.expirationTime ?? NO_EXPIRATION,
         revocable: d.revocable ?? true,
-        refUUID: d.refUUID ?? ZERO_BYTES32,
+        refUID: d.refUID ?? ZERO_BYTES32,
         data: d.data ?? ZERO_BYTES32,
         value: d.value ?? 0
       }))
@@ -173,7 +173,7 @@ export class EAS extends Base<EASContract> {
     });
 
     // eslint-disable-next-line require-await
-    return new Transaction(tx, async (receipt: ContractReceipt) => getUUIDsFromAttestEvents(receipt.events));
+    return new Transaction(tx, async (receipt: ContractReceipt) => getUIDsFromAttestEvents(receipt.events));
   }
 
   // Multi-attests to multiple schemas via an EIP712 delegation requests
@@ -184,7 +184,7 @@ export class EAS extends Base<EASContract> {
         recipient: d.recipient,
         expirationTime: d.expirationTime ?? NO_EXPIRATION,
         revocable: d.revocable ?? true,
-        refUUID: d.refUUID ?? ZERO_BYTES32,
+        refUID: d.refUID ?? ZERO_BYTES32,
         data: d.data ?? ZERO_BYTES32,
         value: d.value ?? 0
       })),
@@ -202,12 +202,12 @@ export class EAS extends Base<EASContract> {
     });
 
     // eslint-disable-next-line require-await
-    return new Transaction(tx, async (receipt: ContractReceipt) => getUUIDsFromAttestEvents(receipt.events));
+    return new Transaction(tx, async (receipt: ContractReceipt) => getUIDsFromAttestEvents(receipt.events));
   }
 
   // Revokes an existing attestation
-  public async revoke({ schema, data: { uuid, value = 0 } }: RevocationRequest): Promise<Transaction<void>> {
-    const tx = await this.contract.revoke({ schema, data: { uuid, value } }, { value });
+  public async revoke({ schema, data: { uid, value = 0 } }: RevocationRequest): Promise<Transaction<void>> {
+    const tx = await this.contract.revoke({ schema, data: { uid, value } }, { value });
 
     return new Transaction(tx, async () => {});
   }
@@ -215,7 +215,7 @@ export class EAS extends Base<EASContract> {
   // Revokes an existing attestation an EIP712 delegation request
   public async revokeByDelegation({
     schema,
-    data: { uuid, value = 0 },
+    data: { uid, value = 0 },
     signature,
     revoker
   }: DelegatedRevocationRequest): Promise<Transaction<void>> {
@@ -223,7 +223,7 @@ export class EAS extends Base<EASContract> {
       {
         schema,
         data: {
-          uuid,
+          uid,
           value
         },
         signature,
@@ -240,7 +240,7 @@ export class EAS extends Base<EASContract> {
     const multiRevocationRequests = requests.map((r) => ({
       schema: r.schema,
       data: r.data.map((d) => ({
-        uuid: d.uuid,
+        uid: d.uid,
         value: d.value ?? 0
       }))
     }));
@@ -262,7 +262,7 @@ export class EAS extends Base<EASContract> {
     const multiRevocationRequests = requests.map((r) => ({
       schema: r.schema,
       data: r.data.map((d) => ({
-        uuid: d.uuid,
+        uid: d.uid,
         value: d.value ?? 0
       })),
       signatures: r.signatures,

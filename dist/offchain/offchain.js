@@ -12,7 +12,7 @@ exports.ATTESTATION_TYPE = [
     { name: 'time', type: 'uint64' },
     { name: 'expirationTime', type: 'uint64' },
     { name: 'revocable', type: 'bool' },
-    { name: 'refUUID', type: 'bytes32' },
+    { name: 'refUID', type: 'bytes32' },
     { name: 'data', type: 'bytes' }
 ];
 exports.DOMAIN_NAME = 'EAS Attestation';
@@ -37,7 +37,7 @@ class Offchain extends typed_data_handler_1.TypedDataHandler {
         };
     }
     async signOffchainAttestation(params, signer) {
-        const uuid = Offchain.getOffchainUUID(params);
+        const uid = Offchain.getOffchainUID(params);
         return {
             ...(await this.signTypedDataRequest(params, {
                 domain: this.getDomainTypedData(),
@@ -47,15 +47,15 @@ class Offchain extends typed_data_handler_1.TypedDataHandler {
                     Attest: exports.ATTESTATION_TYPE
                 }
             }, signer)),
-            uuid
+            uid
         };
     }
     verifyOffchainAttestationSignature(attester, request) {
-        return (request.uuid === Offchain.getOffchainUUID(request.message) &&
+        return (request.uid === Offchain.getOffchainUID(request.message) &&
             this.verifyTypedDataRequestSignature(attester, request));
     }
-    static getOffchainUUID(params) {
-        return (0, utils_1.getOffchainUUID)(params.schema, params.recipient, params.time, params.expirationTime, params.revocable, params.refUUID, params.data);
+    static getOffchainUID(params) {
+        return (0, utils_1.getOffchainUID)(params.schema, params.recipient, params.time, params.expirationTime, params.revocable, params.refUID, params.data);
     }
 }
 exports.Offchain = Offchain;

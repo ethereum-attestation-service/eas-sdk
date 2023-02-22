@@ -17,8 +17,8 @@ export { EIP712MessageTypes, EIP712TypedData, EIP712Request, TypedDataConfig } f
 export const EIP712_DOMAIN = 'EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)';
 export const EIP712_NAME = 'EAS';
 export const ATTEST_TYPED_SIGNATURE =
-  'Attest(bytes32 schema,address recipient,uint64 expirationTime,bool revocable,bytes32 refUUID,bytes data,uint256 nonce)';
-export const REVOKE_TYPED_SIGNATURE = 'Revoke(bytes32 schema,bytes32 uuid,uint256 nonce)';
+  'Attest(bytes32 schema,address recipient,uint64 expirationTime,bool revocable,bytes32 refUID,bytes data,uint256 nonce)';
+export const REVOKE_TYPED_SIGNATURE = 'Revoke(bytes32 schema,bytes32 uid,uint256 nonce)';
 export const ATTEST_PRIMARY_TYPE = 'Attest';
 export const REVOKE_PRIMARY_TYPE = 'Revoke';
 export const ATTEST_TYPE: TypedData[] = [
@@ -26,13 +26,13 @@ export const ATTEST_TYPE: TypedData[] = [
   { name: 'recipient', type: 'address' },
   { name: 'expirationTime', type: 'uint64' },
   { name: 'revocable', type: 'bool' },
-  { name: 'refUUID', type: 'bytes32' },
+  { name: 'refUID', type: 'bytes32' },
   { name: 'data', type: 'bytes' },
   { name: 'nonce', type: 'uint256' }
 ];
 export const REVOKE_TYPE: TypedData[] = [
   { name: 'schema', type: 'bytes32' },
-  { name: 'uuid', type: 'bytes32' },
+  { name: 'uid', type: 'bytes32' },
   { name: 'nonce', type: 'uint256' }
 ];
 
@@ -41,13 +41,13 @@ export type EIP712AttestationParams = EIP712Params & {
   recipient: string;
   expirationTime: BigNumberish;
   revocable: boolean;
-  refUUID: string;
+  refUID: string;
   data: Buffer;
 };
 
 export type EIP712RevocationParams = EIP712Params & {
   schema: string;
-  uuid: string;
+  uid: string;
 };
 
 export class Delegated extends TypedDataHandler {
