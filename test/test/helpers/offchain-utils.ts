@@ -38,7 +38,7 @@ export class OffchainUtils extends Offchain {
     revocable: boolean,
     refUID: string,
     data: string,
-    customUuid?: string
+    customUid?: string
   ): Promise<SignedOffchainAttestation> {
     return this.signCustomAttestation(
       {
@@ -51,7 +51,7 @@ export class OffchainUtils extends Offchain {
         data
       },
       attester,
-      customUuid
+      customUid
     );
   }
 
@@ -62,9 +62,9 @@ export class OffchainUtils extends Offchain {
   private async signCustomAttestation(
     params: OffchainAttestationParams,
     signer: TypedDataSigner,
-    customUuid?: string
+    customUid?: string
   ): Promise<SignedOffchainAttestation> {
-    const uid = customUuid ?? OffchainUtils.getOffchainUID(params);
+    const uid = customUid ?? OffchainUtils.getOffchainUID(params);
 
     return {
       ...(await this.signTypedDataRequest<EIP712MessageTypes, OffchainAttestationParams>(
