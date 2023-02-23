@@ -1,4 +1,4 @@
-import { getOffchainUUID } from '../utils';
+import { getOffchainUID } from '../utils';
 import {
   DomainTypedData,
   EIP712MessageTypes,
@@ -23,7 +23,7 @@ export const ATTESTATION_TYPE: TypedData[] = [
   { name: 'time', type: 'uint64' },
   { name: 'expirationTime', type: 'uint64' },
   { name: 'revocable', type: 'bool' },
-  { name: 'refUUID', type: 'bytes32' },
+  { name: 'refUID', type: 'bytes32' },
   { name: 'data', type: 'bytes' }
 ];
 
@@ -35,12 +35,12 @@ export type OffchainAttestationParams = {
   time: BigNumberish;
   expirationTime: BigNumberish;
   revocable: boolean;
-  refUUID: string;
+  refUID: string;
   data: string;
 } & Partial<EIP712Params>;
 
 export interface SignedOffchainAttestation extends EIP712Request<EIP712MessageTypes, OffchainAttestationParams> {
-  uuid: string;
+  uid: string;
 }
 
 export class Offchain extends TypedDataHandler {
@@ -75,7 +75,7 @@ export class Offchain extends TypedDataHandler {
     params: OffchainAttestationParams,
     signer: TypedDataSigner
   ): Promise<SignedOffchainAttestation> {
-    const uuid = Offchain.getOffchainUUID(params);
+    const uid = Offchain.getOffchainUID(params);
 
     return {
       ...(await this.signTypedDataRequest<EIP712MessageTypes, OffchainAttestationParams>(
@@ -90,25 +90,25 @@ export class Offchain extends TypedDataHandler {
         },
         signer
       )),
-      uuid
+      uid
     };
   }
 
   public verifyOffchainAttestationSignature(attester: string, request: SignedOffchainAttestation): boolean {
     return (
-      request.uuid === Offchain.getOffchainUUID(request.message) &&
+      request.uid === Offchain.getOffchainUID(request.message) &&
       this.verifyTypedDataRequestSignature(attester, request)
     );
   }
 
-  public static getOffchainUUID(params: OffchainAttestationParams): string {
-    return getOffchainUUID(
+  public static getOffchainUID(params: OffchainAttestationParams): string {
+    return getOffchainUID(
       params.schema,
       params.recipient,
       params.time,
       params.expirationTime,
       params.revocable,
-      params.refUUID,
+      params.refUID,
       params.data
     );
   }

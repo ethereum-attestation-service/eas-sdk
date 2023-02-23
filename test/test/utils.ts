@@ -1,4 +1,4 @@
-import { getSchemaUUID, getUUID } from '../../src/utils';
+import { getSchemaUID, getUID } from '../../src/utils';
 import { ZERO_ADDRESS, ZERO_BYTES32 } from '../utils/Constants';
 import chai from './helpers/chai';
 import { utils } from 'ethers';
@@ -8,7 +8,7 @@ const { solidityKeccak256, toUtf8Bytes, hexlify } = utils;
 const { expect } = chai;
 
 describe('utils', () => {
-  describe('uuid', () => {
+  describe('uid', () => {
     for (const schema of [
       'bool like',
       'address contractAddress,bool trusted',
@@ -26,7 +26,7 @@ describe('utils', () => {
           for (const time of [1, 12345, 1669299342]) {
             for (const expirationTime of [0, 1669299342]) {
               for (const revocable of [true, false]) {
-                for (const refUUID of [
+                for (const refUID of [
                   ZERO_BYTES32,
                   '0x7465737400000000000000000000000000000000000000000000000000000000'
                 ]) {
@@ -35,9 +35,9 @@ describe('utils', () => {
                       context(
                         `schema=${schema},recipient=${recipient},attester=${attester},time=${time},expirationTime=${expirationTime},revocable=${revocable},data=${data},bump=${bump}`,
                         () => {
-                          it('should properly derive uuid', () => {
+                          it('should properly derive uid', () => {
                             expect(
-                              getUUID(schema, recipient, attester, time, expirationTime, revocable, refUUID, data, bump)
+                              getUID(schema, recipient, attester, time, expirationTime, revocable, refUID, data, bump)
                             ).to.equal(
                               solidityKeccak256(
                                 [
@@ -58,7 +58,7 @@ describe('utils', () => {
                                   time,
                                   expirationTime,
                                   revocable,
-                                  refUUID,
+                                  refUID,
                                   data,
                                   bump
                                 ]
@@ -78,7 +78,7 @@ describe('utils', () => {
     }
   });
 
-  describe('schema uuid', () => {
+  describe('schema uid', () => {
     for (const schema of [
       'bool like',
       'address contractAddress,bool trusted',
@@ -91,8 +91,8 @@ describe('utils', () => {
       ]) {
         for (const revocable of [true, false]) {
           context(`schema=${schema},resolver=${resolver}},revocable=${revocable}`, () => {
-            it('should properly derive uuid', () => {
-              expect(getSchemaUUID(schema, resolver, revocable)).to.equal(
+            it('should properly derive uid', () => {
+              expect(getSchemaUID(schema, resolver, revocable)).to.equal(
                 solidityKeccak256(['string', 'address', 'bool'], [schema, resolver, revocable])
               );
             });

@@ -1,37 +1,37 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getTimestampFromTimestampEvents = exports.getUUIDsFromAttestEvents = exports.getUUIDsFromMultiAttestTx = exports.getUUIDFromAttestTx = exports.getOffchainUUID = exports.getUUID = exports.getSchemaUUID = exports.ZERO_BYTES32 = exports.ZERO_BYTES = exports.ZERO_ADDRESS = void 0;
+exports.getTimestampFromTimestampEvents = exports.getUIDsFromAttestEvents = exports.getUIDsFromMultiAttestTx = exports.getUIDFromAttestTx = exports.getOffchainUID = exports.getUID = exports.getSchemaUID = exports.ZERO_BYTES32 = exports.ZERO_BYTES = exports.ZERO_ADDRESS = void 0;
 const ethers_1 = require("ethers");
 const { solidityKeccak256, hexlify, toUtf8Bytes } = ethers_1.utils;
 const { AddressZero } = ethers_1.constants;
 exports.ZERO_ADDRESS = AddressZero;
 exports.ZERO_BYTES = '0x';
 exports.ZERO_BYTES32 = '0x0000000000000000000000000000000000000000000000000000000000000000';
-const getSchemaUUID = (schema, resolverAddress, revocable) => solidityKeccak256(['string', 'address', 'bool'], [schema, resolverAddress, revocable]);
-exports.getSchemaUUID = getSchemaUUID;
-const getUUID = (schema, recipient, attester, time, expirationTime, revocable, refUUID, data, bump) => solidityKeccak256(['bytes', 'address', 'address', 'uint64', 'uint64', 'bool', 'bytes32', 'bytes', 'uint32'], [hexlify(toUtf8Bytes(schema)), recipient, attester, time, expirationTime, revocable, refUUID, data, bump]);
-exports.getUUID = getUUID;
-const getOffchainUUID = (schema, recipient, time, expirationTime, revocable, refUUID, data) => solidityKeccak256(['bytes', 'address', 'address', 'uint64', 'uint64', 'bool', 'bytes32', 'bytes', 'uint32'], [hexlify(toUtf8Bytes(schema)), recipient, exports.ZERO_ADDRESS, time, expirationTime, revocable, refUUID, data, 0]);
-exports.getOffchainUUID = getOffchainUUID;
-const getUUIDFromAttestTx = async (res) => {
+const getSchemaUID = (schema, resolverAddress, revocable) => solidityKeccak256(['string', 'address', 'bool'], [schema, resolverAddress, revocable]);
+exports.getSchemaUID = getSchemaUID;
+const getUID = (schema, recipient, attester, time, expirationTime, revocable, refUID, data, bump) => solidityKeccak256(['bytes', 'address', 'address', 'uint64', 'uint64', 'bool', 'bytes32', 'bytes', 'uint32'], [hexlify(toUtf8Bytes(schema)), recipient, attester, time, expirationTime, revocable, refUID, data, bump]);
+exports.getUID = getUID;
+const getOffchainUID = (schema, recipient, time, expirationTime, revocable, refUID, data) => solidityKeccak256(['bytes', 'address', 'address', 'uint64', 'uint64', 'bool', 'bytes32', 'bytes', 'uint32'], [hexlify(toUtf8Bytes(schema)), recipient, exports.ZERO_ADDRESS, time, expirationTime, revocable, refUID, data, 0]);
+exports.getOffchainUID = getOffchainUID;
+const getUIDFromAttestTx = async (res) => {
     const receipt = await (await res).wait();
     const event = receipt.events?.find((e) => e.event === 'Attested');
     if (!event) {
         throw new Error('Unable to process attestation event');
     }
-    return event.args?.uuid;
+    return event.args?.uid;
 };
-exports.getUUIDFromAttestTx = getUUIDFromAttestTx;
-const getUUIDsFromMultiAttestTx = async (res) => {
+exports.getUIDFromAttestTx = getUIDFromAttestTx;
+const getUIDsFromMultiAttestTx = async (res) => {
     const receipt = await (await res).wait();
     const events = receipt.events?.filter((e) => e.event === 'Attested');
     if (!events || events?.length === 0) {
         throw new Error('Unable to process attestation event');
     }
-    return events.map((event) => event.args?.uuid);
+    return events.map((event) => event.args?.uid);
 };
-exports.getUUIDsFromMultiAttestTx = getUUIDsFromMultiAttestTx;
-const getUUIDsFromAttestEvents = (events) => {
+exports.getUIDsFromMultiAttestTx = getUIDsFromMultiAttestTx;
+const getUIDsFromAttestEvents = (events) => {
     if (!events) {
         return [];
     }
@@ -39,9 +39,9 @@ const getUUIDsFromAttestEvents = (events) => {
     if (attestedEvents.length === 0) {
         throw new Error('Unable to process attestation events');
     }
-    return attestedEvents.map((event) => event.args?.uuid);
+    return attestedEvents.map((event) => event.args?.uid);
 };
-exports.getUUIDsFromAttestEvents = getUUIDsFromAttestEvents;
+exports.getUIDsFromAttestEvents = getUIDsFromAttestEvents;
 const getTimestampFromTimestampEvents = (events) => {
     if (!events) {
         return [];

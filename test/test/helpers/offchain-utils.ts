@@ -36,9 +36,9 @@ export class OffchainUtils extends Offchain {
     time: BigNumberish,
     expirationTime: BigNumberish,
     revocable: boolean,
-    refUUID: string,
+    refUID: string,
     data: string,
-    customUuid?: string
+    customUid?: string
   ): Promise<SignedOffchainAttestation> {
     return this.signCustomAttestation(
       {
@@ -47,11 +47,11 @@ export class OffchainUtils extends Offchain {
         time,
         expirationTime,
         revocable,
-        refUUID,
+        refUID,
         data
       },
       attester,
-      customUuid
+      customUid
     );
   }
 
@@ -62,9 +62,9 @@ export class OffchainUtils extends Offchain {
   private async signCustomAttestation(
     params: OffchainAttestationParams,
     signer: TypedDataSigner,
-    customUuid?: string
+    customUid?: string
   ): Promise<SignedOffchainAttestation> {
-    const uuid = customUuid ?? OffchainUtils.getOffchainUUID(params);
+    const uid = customUid ?? OffchainUtils.getOffchainUID(params);
 
     return {
       ...(await this.signTypedDataRequest<EIP712MessageTypes, OffchainAttestationParams>(
@@ -79,7 +79,7 @@ export class OffchainUtils extends Offchain {
         },
         signer
       )),
-      uuid
+      uid
     };
   }
 }

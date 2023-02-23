@@ -46,7 +46,7 @@ export class EIP712Utils {
     recipient: string | SignerWithAddress,
     expirationTime: BigNumberish,
     revocable: boolean,
-    refUUID: string,
+    refUID: string,
     data: BytesLike,
     nonce: BigNumber
   ): Promise<EIP712Request<EIP712MessageTypes, EIP712AttestationParams>> {
@@ -60,7 +60,7 @@ export class EIP712Utils {
         recipient: typeof recipient === 'string' ? recipient : recipient.address,
         expirationTime,
         revocable,
-        refUUID,
+        refUID,
         data: Buffer.isBuffer(data) ? data : Buffer.from((data as string).slice(2), 'hex'),
         nonce: nonce.toNumber()
       },
@@ -85,7 +85,7 @@ export class EIP712Utils {
   public signDelegatedRevocation(
     attester: TypedDataSigner,
     schema: string,
-    uuid: string,
+    uid: string,
     nonce: BigNumber
   ): Promise<EIP712Request<EIP712MessageTypes, EIP712RevocationParams>> {
     if (!this.delegated) {
@@ -95,7 +95,7 @@ export class EIP712Utils {
     return this.delegated.signDelegatedRevocation(
       {
         schema,
-        uuid,
+        uid,
         nonce: nonce.toNumber()
       },
       attester

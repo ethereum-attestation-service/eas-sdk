@@ -12,11 +12,11 @@ export type OffchainAttestationParams = {
     time: BigNumberish;
     expirationTime: BigNumberish;
     revocable: boolean;
-    refUUID: string;
+    refUID: string;
     data: string;
 } & Partial<EIP712Params>;
 export interface SignedOffchainAttestation extends EIP712Request<EIP712MessageTypes, OffchainAttestationParams> {
-    uuid: string;
+    uid: string;
 }
 export declare class Offchain extends TypedDataHandler {
     constructor(config: TypedDataConfig);
@@ -24,5 +24,5 @@ export declare class Offchain extends TypedDataHandler {
     getDomainTypedData(): DomainTypedData;
     signOffchainAttestation(params: OffchainAttestationParams, signer: TypedDataSigner): Promise<SignedOffchainAttestation>;
     verifyOffchainAttestationSignature(attester: string, request: SignedOffchainAttestation): boolean;
-    static getOffchainUUID(params: OffchainAttestationParams): string;
+    static getOffchainUID(params: OffchainAttestationParams): string;
 }
