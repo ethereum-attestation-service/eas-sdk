@@ -1,6 +1,6 @@
 import { ZERO_ADDRESS } from '../utils';
 import { TypedDataSigner } from '@ethersproject/abstract-signer';
-import { BigNumberish, Signature, utils } from 'ethers';
+import { BigNumberish, utils } from 'ethers';
 
 const { getAddress, verifyTypedData, hexlify, joinSignature, splitSignature } = utils;
 
@@ -60,6 +60,13 @@ export interface EIP712TypedData<T extends EIP712MessageTypes, P extends EIP712P
   message: P;
 }
 
+export interface Signature {
+  r: string;
+  s: string;
+
+  v: number;
+}
+
 export type EIP712Request<T extends EIP712MessageTypes, P extends EIP712Params> = EIP712TypedData<T, P> & Signature;
 
 export abstract class TypedDataHandler {
@@ -78,8 +85,9 @@ export abstract class TypedDataHandler {
     signer: TypedDataSigner
   ): Promise<EIP712Request<T, P>> {
     const rawSignature = await signer._signTypedData(types.domain, types.types, params);
+    const signature = splitSignature(rawSignature);
 
-    return { ...types, ...splitSignature(rawSignature) };
+    return { ...types, v: signature.v, r: signature.r, s: signature.s };
   }
 
   public verifyTypedDataRequestSignature<T extends EIP712MessageTypes, P extends EIP712Params>(

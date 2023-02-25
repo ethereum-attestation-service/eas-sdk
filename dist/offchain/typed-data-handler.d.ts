@@ -1,5 +1,5 @@
 import { TypedDataSigner } from '@ethersproject/abstract-signer';
-import { BigNumberish, Signature } from 'ethers';
+import { BigNumberish } from 'ethers';
 export interface TypedDataConfig {
     address: string;
     version: string;
@@ -36,6 +36,11 @@ export interface EIP712TypedData<T extends EIP712MessageTypes, P extends EIP712P
     primaryType: keyof T;
     types: T;
     message: P;
+}
+export interface Signature {
+    r: string;
+    s: string;
+    v: number;
 }
 export type EIP712Request<T extends EIP712MessageTypes, P extends EIP712Params> = EIP712TypedData<T, P> & Signature;
 export declare abstract class TypedDataHandler {

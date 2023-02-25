@@ -66,19 +66,21 @@ export class OffchainUtils extends Offchain {
   ): Promise<SignedOffchainAttestation> {
     const uid = customUid ?? OffchainUtils.getOffchainUID(params);
 
+    const signedRequest = await this.signTypedDataRequest<EIP712MessageTypes, OffchainAttestationParams>(
+      params,
+      {
+        domain: this.getDomainTypedData(),
+        primaryType: ATTESTATION_PRIMARY_TYPE,
+        message: params,
+        types: {
+          Attest: ATTESTATION_TYPE
+        }
+      },
+      signer
+    );
+
     return {
-      ...(await this.signTypedDataRequest<EIP712MessageTypes, OffchainAttestationParams>(
-        params,
-        {
-          domain: this.getDomainTypedData(),
-          primaryType: ATTESTATION_PRIMARY_TYPE,
-          message: params,
-          types: {
-            Attest: ATTESTATION_TYPE
-          }
-        },
-        signer
-      )),
+      ...signedRequest,
       uid
     };
   }
