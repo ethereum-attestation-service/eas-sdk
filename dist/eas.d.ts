@@ -1,6 +1,7 @@
+import { Signature } from './offchain/typed-data-handler';
 import { Base, SignerOrProvider, Transaction } from './transaction';
 import { EAS as EASContract } from '@ethereum-attestation-service/eas-contracts';
-import { BigNumber, BigNumberish, Signature } from 'ethers';
+import { BigNumber, BigNumberish } from 'ethers';
 export interface Attestation {
     uid: string;
     schema: string;

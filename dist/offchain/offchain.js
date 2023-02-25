@@ -38,15 +38,16 @@ class Offchain extends typed_data_handler_1.TypedDataHandler {
     }
     async signOffchainAttestation(params, signer) {
         const uid = Offchain.getOffchainUID(params);
+        const signedRequest = await this.signTypedDataRequest(params, {
+            domain: this.getDomainTypedData(),
+            primaryType: exports.ATTESTATION_PRIMARY_TYPE,
+            message: params,
+            types: {
+                Attest: exports.ATTESTATION_TYPE
+            }
+        }, signer);
         return {
-            ...(await this.signTypedDataRequest(params, {
-                domain: this.getDomainTypedData(),
-                primaryType: exports.ATTESTATION_PRIMARY_TYPE,
-                message: params,
-                types: {
-                    Attest: exports.ATTESTATION_TYPE
-                }
-            }, signer)),
+            ...signedRequest,
             uid
         };
     }

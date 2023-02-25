@@ -11,7 +11,8 @@ class TypedDataHandler {
     }
     async signTypedDataRequest(params, types, signer) {
         const rawSignature = await signer._signTypedData(types.domain, types.types, params);
-        return { ...types, ...splitSignature(rawSignature) };
+        const signature = splitSignature(rawSignature);
+        return { ...types, v: signature.v, r: signature.r, s: signature.s };
     }
     verifyTypedDataRequestSignature(attester, request) {
         if (attester === utils_1.ZERO_ADDRESS) {
