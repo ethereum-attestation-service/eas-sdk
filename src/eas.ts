@@ -1,6 +1,11 @@
 import { Signature } from './offchain/typed-data-handler';
 import { Base, SignerOrProvider, Transaction } from './transaction';
-import { getTimestampFromTimestampEvents, getUIDsFromAttestEvents, ZERO_BYTES32 } from './utils';
+import {
+  getTimestampFromOffchainRevocationEvents,
+  getTimestampFromTimestampEvents,
+  getUIDsFromAttestEvents,
+  ZERO_BYTES32
+} from './utils';
 import { EAS__factory, EAS as EASContract } from '@ethereum-attestation-service/eas-contracts';
 import { BigNumber, BigNumberish, ContractReceipt } from 'ethers';
 
@@ -106,6 +111,11 @@ export class EAS extends Base<EASContract> {
   // Returns the timestamp that the specified data was timestamped with.
   public getTimestamp(data: string): Promise<BigNumberish> {
     return this.contract.getTimestamp(data);
+  }
+
+  // Returns the timestamp that the specified data was timestamped with.
+  public getRevocationOffchain(user:string, uid: string): Promise<BigNumberish> {
+    return this.contract.getRevokeOffchain(user, uid);
   }
 
   // Attests to a specific schema
@@ -299,6 +309,25 @@ export class EAS extends Base<EASContract> {
     // eslint-disable-next-line require-await
     return new Transaction(tx, async (receipt: ContractReceipt) => getTimestampFromTimestampEvents(receipt.events));
   }
+
+  // Revokes the specified offchain attestation UID.
+  public async revokeOffchain(uid: string): Promise<Transaction<BigNumberish>> {
+    const tx = await this.contract.revokeOffchain(uid);
+
+    return new Transaction(
+      tx,
+      async (receipt: ContractReceipt) => (await getTimestampFromOffchainRevocationEvents(receipt.events))[0]
+    );
+  }
+
+  // Revokes the specified multiple offchain attestation UIDs.
+  public async multiRevokeOffchain(uids: string[]): Promise<Transaction<BigNumberish[]>> {
+    const tx = await this.contract.multiRevokeOffchain(uids);
+
+    // eslint-disable-next-line require-await
+    return new Transaction(tx, async (receipt: ContractReceipt) => getTimestampFromOffchainRevocationEvents(receipt.events));
+  }
+
 
   // Returns the domain separator used in the encoding of the signatures for attest, and revoke.
   public getDomainSeparator(): Promise<string> {

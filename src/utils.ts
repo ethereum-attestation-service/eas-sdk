@@ -85,3 +85,16 @@ export const getTimestampFromTimestampEvents = (events?: Event[]): BigNumberish[
 
   return timestampedEvents.map((event) => event.args?.timestamp);
 };
+
+export const getTimestampFromOffchainRevocationEvents = (events?: Event[]): BigNumberish[] => {
+  if (!events) {
+    return [];
+  }
+
+  const revocationEvents = events.filter((e) => e.event === 'RevokedOffchain');
+  if (revocationEvents.length === 0) {
+    throw new Error('Unable to process revocationoffchain events');
+  }
+
+  return revocationEvents.map((event) => event.args?.timestamp);
+};
