@@ -433,6 +433,6 @@ describe('EAS API', () => {
       it("should return 0 for any data that wasn't revoked multiple data", async () => {
         expect(await eas.getRevocationOffchain(sender.address, data3)).to.equal(0);
       });
-    })
+    });
   });
 });
