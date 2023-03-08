@@ -9,3 +9,4 @@ export declare const getUIDFromAttestTx: (res: Promise<ContractTransaction> | Co
 export declare const getUIDsFromMultiAttestTx: (res: Promise<ContractTransaction> | ContractTransaction) => Promise<any[]>;
 export declare const getUIDsFromAttestEvents: (events?: Event[]) => string[];
 export declare const getTimestampFromTimestampEvents: (events?: Event[]) => BigNumberish[];
+export declare const getTimestampFromOffchainRevocationEvents: (events?: Event[]) => BigNumberish[];

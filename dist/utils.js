@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getTimestampFromTimestampEvents = exports.getUIDsFromAttestEvents = exports.getUIDsFromMultiAttestTx = exports.getUIDFromAttestTx = exports.getOffchainUID = exports.getUID = exports.getSchemaUID = exports.ZERO_BYTES32 = exports.ZERO_BYTES = exports.ZERO_ADDRESS = void 0;
+exports.getTimestampFromOffchainRevocationEvents = exports.getTimestampFromTimestampEvents = exports.getUIDsFromAttestEvents = exports.getUIDsFromMultiAttestTx = exports.getUIDFromAttestTx = exports.getOffchainUID = exports.getUID = exports.getSchemaUID = exports.ZERO_BYTES32 = exports.ZERO_BYTES = exports.ZERO_ADDRESS = void 0;
 const ethers_1 = require("ethers");
 const { solidityKeccak256, hexlify, toUtf8Bytes } = ethers_1.utils;
 const { AddressZero } = ethers_1.constants;
@@ -53,4 +53,15 @@ const getTimestampFromTimestampEvents = (events) => {
     return timestampedEvents.map((event) => event.args?.timestamp);
 };
 exports.getTimestampFromTimestampEvents = getTimestampFromTimestampEvents;
+const getTimestampFromOffchainRevocationEvents = (events) => {
+    if (!events) {
+        return [];
+    }
+    const revocationEvents = events.filter((e) => e.event === 'RevokedOffchain');
+    if (revocationEvents.length === 0) {
+        throw new Error('Unable to process revocationoffchain events');
+    }
+    return revocationEvents.map((event) => event.args?.timestamp);
+};
+exports.getTimestampFromOffchainRevocationEvents = getTimestampFromOffchainRevocationEvents;
 //# sourceMappingURL=utils.js.map

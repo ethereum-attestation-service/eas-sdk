@@ -66,6 +66,7 @@ export declare class EAS extends Base<EASContract> {
     isAttestationValid(uid: string): Promise<boolean>;
     isAttestationRevoked(uid: string): Promise<boolean>;
     getTimestamp(data: string): Promise<BigNumberish>;
+    getRevocationOffchain(user: string, uid: string): Promise<BigNumberish>;
     attest({ schema, data: { recipient, data, expirationTime, revocable, refUID, value } }: AttestationRequest): Promise<Transaction<string>>;
     attestByDelegation({ schema, data: { recipient, data, expirationTime, revocable, refUID, value }, attester, signature }: DelegatedAttestationRequest): Promise<Transaction<string>>;
     multiAttest(requests: MultiAttestationRequest[]): Promise<Transaction<string[]>>;
@@ -76,6 +77,8 @@ export declare class EAS extends Base<EASContract> {
     multiRevokeByDelegation(requests: MultiDelegatedRevocationRequest[]): Promise<Transaction<void>>;
     timestamp(data: string): Promise<Transaction<BigNumberish>>;
     multiTimestamp(data: string[]): Promise<Transaction<BigNumberish[]>>;
+    revokeOffchain(uid: string): Promise<Transaction<BigNumberish>>;
+    multiRevokeOffchain(uids: string[]): Promise<Transaction<BigNumberish[]>>;
     getDomainSeparator(): Promise<string>;
     getNonce(address: string): Promise<BigNumber>;
     getAttestTypeHash(): Promise<string>;

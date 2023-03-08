@@ -34,6 +34,10 @@ class EAS extends transaction_1.Base {
     getTimestamp(data) {
         return this.contract.getTimestamp(data);
     }
+    // Returns the timestamp that the specified data was timestamped with.
+    getRevocationOffchain(user, uid) {
+        return this.contract.getRevokeOffchain(user, uid);
+    }
     // Attests to a specific schema
     async attest({ schema, data: { recipient, data, expirationTime = exports.NO_EXPIRATION, revocable = true, refUID = utils_1.ZERO_BYTES32, value = 0 } }) {
         const tx = await this.contract.attest({ schema, data: { recipient, expirationTime, revocable, refUID, data, value } }, {
@@ -172,6 +176,17 @@ class EAS extends transaction_1.Base {
         const tx = await this.contract.multiTimestamp(data);
         // eslint-disable-next-line require-await
         return new transaction_1.Transaction(tx, async (receipt) => (0, utils_1.getTimestampFromTimestampEvents)(receipt.events));
+    }
+    // Revokes the specified offchain attestation UID.
+    async revokeOffchain(uid) {
+        const tx = await this.contract.revokeOffchain(uid);
+        return new transaction_1.Transaction(tx, async (receipt) => (await (0, utils_1.getTimestampFromOffchainRevocationEvents)(receipt.events))[0]);
+    }
+    // Revokes the specified multiple offchain attestation UIDs.
+    async multiRevokeOffchain(uids) {
+        const tx = await this.contract.multiRevokeOffchain(uids);
+        // eslint-disable-next-line require-await
+        return new transaction_1.Transaction(tx, async (receipt) => (0, utils_1.getTimestampFromOffchainRevocationEvents)(receipt.events));
     }
     // Returns the domain separator used in the encoding of the signatures for attest, and revoke.
     getDomainSeparator() {
