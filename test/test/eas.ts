@@ -395,5 +395,44 @@ describe('EAS API', () => {
         expect(await eas.getTimestamp(data3)).to.equal(0);
       });
     });
+
+    describe('revoking offchain', () => {
+      const data1 = formatBytes32String('0x1234');
+      const data2 = formatBytes32String('0x4567');
+      const data3 = formatBytes32String('0x6666');
+
+      it('should revoke a single data', async () => {
+        const tx = await eas.revokeOffchain(data1);
+        const timestamp = await tx.wait();
+        expect(timestamp).to.equal(await latest());
+
+        expect(await eas.getRevocationOffchain(sender.address, data1)).to.equal(timestamp);
+
+        const tx2 = await eas.revokeOffchain(data2);
+        const timestamp2 = await tx2.wait();
+        expect(timestamp2).to.equal(await latest());
+
+        expect(await eas.getRevocationOffchain(sender.address, data2)).to.equal(timestamp2);
+      });
+
+      it('should revoke multiple data', async () => {
+        const data = [data1, data2];
+        const tx = await eas.multiRevokeOffchain([data1, data2]);
+        const timestamps = await tx.wait();
+
+        const currentTime = await latest();
+
+        for (const [i, d] of data.entries()) {
+          const timestamp = timestamps[i];
+          expect(timestamp).to.equal(currentTime);
+
+          expect(await eas.getRevocationOffchain(sender.address,d)).to.equal(timestamp);
+        }
+      });
+
+      it("should return 0 for any data that wasn't revoked multiple data", async () => {
+        expect(await eas.getRevocationOffchain(sender.address, data3)).to.equal(0);
+      });
+    });
   });
 });
