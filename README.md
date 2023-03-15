@@ -6,10 +6,6 @@
 
 This repository contains the Ethereum Attestation Service SDK, used to interact with the Ethereum Attestation Service Protocol.
 
-# Javascript Integration
-
-Here, you'll find everything you need to get started with integrating EAS into a Javacript/Typescript project.
-
 ## Installing the EAS SDK
 
 To install the EAS contracts, run the following command within your project directory:
