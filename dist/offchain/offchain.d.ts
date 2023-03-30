@@ -1,4 +1,4 @@
-import { DomainTypedData, EIP712MessageTypes, EIP712Params, EIP712Request, TypedData, TypedDataConfig, TypedDataHandler } from './typed-data-handler';
+import { DomainTypedData, EIP712MessageTypes, EIP712Params, EIP712Response, TypedData, TypedDataConfig, TypedDataHandler } from './typed-data-handler';
 import { TypedDataSigner } from '@ethersproject/abstract-signer';
 import { BigNumberish } from 'ethers';
 export { EIP712Request, TypedDataConfig, EIP712MessageTypes } from './typed-data-handler';
@@ -15,7 +15,7 @@ export type OffchainAttestationParams = {
     refUID: string;
     data: string;
 } & Partial<EIP712Params>;
-export interface SignedOffchainAttestation extends EIP712Request<EIP712MessageTypes, OffchainAttestationParams> {
+export interface SignedOffchainAttestation extends EIP712Response<EIP712MessageTypes, OffchainAttestationParams> {
     uid: string;
 }
 export declare class Offchain extends TypedDataHandler {

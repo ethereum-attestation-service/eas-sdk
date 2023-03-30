@@ -11,7 +11,7 @@ import {
 import {
   EIP712AttestationParams,
   EIP712MessageTypes,
-  EIP712Request,
+  EIP712Response,
   EIP712RevocationParams
 } from '../../../src/offchain/delegated';
 import { getOffchainUID } from '../../../src/utils';
@@ -83,7 +83,7 @@ export const expectAttestation = async (
         throw new Error('Invalid verifier');
       }
 
-      const signature = await eip712Utils.signDelegatedAttestation(
+      const response = await eip712Utils.signDelegatedAttestation(
         txSender,
         schema,
         recipient,
@@ -94,13 +94,13 @@ export const expectAttestation = async (
         await eas.getNonce(txSender.address)
       );
 
-      expect(await eip712Utils.verifyDelegatedAttestationSignature(txSender.address, signature)).to.be.true;
+      expect(await eip712Utils.verifyDelegatedAttestationSignature(txSender.address, response)).to.be.true;
 
       uid = await (
         await eas.connect(txSender).attestByDelegation({
           schema,
           data: { recipient, expirationTime, revocable, refUID, data, value },
-          signature,
+          signature: response.signature,
           attester: txSender.address
         })
       ).wait();
@@ -115,7 +115,7 @@ export const expectAttestation = async (
 
       const now = await latest();
       const uid = getOffchainUID(schema, recipient, now, expirationTime, revocable, refUID, data);
-      const request = await offchainUtils.signAttestation(
+      const response = await offchainUtils.signAttestation(
         txSender,
         schema,
         recipient,
@@ -125,8 +125,8 @@ export const expectAttestation = async (
         refUID,
         data
       );
-      expect(request.uid).to.equal(uid);
-      expect(await offchainUtils.verifyAttestation(txSender.address, request)).to.be.true;
+      expect(response.uid).to.equal(uid);
+      expect(await offchainUtils.verifyAttestation(txSender.address, response)).to.be.true;
 
       return;
     }
@@ -164,10 +164,10 @@ export const expectMultiAttestations = async (
       let nonce = await eas.getNonce(txSender.address);
 
       for (const { schema, data } of requests) {
-        const signatures: EIP712Request<EIP712MessageTypes, EIP712AttestationParams>[] = [];
+        const responses: EIP712Response<EIP712MessageTypes, EIP712AttestationParams>[] = [];
 
         for (const request of data) {
-          const signature = await eip712Utils.signDelegatedAttestation(
+          const response = await eip712Utils.signDelegatedAttestation(
             txSender,
             schema,
             request.recipient,
@@ -178,14 +178,19 @@ export const expectMultiAttestations = async (
             nonce
           );
 
-          expect(await eip712Utils.verifyDelegatedAttestationSignature(txSender.address, signature)).to.be.true;
+          expect(await eip712Utils.verifyDelegatedAttestationSignature(txSender.address, response)).to.be.true;
 
-          signatures.push(signature);
+          responses.push(response);
 
           nonce = nonce.add(1);
         }
 
-        multiDelegatedAttestationRequests.push({ schema, data, signatures, attester: txSender.address });
+        multiDelegatedAttestationRequests.push({
+          schema,
+          data,
+          signatures: responses.map((r) => r.signature),
+          attester: txSender.address
+        });
       }
 
       const tx = await eas.connect(txSender).multiAttestByDelegation(multiDelegatedAttestationRequests);
@@ -226,7 +231,7 @@ export const expectRevocation = async (
         throw new Error('Invalid verifier');
       }
 
-      const signature = await eip712Utils.signDelegatedRevocation(
+      const { signature } = await eip712Utils.signDelegatedRevocation(
         txSender,
         schema,
         uid,
@@ -275,19 +280,24 @@ export const expectMultiRevocations = async (
       let nonce = await eas.getNonce(txSender.address);
 
       for (const { schema, data } of requests) {
-        const signatures: EIP712Request<EIP712MessageTypes, EIP712RevocationParams>[] = [];
+        const responses: EIP712Response<EIP712MessageTypes, EIP712RevocationParams>[] = [];
 
         for (const request of data) {
-          const signature = await eip712Utils.signDelegatedRevocation(txSender, schema, request.uid, nonce);
+          const response = await eip712Utils.signDelegatedRevocation(txSender, schema, request.uid, nonce);
 
-          expect(await eip712Utils.verifyDelegatedRevocationSignature(txSender.address, signature)).to.be.true;
+          expect(await eip712Utils.verifyDelegatedRevocationSignature(txSender.address, response)).to.be.true;
 
-          signatures.push(signature);
+          responses.push(response);
 
           nonce = nonce.add(1);
         }
 
-        multiDelegatedRevocationRequests.push({ schema, data, signatures, revoker: txSender.address });
+        multiDelegatedRevocationRequests.push({
+          schema,
+          data,
+          signatures: responses.map((r) => r.signature),
+          revoker: txSender.address
+        });
       }
 
       await eas.connect(txSender).multiRevokeByDelegation(multiDelegatedRevocationRequests);

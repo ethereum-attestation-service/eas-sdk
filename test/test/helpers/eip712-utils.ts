@@ -2,7 +2,7 @@ import {
   Delegated,
   EIP712AttestationParams,
   EIP712MessageTypes,
-  EIP712Request,
+  EIP712Response,
   EIP712RevocationParams,
   TypedDataConfig
 } from '../../../src/offchain/delegated';
@@ -49,7 +49,7 @@ export class EIP712Utils {
     refUID: string,
     data: BytesLike,
     nonce: BigNumber
-  ): Promise<EIP712Request<EIP712MessageTypes, EIP712AttestationParams>> {
+  ): Promise<EIP712Response<EIP712MessageTypes, EIP712AttestationParams>> {
     if (!this.delegated) {
       throw new Error('EIP712Utils was not initialized');
     }
@@ -70,7 +70,7 @@ export class EIP712Utils {
 
   public verifyDelegatedAttestationSignature(
     attester: string | SignerWithAddress,
-    request: EIP712Request<EIP712MessageTypes, EIP712AttestationParams>
+    response: EIP712Response<EIP712MessageTypes, EIP712AttestationParams>
   ): boolean {
     if (!this.delegated) {
       throw new Error('EIP712Utils was not initialized');
@@ -78,7 +78,7 @@ export class EIP712Utils {
 
     return this.delegated.verifyDelegatedAttestationSignature(
       typeof attester === 'string' ? attester : attester.address,
-      request
+      response
     );
   }
 
@@ -87,7 +87,7 @@ export class EIP712Utils {
     schema: string,
     uid: string,
     nonce: BigNumber
-  ): Promise<EIP712Request<EIP712MessageTypes, EIP712RevocationParams>> {
+  ): Promise<EIP712Response<EIP712MessageTypes, EIP712RevocationParams>> {
     if (!this.delegated) {
       throw new Error('EIP712Utils was not initialized');
     }
@@ -104,7 +104,7 @@ export class EIP712Utils {
 
   public verifyDelegatedRevocationSignature(
     attester: string | SignerWithAddress,
-    request: EIP712Request<EIP712MessageTypes, EIP712RevocationParams>
+    response: EIP712Response<EIP712MessageTypes, EIP712RevocationParams>
   ): boolean {
     if (!this.delegated) {
       throw new Error('EIP712Utils was not initialized');
@@ -112,7 +112,7 @@ export class EIP712Utils {
 
     return this.delegated.verifyDelegatedRevocationSignature(
       typeof attester === 'string' ? attester : attester.address,
-      request
+      response
     );
   }
 }

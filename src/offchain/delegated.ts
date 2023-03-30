@@ -2,7 +2,7 @@ import {
   DomainTypedData,
   EIP712MessageTypes,
   EIP712Params,
-  EIP712Request,
+  EIP712Response,
   TypedData,
   TypedDataConfig,
   TypedDataHandler
@@ -12,7 +12,13 @@ import { BigNumberish, utils } from 'ethers';
 
 const { keccak256, toUtf8Bytes, defaultAbiCoder } = utils;
 
-export { EIP712MessageTypes, EIP712TypedData, EIP712Request, TypedDataConfig } from './typed-data-handler';
+export {
+  EIP712MessageTypes,
+  EIP712TypedData,
+  EIP712Request,
+  EIP712Response,
+  TypedDataConfig
+} from './typed-data-handler';
 
 export const EIP712_DOMAIN = 'EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)';
 export const EIP712_NAME = 'EAS';
@@ -82,7 +88,7 @@ export class Delegated extends TypedDataHandler {
   public signDelegatedAttestation(
     params: EIP712AttestationParams,
     signer: TypedDataSigner
-  ): Promise<EIP712Request<EIP712MessageTypes, EIP712AttestationParams>> {
+  ): Promise<EIP712Response<EIP712MessageTypes, EIP712AttestationParams>> {
     return this.signTypedDataRequest<EIP712MessageTypes, EIP712AttestationParams>(
       params,
       {
@@ -99,15 +105,15 @@ export class Delegated extends TypedDataHandler {
 
   public verifyDelegatedAttestationSignature(
     attester: string,
-    request: EIP712Request<EIP712MessageTypes, EIP712AttestationParams>
+    response: EIP712Response<EIP712MessageTypes, EIP712AttestationParams>
   ): boolean {
-    return this.verifyTypedDataRequestSignature(attester, request);
+    return this.verifyTypedDataRequestSignature(attester, response);
   }
 
   public signDelegatedRevocation(
     params: EIP712RevocationParams,
     signer: TypedDataSigner
-  ): Promise<EIP712Request<EIP712MessageTypes, EIP712RevocationParams>> {
+  ): Promise<EIP712Response<EIP712MessageTypes, EIP712RevocationParams>> {
     return this.signTypedDataRequest<EIP712MessageTypes, EIP712RevocationParams>(
       params,
       {
@@ -124,8 +130,8 @@ export class Delegated extends TypedDataHandler {
 
   public verifyDelegatedRevocationSignature(
     attester: string,
-    request: EIP712Request<EIP712MessageTypes, EIP712RevocationParams>
+    response: EIP712Response<EIP712MessageTypes, EIP712RevocationParams>
   ): boolean {
-    return this.verifyTypedDataRequestSignature(attester, request);
+    return this.verifyTypedDataRequestSignature(attester, response);
   }
 }

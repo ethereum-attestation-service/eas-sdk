@@ -42,12 +42,15 @@ export interface Signature {
     s: string;
     v: number;
 }
-export type EIP712Request<T extends EIP712MessageTypes, P extends EIP712Params> = EIP712TypedData<T, P> & Signature;
+export type EIP712Request<T extends EIP712MessageTypes, P extends EIP712Params> = EIP712TypedData<T, P>;
+export type EIP712Response<T extends EIP712MessageTypes, P extends EIP712Params> = EIP712TypedData<T, P> & {
+    signature: Signature;
+};
 export declare abstract class TypedDataHandler {
     protected config: TypedDataConfig;
     constructor(config: TypedDataConfig);
     abstract getDomainSeparator(): string;
     abstract getDomainTypedData(): DomainTypedData;
-    signTypedDataRequest<T extends EIP712MessageTypes, P extends EIP712Params>(params: P, types: EIP712TypedData<T, P>, signer: TypedDataSigner): Promise<EIP712Request<T, P>>;
-    verifyTypedDataRequestSignature<T extends EIP712MessageTypes, P extends EIP712Params>(attester: string, request: EIP712Request<T, P>): boolean;
+    signTypedDataRequest<T extends EIP712MessageTypes, P extends EIP712Params>(params: P, types: EIP712TypedData<T, P>, signer: TypedDataSigner): Promise<EIP712Response<T, P>>;
+    verifyTypedDataRequestSignature<T extends EIP712MessageTypes, P extends EIP712Params>(attester: string, request: EIP712Response<T, P>): boolean;
 }
