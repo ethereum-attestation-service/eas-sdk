@@ -48,7 +48,7 @@ export type EIP712AttestationParams = EIP712Params & {
   expirationTime: BigNumberish;
   revocable: boolean;
   refUID: string;
-  data: Buffer;
+  data: string;
 };
 
 export type EIP712RevocationParams = EIP712Params & {

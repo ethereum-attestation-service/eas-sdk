@@ -1,4 +1,3 @@
-/// <reference types="node" />
 import { DomainTypedData, EIP712MessageTypes, EIP712Params, EIP712Response, TypedData, TypedDataConfig, TypedDataHandler } from './typed-data-handler';
 import { TypedDataSigner } from '@ethersproject/abstract-signer';
 import { BigNumberish } from 'ethers';
@@ -17,7 +16,7 @@ export type EIP712AttestationParams = EIP712Params & {
     expirationTime: BigNumberish;
     revocable: boolean;
     refUID: string;
-    data: Buffer;
+    data: string;
 };
 export type EIP712RevocationParams = EIP712Params & {
     schema: string;
