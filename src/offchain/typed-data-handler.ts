@@ -63,11 +63,14 @@ export interface EIP712TypedData<T extends EIP712MessageTypes, P extends EIP712P
 export interface Signature {
   r: string;
   s: string;
-
   v: number;
 }
 
-export type EIP712Request<T extends EIP712MessageTypes, P extends EIP712Params> = EIP712TypedData<T, P> & Signature;
+export type EIP712Request<T extends EIP712MessageTypes, P extends EIP712Params> = EIP712TypedData<T, P>;
+
+export type EIP712Response<T extends EIP712MessageTypes, P extends EIP712Params> = EIP712TypedData<T, P> & {
+  signature: Signature;
+};
 
 export abstract class TypedDataHandler {
   protected config: TypedDataConfig;
@@ -83,22 +86,23 @@ export abstract class TypedDataHandler {
     params: P,
     types: EIP712TypedData<T, P>,
     signer: TypedDataSigner
-  ): Promise<EIP712Request<T, P>> {
+  ): Promise<EIP712Response<T, P>> {
     const rawSignature = await signer._signTypedData(types.domain, types.types, params);
     const signature = splitSignature(rawSignature);
 
-    return { ...types, v: signature.v, r: signature.r, s: signature.s };
+    return { ...types, signature: { v: signature.v, r: signature.r, s: signature.s } };
   }
 
   public verifyTypedDataRequestSignature<T extends EIP712MessageTypes, P extends EIP712Params>(
     attester: string,
-    request: EIP712Request<T, P>
+    request: EIP712Response<T, P>
   ): boolean {
     if (attester === ZERO_ADDRESS) {
       throw new Error('Invalid address');
     }
 
-    const sig = joinSignature({ v: request.v, r: hexlify(request.r), s: hexlify(request.s) });
+    const { signature } = request;
+    const sig = joinSignature({ v: signature.v, r: hexlify(signature.r), s: hexlify(signature.s) });
     const recoveredAddress = verifyTypedData(request.domain, request.types, request.message, sig);
 
     return getAddress(attester) === getAddress(recoveredAddress);

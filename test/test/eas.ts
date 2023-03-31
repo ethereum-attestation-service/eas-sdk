@@ -261,7 +261,7 @@ describe('EAS API', () => {
 
               if (signatureType === SignatureType.Offchain) {
                 it('should verify the uid of an offchain attestation', async () => {
-                  const request = await offchainUtils.signAttestation(
+                  const response = await offchainUtils.signAttestation(
                     sender,
                     schema1Id,
                     recipient,
@@ -272,7 +272,7 @@ describe('EAS API', () => {
                     data
                   );
 
-                  expect(await offchainUtils.verifyAttestation(sender.address, request)).to.be.true;
+                  expect(await offchainUtils.verifyAttestation(sender.address, response)).to.be.true;
 
                   const request2 = await offchainUtils.signAttestation(
                     sender,
@@ -426,7 +426,7 @@ describe('EAS API', () => {
           const timestamp = timestamps[i];
           expect(timestamp).to.equal(currentTime);
 
-          expect(await eas.getRevocationOffchain(sender.address,d)).to.equal(timestamp);
+          expect(await eas.getRevocationOffchain(sender.address, d)).to.equal(timestamp);
         }
       });
 

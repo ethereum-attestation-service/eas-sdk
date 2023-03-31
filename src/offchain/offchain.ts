@@ -3,7 +3,7 @@ import {
   DomainTypedData,
   EIP712MessageTypes,
   EIP712Params,
-  EIP712Request,
+  EIP712Response,
   TypedData,
   TypedDataConfig,
   TypedDataHandler
@@ -39,7 +39,7 @@ export type OffchainAttestationParams = {
   data: string;
 } & Partial<EIP712Params>;
 
-export interface SignedOffchainAttestation extends EIP712Request<EIP712MessageTypes, OffchainAttestationParams> {
+export interface SignedOffchainAttestation extends EIP712Response<EIP712MessageTypes, OffchainAttestationParams> {
   uid: string;
 }
 

@@ -55,8 +55,8 @@ class Delegated extends typed_data_handler_1.TypedDataHandler {
             }
         }, signer);
     }
-    verifyDelegatedAttestationSignature(attester, request) {
-        return this.verifyTypedDataRequestSignature(attester, request);
+    verifyDelegatedAttestationSignature(attester, response) {
+        return this.verifyTypedDataRequestSignature(attester, response);
     }
     signDelegatedRevocation(params, signer) {
         return this.signTypedDataRequest(params, {
@@ -68,8 +68,8 @@ class Delegated extends typed_data_handler_1.TypedDataHandler {
             }
         }, signer);
     }
-    verifyDelegatedRevocationSignature(attester, request) {
-        return this.verifyTypedDataRequestSignature(attester, request);
+    verifyDelegatedRevocationSignature(attester, response) {
+        return this.verifyTypedDataRequestSignature(attester, response);
     }
 }
 exports.Delegated = Delegated;
