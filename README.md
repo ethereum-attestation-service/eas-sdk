@@ -10,13 +10,13 @@ This repository contains the Ethereum Attestation Service SDK, used to interact 
 
 To install the EAS contracts, run the following command within your project directory:
 
-``` bash 
+```bash 
 yarn add @ethereum-attestation-service/eas-sdk 
 ```
 
 OR
 
-``` bash 
+```bash 
 npm install @ethereum-attestation-service/eas-sdk 
 ```
 
@@ -24,7 +24,7 @@ npm install @ethereum-attestation-service/eas-sdk
 
 Import and initialize the library
 
-``` javascript 
+```javascript 
 import { EAS, Offchain, SchemaEncoder, SchemaRegistry } from "@ethereum-attestation-service/eas-sdk";
 import { ethers } from 'ethers';
 
@@ -43,17 +43,43 @@ const provider = ethers.providers.getDefaultProvider(
 eas.connect(provider);
 ```
 
-### Viewing on-chain attestations
+### Getting an Attestation
 
-``` javascript 
-// Gets an on-chain attestation for the corresponding UID
- const attestation = await eas.getAttestation(
-    "0x5134f511e0533f997e569dac711952dde21daf14b316f3cce23835defc82c065"
- );
+The `getAttestation` function allows you to retrieve an on-chain attestation for a given UID. This function returns an attestation object containing information about the attestation, such as the schema, recipient, attester, and more.
+
+#### Usage
+
+```javascript
+import { EAS } from "@ethereum-attestation-service/eas-sdk";
+
+const eas = new EAS(EASContractAddress);
+eas.connect(provider);
+
+const uid = "0x5134f511e0533f997e569dac711952dde21daf14b316f3cce23835defc82c065";
+
+const attestation = await eas.getAttestation(uid);
 
 console.log(attestation);
+```
 
-// Output
+#### Output
+
+The `getAttestation` function returns an attestation object with the following properties:
+
+- `uid`: The unique identifier of the attestation.
+- `schema`: The schema identifier associated with the attestation.
+- `refUID`: The reference UID of the attestation, if any.
+- `time`: The Unix timestamp when the attestation was created.
+- `expirationTime`: The Unix timestamp when the attestation expires (0 for no expiration).
+- `revocationTime`: The Unix timestamp when the attestation was revoked, if applicable.
+- `recipient`: The Ethereum address of the recipient of the attestation.
+- `attester`: The Ethereum address of the attester who created the attestation.
+- `revocable`: A boolean indicating whether the attestation is revocable or not.
+- `data`: The attestation data in bytes format.
+
+Example output:
+
+```javascript
 {
     uid: '0x5134f511e0533f997e569dac711952dde21daf14b316f3cce23835defc82c065',
     schema: '0x27d06e3659317e9a4f8154d1e849eb53d43d91fb4f219884d1684f86d797804a',
@@ -72,7 +98,27 @@ console.log(attestation);
 
 ### Creating on-chain attestations
 
-``` javascript 
+
+The `attest` function allows you to create an on-chain attestation for a specific schema. This function takes an object with the following properties:
+
+- `schema`: The UID of the schema for which the attestation is being created.
+- `data`: An object containing the following properties:
+    - `recipient`: The Ethereum address of the recipient of the attestation.
+    - `expirationTime`: A Unix timestamp representing the expiration time of the attestation. Use `0` for no expiration.
+    - `revocable`: A boolean indicating whether the attestation is revocable or not.
+    - `refUID`: (Optional) The UID of a referenced attestation. Use `ZERO_BYTES32` if there is no reference.
+    - `data`: The encoded data for the attestation, which should be generated using the `SchemaEncoder` class.
+
+The function returns a Promise that resolves to the UID of the newly created attestation.
+
+### Example
+
+```javascript
+import { EAS, SchemaEncoder } from "@ethereum-attestation-service/eas-sdk";
+
+const eas = new EAS(EASContractAddress);
+eas.connect(signer);
+
 // Initialize SchemaEncoder with the schema string
 const schemaEncoder = new SchemaEncoder("uint256 eventId, uint8 voteIndex");
 const encodedData = schemaEncoder.encodeData([
@@ -80,22 +126,26 @@ const encodedData = schemaEncoder.encodeData([
   { name: "voteIndex", value: 1, type: "uint8" },
 ]);
 
-const newAttestationUID = await eas.attest({
+const schemaUID = "0xb16fa048b0d597f5a821747eba64efa4762ee5143e9a80600d0005386edfc995";
+
+const tx = await eas.attest({
+  schema: schemaUID,
   data: {
     recipient: "0xFD50b031E778fAb33DfD2Fc3Ca66a1EeF0652165",
-    // Unix timestamp of when attestation expires. (0 for no expiration)
     expirationTime: 0,
     revocable: true,
     data: encodedData,
   },
-  schema:
-    "0xb16fa048b0d597f5a821747eba64efa4762ee5143e9a80600d0005386edfc995",
 });
+
+const newAttestationUID = await tx.wait();
+
+console.log("New attestation UID:", newAttestationUID);
 ```
 
 ### Creating off-chain attestations
 
-``` javascript 
+```javascript 
 export const EAS_CONFIG = {
   address: EASContractAddress,
   version: EASVersion,
@@ -111,7 +161,7 @@ const encodedData = schemaEncoder.encodeData([
   { name: "voteIndex", value: 1, type: "uint8" },
 ]);
 
-const newAttestationUID = await offchain.signOffchainAttestation({
+const signedOffchainAttestation = await offchain.signOffchainAttestation({
   recipient: '0xFD50b031E778fAb33DfD2Fc3Ca66a1EeF0652165',
   // Unix timestamp of when attestation expires. (0 for no expiration)
   expirationTime: 0,
@@ -126,11 +176,144 @@ const newAttestationUID = await offchain.signOffchainAttestation({
 
 ### Revoking on-chain attestations
 
-``` javascript 
+```javascript 
 const transaction = await eas.revoke({
-  uid: "0x0000000000000000000000000000000000000000000000000000000000000000"
+  uid: "0x6776de8122c352b4d671003e58ca112aedb99f34c629a1d1fe3b332504e2943a"
 });
 
 // Optional: Wait for transaction to be validated
 await transaction.wait();
 ```
+
+### Creating timestamps
+
+To create a timestamp for a single piece of data, you can use the `timestamp` function provided by the EAS SDK. Here's an example:
+
+```javascript
+import { EAS } from "@ethereum-attestation-service/eas-sdk";
+
+const eas = new EAS(EASContractAddress);
+eas.connect(provider);
+
+const data = ethers.utils.formatBytes32String('0x1234');
+
+const transaction = await eas.timestamp(data);
+
+// Optional: Wait for transaction to be validated
+await transaction.wait();
+```
+
+To create timestamps for multiple pieces of data, you can use the `multiTimestamp` function:
+
+```javascript
+import { EAS } from "@ethereum-attestation-service/eas-sdk";
+
+const eas = new EAS(EASContractAddress);
+eas.connect(provider);
+
+const data1 = ethers.utils.formatBytes32String('0x3e23b395b2bd2d37dd0f6e4148ac6b9e7ed22f2215107958f95cc1489e4e6289');
+const data2 = ethers.utils.formatBytes32String('0x6776de8122c352b4d671003e58ca112aedb99f34c629a1d1fe3b332504e2943a');
+
+const transaction = await eas.multiTimestamp([data1, data2]);
+
+// Optional: Wait for transaction to be validated
+await transaction.wait();
+```
+
+### Revoking off-chain attestations
+
+To revoke an off-chain attestation, you can use the `revokeOffchain` function provided by the EAS SDK. Here's an example:
+
+```javascript
+import { EAS } from "@ethereum-attestation-service/eas-sdk";
+
+const eas = new EAS(EASContractAddress);
+eas.connect(provider);
+
+const data = ethers.utils.formatBytes32String('0x6776de8122c352b4d671003e58ca112aedb99f34c629a1d1fe3b332504e2943a');
+
+const transaction = await eas.revokeOffchain(data);
+
+// Optional: Wait for transaction to be validated
+await transaction.wait();
+```
+
+To revoke multiple off-chain attestations, you can use the `multiRevokeOffchain` function:
+
+```javascript
+import { EAS } from "@ethereum-attestation-service/eas-sdk";
+
+const eas = new EAS(EASContractAddress);
+eas.connect(provider);
+
+const data1 = ethers.utils.formatBytes32String('0x6776de8122c352b4d671003e58ca112aedb99f34c629a1d1fe3b332504e2943a');
+const data2 = ethers.utils.formatBytes32String('0x3e23b395b2bd2d37dd0f6e4148ac6b9e7ed22f2215107958f95cc1489e4e6289');
+
+const transaction = await eas.multiRevokeOffchain([data1, data2]);
+
+// Optional: Wait for transaction to be validated
+await transaction.wait();
+```
+
+### Registering a Schema
+
+To register a new schema, you can use the `register` function provided by the EAS SDK. This function takes an object with the following properties:
+
+- `schema`: The schema string that defines the structure of the data to be attested.
+- `resolverAddress`: The Ethereum address of the resolver responsible for managing the schema.
+- `revocable`: A boolean value indicating whether attestations created with this schema can be revoked.
+
+Here's an example of how to register a new schema:
+
+```javascript
+import { SchemaRegistry } from "@ethereum-attestation-service/eas-sdk";
+import { ethers } from 'ethers';
+
+const schemaRegistryContractAddress = "0xYourSchemaRegistryContractAddress";
+const schemaRegistry = new SchemaRegistry(schemaRegistryContractAddress);
+
+schemaRegistry.connect(signer);
+
+const schema = "uint256 eventId, uint8 voteIndex";
+const resolverAddress = "0x0a7E2Ff54e76B8E6659aedc9103FB21c038050D0"; // Sepolia 0.26
+const revocable = true;
+
+const transaction = await schemaRegistry.register({
+  schema,
+  resolverAddress,
+  revocable,
+});
+
+// Optional: Wait for transaction to be validated
+await transaction.wait();
+```
+
+After registering a schema, you can use its UID to create attestations with the specified structure.
+
+### Getting Schema Information
+
+To retrieve the schema information for a specific schema UID, you can use the `getSchema` function provided by the EAS SDK. Here's an example:
+
+```javascript
+import { SchemaRegistry } from "@ethereum-attestation-service/eas-sdk";
+
+const schemaRegistryContractAddress = "0x0a7E2Ff54e76B8E6659aedc9103FB21c038050D0"; // Sepolia 0.26
+const schemaRegistry = new SchemaRegistry(schemaRegistryContractAddress);
+schemaRegistry.connect(provider);
+
+const schemaUID = "0xYourSchemaUID";
+
+const schemaRecord = await schemaRegistry.getSchema({ uid: schemaUID });
+
+console.log(schemaRecord);
+
+// Example Output
+{
+  uid: '0xYourSchemaUID',
+  schema: 'bytes32 proposalId, bool vote',
+  resolver: '0xResolverAddress',
+  revocable: true
+}
+```
+
+In the output, you will receive an object containing the schema UID, the schema string, the resolver address, and a boolean indicating whether the schema is revocable or not.
