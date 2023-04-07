@@ -167,8 +167,10 @@ const signedOffchainAttestation = await offchain.signOffchainAttestation({
   expirationTime: 0,
   // Unix timestamp of current time
   time: 1671219636,
+  revocable: false,
   nonce: 0,
   schema: "0xb16fa048b0d597f5a821747eba64efa4762ee5143e9a80600d0005386edfc995",
+  refUID: '0x0000000000000000000000000000000000000000000000000000000000000000',
   data: encodedData,
 }, signer);
 ```
