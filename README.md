@@ -145,10 +145,17 @@ console.log("New attestation UID:", newAttestationUID);
 
 ### Creating off-chain attestations
 
-```javascript 
-export const EAS_CONFIG = {
+To create an off-chain attestation, you can use the `signOffchainAttestation` function provided by the Offchain class in the EAS SDK. Here's an example:
+
+```javascript
+import { Offchain, SchemaEncoder } from "@ethereum-attestation-service/eas-sdk";
+
+const EASContractAddress = "0xC2679fBD37d54388Ce493F1DB75320D236e1815e"; // Sepolia v0.26
+
+// Initialize Offchain class with EAS configuration
+const EAS_CONFIG = {
   address: EASContractAddress,
-  version: EASVersion,
+  version: EASVersion, // 0.26
   chainId: CHAINID,
 };
 
@@ -161,19 +168,25 @@ const encodedData = schemaEncoder.encodeData([
   { name: "voteIndex", value: 1, type: "uint8" },
 ]);
 
-const signedOffchainAttestation = await offchain.signOffchainAttestation({
+// Signer is an ethers.js Signer instance
+const signer = new ethers.Wallet(privateKey, provider);
+
+const newAttestationUID = await offchain.signOffchainAttestation({
   recipient: '0xFD50b031E778fAb33DfD2Fc3Ca66a1EeF0652165',
   // Unix timestamp of when attestation expires. (0 for no expiration)
   expirationTime: 0,
   // Unix timestamp of current time
   time: 1671219636,
-  revocable: false,
+  revocable: true,
   nonce: 0,
   schema: "0xb16fa048b0d597f5a821747eba64efa4762ee5143e9a80600d0005386edfc995",
   refUID: '0x0000000000000000000000000000000000000000000000000000000000000000',
   data: encodedData,
 }, signer);
 ```
+
+This function will return a signed off-chain attestation object containing the UID, signature, and attestation data. You can then share this object with the intended recipient or store it for future use.
+
 
 
 ### Revoking on-chain attestations
