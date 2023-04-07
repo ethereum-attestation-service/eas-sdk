@@ -171,7 +171,7 @@ const encodedData = schemaEncoder.encodeData([
 // Signer is an ethers.js Signer instance
 const signer = new ethers.Wallet(privateKey, provider);
 
-const newAttestationUID = await offchain.signOffchainAttestation({
+const offchainAttestation = await offchain.signOffchainAttestation({
   recipient: '0xFD50b031E778fAb33DfD2Fc3Ca66a1EeF0652165',
   // Unix timestamp of when attestation expires. (0 for no expiration)
   expirationTime: 0,
