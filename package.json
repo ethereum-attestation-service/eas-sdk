@@ -34,8 +34,8 @@
     "typescript": "^5.0.4"
   },
   "dependencies": {
-    "@ethereum-attestation-service/eas-contracts": "^0.26.3",
+    "@ethereum-attestation-service/eas-contracts": "^0.27.1",
     "ethers": "^5.7.2",
-    "multiformats": "9.9.0"
+    "multiformats": "11.0.2"
   }
 }
