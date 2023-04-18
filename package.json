@@ -36,6 +36,6 @@
   "dependencies": {
     "@ethereum-attestation-service/eas-contracts": "^0.27.1",
     "ethers": "^5.7.2",
-    "multiformats": "11.0.2"
+    "multiformats": "9.9.0"
   }
 }
