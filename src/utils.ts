@@ -93,7 +93,7 @@ export const getTimestampFromOffchainRevocationEvents = (events?: Event[]): BigN
 
   const revocationEvents = events.filter((e) => e.event === 'RevokedOffchain');
   if (revocationEvents.length === 0) {
-    throw new Error('Unable to process revocationoffchain events');
+    throw new Error('Unable to process offchain revocation events');
   }
 
   return revocationEvents.map((event) => event.args?.timestamp);
