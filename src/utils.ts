@@ -1,4 +1,6 @@
-import { BigNumberish, constants, ContractTransaction, Event, utils } from 'ethers';
+import { EAS__factory } from '@ethereum-attestation-service/eas-contracts';
+import { Interface } from '@ethersproject/abi';
+import { BigNumberish, constants, ContractReceipt, ContractTransaction, Event, utils } from 'ethers';
 
 const { solidityKeccak256, hexlify, toUtf8Bytes } = utils;
 
@@ -41,26 +43,57 @@ export const getOffchainUID = (
     [hexlify(toUtf8Bytes(schema)), recipient, ZERO_ADDRESS, time, expirationTime, revocable, refUID, data, 0]
   );
 
-export const getUIDFromAttestTx = async (res: Promise<ContractTransaction> | ContractTransaction) => {
+export const getUIDsFromMultiAttestTx = async (
+  res: Promise<ContractTransaction> | ContractTransaction
+): Promise<string[]> => {
   const receipt = await (await res).wait();
-  const event = receipt.events?.find((e) => e.event === 'Attested');
-  if (!event) {
-    throw new Error('Unable to process attestation event');
-  }
-  return event.args?.uid;
+
+  return getUIDsFromAttestEvents(receipt.events);
 };
 
-export const getUIDsFromMultiAttestTx = async (res: Promise<ContractTransaction> | ContractTransaction) => {
-  const receipt = await (await res).wait();
-  const events = receipt.events?.filter((e) => e.event === 'Attested');
-  if (!events || events?.length === 0) {
-    throw new Error('Unable to process attestation event');
-  }
-
-  return events.map((event) => event.args?.uid);
+export const getUIDFromAttestTx = async (res: Promise<ContractTransaction> | ContractTransaction): Promise<string> => {
+  return (await getUIDsFromMultiAttestTx(res))[0];
 };
 
-export const getUIDsFromAttestEvents = (events?: Event[]): string[] => {
+export const getUIDFromMultiDelegatedProxyAttestTx = async (
+  res: Promise<ContractTransaction> | ContractTransaction
+): Promise<string[]> => {
+  return getUIDFromMultiDelegatedProxyAttestReceipt((await res).wait());
+};
+
+export const getUIDFromMultiDelegatedProxyAttestReceipt = async (
+  res: Promise<ContractReceipt> | ContractReceipt
+): Promise<string[]> => {
+  const receipt = await res;
+
+  // eslint-disable-next-line camelcase
+  const eas = new Interface(EAS__factory.abi);
+  const events = [];
+
+  for (const event of receipt.events || []) {
+    events.push({
+      event: 'Attested',
+      args: await eas.decodeEventLog('Attested', event.data, event.topics)
+    });
+  }
+
+  return getUIDsFromAttestEvents(events);
+};
+
+export const getUIDFromDelegatedProxyAttestTx = async (
+  res: Promise<ContractTransaction> | ContractTransaction
+): Promise<string> => {
+  return (await getUIDFromMultiDelegatedProxyAttestTx(res))[0];
+};
+
+export const getUIDFromDelegatedProxyAttestReceipt = async (
+  res: Promise<ContractReceipt> | ContractReceipt
+): Promise<string> => {
+  return (await getUIDFromMultiDelegatedProxyAttestReceipt(res))[0];
+};
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const getUIDsFromAttestEvents = (events?: ReadonlyArray<any>): string[] => {
   if (!events) {
     return [];
   }

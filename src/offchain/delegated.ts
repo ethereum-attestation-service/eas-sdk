@@ -1,4 +1,11 @@
-import { EIP712MessageTypes, EIP712Params, EIP712Response, TypedData, TypedDataHandler } from './typed-data-handler';
+import {
+  EIP712MessageTypes,
+  EIP712Params,
+  EIP712Response,
+  PartialTypedDataConfig,
+  TypedData,
+  TypedDataHandler
+} from './typed-data-handler';
 import { TypedDataSigner } from '@ethersproject/abstract-signer';
 import { BigNumberish } from 'ethers';
 
@@ -7,7 +14,7 @@ export {
   EIP712TypedData,
   EIP712Request,
   EIP712Response,
-  TypedDataConfig
+  PartialTypedDataConfig
 } from './typed-data-handler';
 
 export const EIP712_NAME = 'EAS';
@@ -44,12 +51,6 @@ export type EIP712RevocationParams = EIP712Params & {
   schema: string;
   uid: string;
 };
-
-interface PartialTypedDataConfig {
-  address: string;
-  version: string;
-  chainId: number;
-}
 
 export class Delegated extends TypedDataHandler {
   public constructor(config: PartialTypedDataConfig) {

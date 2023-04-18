@@ -59,8 +59,25 @@ export interface MultiDelegatedRevocationRequest extends MultiRevocationRequest 
     signatures: Signature[];
     revoker: string;
 }
+export interface DelegatedProxyAttestationRequest extends DelegatedAttestationRequest {
+    deadline: BigNumberish;
+}
+export interface MultiDelegatedProxyAttestationRequest extends MultiDelegatedAttestationRequest {
+    deadline: BigNumberish;
+}
+export interface DelegatedProxyRevocationRequest extends DelegatedRevocationRequest {
+    deadline: BigNumberish;
+}
+export interface MultiDelegatedProxyRevocationRequest extends MultiDelegatedRevocationRequest {
+    deadline: BigNumberish;
+}
+export interface EASOptions {
+    signerOrProvider?: SignerOrProvider;
+    proxy?: string;
+}
 export declare class EAS extends Base<EASContract> {
-    constructor(address: string, signerOrProvider?: SignerOrProvider);
+    private proxy?;
+    constructor(address: string, options?: EASOptions);
     getVersion(): Promise<string>;
     getAttestation(uid: string): Promise<Attestation>;
     isAttestationValid(uid: string): Promise<boolean>;
@@ -75,6 +92,10 @@ export declare class EAS extends Base<EASContract> {
     revokeByDelegation({ schema, data: { uid, value }, signature, revoker }: DelegatedRevocationRequest): Promise<Transaction<void>>;
     multiRevoke(requests: MultiRevocationRequest[]): Promise<Transaction<void>>;
     multiRevokeByDelegation(requests: MultiDelegatedRevocationRequest[]): Promise<Transaction<void>>;
+    attestByDelegationProxy({ schema, data: { recipient, data, expirationTime, revocable, refUID, value }, attester, signature, deadline }: DelegatedProxyAttestationRequest): Promise<Transaction<string>>;
+    multiAttestByDelegationProxy(requests: MultiDelegatedProxyAttestationRequest[]): Promise<Transaction<string[]>>;
+    revokeByDelegationProxy({ schema, data: { uid, value }, signature, revoker, deadline }: DelegatedProxyRevocationRequest): Promise<Transaction<void>>;
+    multiRevokeByDelegationProxy(requests: MultiDelegatedProxyRevocationRequest[]): Promise<Transaction<void>>;
     timestamp(data: string): Promise<Transaction<BigNumberish>>;
     multiTimestamp(data: string[]): Promise<Transaction<BigNumberish[]>>;
     revokeOffchain(uid: string): Promise<Transaction<BigNumberish>>;

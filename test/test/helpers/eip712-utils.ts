@@ -4,7 +4,7 @@ import {
   EIP712MessageTypes,
   EIP712Response,
   EIP712RevocationParams,
-  TypedDataConfig
+  PartialTypedDataConfig
 } from '../../../src/offchain/delegated';
 import { EAS } from '@ethereum-attestation-service/eas-contracts';
 import { TypedDataSigner } from '@ethersproject/abstract-signer';
@@ -14,7 +14,7 @@ import { network } from 'hardhat';
 
 export class EIP712Utils {
   private verifier: EAS;
-  private config?: TypedDataConfig;
+  private config?: PartialTypedDataConfig;
 
   private delegated?: Delegated;
 

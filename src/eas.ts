@@ -3,6 +3,8 @@ import { Base, SignerOrProvider, Transaction } from './transaction';
 import {
   getTimestampFromOffchainRevocationEvents,
   getTimestampFromTimestampEvents,
+  getUIDFromDelegatedProxyAttestReceipt,
+  getUIDFromMultiDelegatedProxyAttestReceipt,
   getUIDsFromAttestEvents,
   ZERO_BYTES32
 } from './utils';
@@ -107,7 +109,9 @@ export interface EASOptions {
 export class EAS extends Base<EASContract> {
   private proxy?: Base<EIP712Proxy>;
 
-  constructor(address: string, { signerOrProvider, proxy }: EASOptions) {
+  constructor(address: string, options?: EASOptions) {
+    const { signerOrProvider, proxy } = options || {};
+
     super(new EAS__factory(), address, signerOrProvider);
 
     if (proxy) {
@@ -354,7 +358,8 @@ export class EAS extends Base<EASContract> {
       { value }
     );
 
-    return new Transaction(tx, async (receipt: ContractReceipt) => (await getUIDsFromAttestEvents(receipt.events))[0]);
+    // eslint-disable-next-line require-await
+    return new Transaction(tx, async (receipt: ContractReceipt) => getUIDFromDelegatedProxyAttestReceipt(receipt));
   }
 
   // Multi-attests to multiple schemas via an EIP712 delegation requests using an external EIP712 proxy
@@ -390,7 +395,7 @@ export class EAS extends Base<EASContract> {
     });
 
     // eslint-disable-next-line require-await
-    return new Transaction(tx, async (receipt: ContractReceipt) => getUIDsFromAttestEvents(receipt.events));
+    return new Transaction(tx, async (receipt: ContractReceipt) => getUIDFromMultiDelegatedProxyAttestReceipt(receipt));
   }
 
   // Revokes an existing attestation an EIP712 delegation request using an external EIP712 proxy

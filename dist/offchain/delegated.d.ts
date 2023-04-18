@@ -1,8 +1,7 @@
-import { DomainTypedData, EIP712MessageTypes, EIP712Params, EIP712Response, TypedData, TypedDataConfig, TypedDataHandler } from './typed-data-handler';
+import { EIP712MessageTypes, EIP712Params, EIP712Response, PartialTypedDataConfig, TypedData, TypedDataHandler } from './typed-data-handler';
 import { TypedDataSigner } from '@ethersproject/abstract-signer';
 import { BigNumberish } from 'ethers';
-export { EIP712MessageTypes, EIP712TypedData, EIP712Request, EIP712Response, TypedDataConfig } from './typed-data-handler';
-export declare const EIP712_DOMAIN = "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)";
+export { EIP712MessageTypes, EIP712TypedData, EIP712Request, EIP712Response, PartialTypedDataConfig } from './typed-data-handler';
 export declare const EIP712_NAME = "EAS";
 export declare const ATTEST_TYPED_SIGNATURE = "Attest(bytes32 schema,address recipient,uint64 expirationTime,bool revocable,bytes32 refUID,bytes data,uint256 nonce)";
 export declare const REVOKE_TYPED_SIGNATURE = "Revoke(bytes32 schema,bytes32 uid,uint256 nonce)";
@@ -23,9 +22,7 @@ export type EIP712RevocationParams = EIP712Params & {
     uid: string;
 };
 export declare class Delegated extends TypedDataHandler {
-    constructor(config: TypedDataConfig);
-    getDomainSeparator(): string;
-    getDomainTypedData(): DomainTypedData;
+    constructor(config: PartialTypedDataConfig);
     signDelegatedAttestation(params: EIP712AttestationParams, signer: TypedDataSigner): Promise<EIP712Response<EIP712MessageTypes, EIP712AttestationParams>>;
     verifyDelegatedAttestationSignature(attester: string, response: EIP712Response<EIP712MessageTypes, EIP712AttestationParams>): boolean;
     signDelegatedRevocation(params: EIP712RevocationParams, signer: TypedDataSigner): Promise<EIP712Response<EIP712MessageTypes, EIP712RevocationParams>>;

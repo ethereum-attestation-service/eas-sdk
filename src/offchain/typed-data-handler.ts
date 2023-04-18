@@ -5,11 +5,14 @@ import { BigNumberish, utils } from 'ethers';
 const { getAddress, verifyTypedData, hexlify, joinSignature, splitSignature, keccak256, toUtf8Bytes, defaultAbiCoder } =
   utils;
 
-export interface TypedDataConfig {
-  name: string;
+export interface PartialTypedDataConfig {
   address: string;
   version: string;
   chainId: number;
+}
+
+export interface TypedDataConfig extends PartialTypedDataConfig {
+  name: string;
 }
 
 export interface DomainTypedData {
