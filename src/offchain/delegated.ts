@@ -1,16 +1,6 @@
-import {
-  DomainTypedData,
-  EIP712MessageTypes,
-  EIP712Params,
-  EIP712Response,
-  TypedData,
-  TypedDataConfig,
-  TypedDataHandler
-} from './typed-data-handler';
+import { EIP712MessageTypes, EIP712Params, EIP712Response, TypedData, TypedDataHandler } from './typed-data-handler';
 import { TypedDataSigner } from '@ethersproject/abstract-signer';
-import { BigNumberish, utils } from 'ethers';
-
-const { keccak256, toUtf8Bytes, defaultAbiCoder } = utils;
+import { BigNumberish } from 'ethers';
 
 export {
   EIP712MessageTypes,
@@ -20,7 +10,6 @@ export {
   TypedDataConfig
 } from './typed-data-handler';
 
-export const EIP712_DOMAIN = 'EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)';
 export const EIP712_NAME = 'EAS';
 export const ATTEST_TYPED_SIGNATURE =
   'Attest(bytes32 schema,address recipient,uint64 expirationTime,bool revocable,bytes32 refUID,bytes data,uint256 nonce)';
@@ -56,33 +45,15 @@ export type EIP712RevocationParams = EIP712Params & {
   uid: string;
 };
 
+interface PartialTypedDataConfig {
+  address: string;
+  version: string;
+  chainId: number;
+}
+
 export class Delegated extends TypedDataHandler {
-  public constructor(config: TypedDataConfig) {
-    super(config);
-  }
-
-  public getDomainSeparator() {
-    return keccak256(
-      defaultAbiCoder.encode(
-        ['bytes32', 'bytes32', 'bytes32', 'uint256', 'address'],
-        [
-          keccak256(toUtf8Bytes(EIP712_DOMAIN)),
-          keccak256(toUtf8Bytes(EIP712_NAME)),
-          keccak256(toUtf8Bytes(this.config.version)),
-          this.config.chainId,
-          this.config.address
-        ]
-      )
-    );
-  }
-
-  public getDomainTypedData(): DomainTypedData {
-    return {
-      name: EIP712_NAME,
-      version: this.config.version,
-      chainId: this.config.chainId,
-      verifyingContract: this.config.address
-    };
+  public constructor(config: PartialTypedDataConfig) {
+    super({ ...config, name: EIP712_NAME });
   }
 
   public signDelegatedAttestation(
