@@ -4,8 +4,8 @@ import {
   EIP712MessageTypes,
   Offchain,
   OffchainAttestationParams,
+  PartialTypedDataConfig,
   SignedOffchainAttestation,
-  TypedDataConfig,
   TypedDataSigner
 } from '../../../src/offchain/offchain';
 import { EAS } from '@ethereum-attestation-service/eas-contracts';
@@ -14,7 +14,7 @@ import { BigNumberish } from 'ethers';
 import { network } from 'hardhat';
 
 export class OffchainUtils extends Offchain {
-  public constructor(config: TypedDataConfig) {
+  public constructor(config: PartialTypedDataConfig) {
     super(config);
   }
 

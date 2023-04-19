@@ -1,7 +1,7 @@
-import { DomainTypedData, EIP712MessageTypes, EIP712Params, EIP712Response, TypedData, TypedDataConfig, TypedDataHandler } from './typed-data-handler';
+import { DomainTypedData, EIP712MessageTypes, EIP712Params, EIP712Response, PartialTypedDataConfig, TypedData, TypedDataHandler } from './typed-data-handler';
 import { TypedDataSigner } from '@ethersproject/abstract-signer';
 import { BigNumberish } from 'ethers';
-export { EIP712Request, TypedDataConfig, EIP712MessageTypes } from './typed-data-handler';
+export { EIP712Request, PartialTypedDataConfig, EIP712MessageTypes } from './typed-data-handler';
 export { TypedDataSigner } from '@ethersproject/abstract-signer';
 export declare const ATTESTATION_PRIMARY_TYPE = "Attestation";
 export declare const ATTESTATION_TYPE: TypedData[];
@@ -19,7 +19,7 @@ export interface SignedOffchainAttestation extends EIP712Response<EIP712MessageT
     uid: string;
 }
 export declare class Offchain extends TypedDataHandler {
-    constructor(config: TypedDataConfig);
+    constructor(config: PartialTypedDataConfig);
     getDomainSeparator(): string;
     getDomainTypedData(): DomainTypedData;
     signOffchainAttestation(params: OffchainAttestationParams, signer: TypedDataSigner): Promise<SignedOffchainAttestation>;

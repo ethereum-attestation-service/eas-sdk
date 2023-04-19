@@ -2,12 +2,17 @@ import { ZERO_ADDRESS } from '../utils';
 import { TypedDataSigner } from '@ethersproject/abstract-signer';
 import { BigNumberish, utils } from 'ethers';
 
-const { getAddress, verifyTypedData, hexlify, joinSignature, splitSignature } = utils;
+const { getAddress, verifyTypedData, hexlify, joinSignature, splitSignature, keccak256, toUtf8Bytes, defaultAbiCoder } =
+  utils;
 
-export interface TypedDataConfig {
+export interface PartialTypedDataConfig {
   address: string;
   version: string;
   chainId: number;
+}
+
+export interface TypedDataConfig extends PartialTypedDataConfig {
+  name: string;
 }
 
 export interface DomainTypedData {
@@ -72,6 +77,8 @@ export type EIP712Response<T extends EIP712MessageTypes, P extends EIP712Params>
   signature: Signature;
 };
 
+export const EIP712_DOMAIN = 'EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)';
+
 export abstract class TypedDataHandler {
   protected config: TypedDataConfig;
 
@@ -79,8 +86,29 @@ export abstract class TypedDataHandler {
     this.config = config;
   }
 
-  abstract getDomainSeparator(): string;
-  abstract getDomainTypedData(): DomainTypedData;
+  public getDomainSeparator() {
+    return keccak256(
+      defaultAbiCoder.encode(
+        ['bytes32', 'bytes32', 'bytes32', 'uint256', 'address'],
+        [
+          keccak256(toUtf8Bytes(EIP712_DOMAIN)),
+          keccak256(toUtf8Bytes(this.config.name)),
+          keccak256(toUtf8Bytes(this.config.version)),
+          this.config.chainId,
+          this.config.address
+        ]
+      )
+    );
+  }
+
+  public getDomainTypedData(): DomainTypedData {
+    return {
+      name: this.config.name,
+      version: this.config.version,
+      chainId: this.config.chainId,
+      verifyingContract: this.config.address
+    };
+  }
 
   public async signTypedDataRequest<T extends EIP712MessageTypes, P extends EIP712Params>(
     params: P,

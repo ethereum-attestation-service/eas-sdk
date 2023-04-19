@@ -1,7 +1,8 @@
 {
   "compilerOptions": {
     "target": "esnext",
-    "module": "commonjs",
+    "module": "esnext",
+    "moduleResolution": "node",
     "importHelpers": true,
     "declaration": true,
     "sourceMap": true,
@@ -19,7 +20,6 @@
     "allowJs": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "moduleResolution": "node",
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "rootDir": "src",

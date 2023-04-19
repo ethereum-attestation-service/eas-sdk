@@ -1,7 +1,4 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.Base = exports.Transaction = void 0;
-class Transaction {
+export class Transaction {
     tx;
     waitCallback;
     constructor(tx, waitCallback) {
@@ -13,8 +10,7 @@ class Transaction {
         return this.waitCallback(receipt);
     }
 }
-exports.Transaction = Transaction;
-class Base {
+export class Base {
     contract;
     constructor(factory, address, signerOrProvider) {
         this.contract = factory.attach(address);
@@ -28,5 +24,4 @@ class Base {
         return this;
     }
 }
-exports.Base = Base;
 //# sourceMappingURL=transaction.js.map

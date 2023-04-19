@@ -1,16 +1,10 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.Delegated = exports.REVOKE_TYPE = exports.ATTEST_TYPE = exports.REVOKE_PRIMARY_TYPE = exports.ATTEST_PRIMARY_TYPE = exports.REVOKE_TYPED_SIGNATURE = exports.ATTEST_TYPED_SIGNATURE = exports.EIP712_NAME = exports.EIP712_DOMAIN = void 0;
-const typed_data_handler_1 = require("./typed-data-handler");
-const ethers_1 = require("ethers");
-const { keccak256, toUtf8Bytes, defaultAbiCoder } = ethers_1.utils;
-exports.EIP712_DOMAIN = 'EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)';
-exports.EIP712_NAME = 'EAS';
-exports.ATTEST_TYPED_SIGNATURE = 'Attest(bytes32 schema,address recipient,uint64 expirationTime,bool revocable,bytes32 refUID,bytes data,uint256 nonce)';
-exports.REVOKE_TYPED_SIGNATURE = 'Revoke(bytes32 schema,bytes32 uid,uint256 nonce)';
-exports.ATTEST_PRIMARY_TYPE = 'Attest';
-exports.REVOKE_PRIMARY_TYPE = 'Revoke';
-exports.ATTEST_TYPE = [
+import { TypedDataHandler } from './typed-data-handler';
+export const EIP712_NAME = 'EAS';
+export const ATTEST_TYPED_SIGNATURE = 'Attest(bytes32 schema,address recipient,uint64 expirationTime,bool revocable,bytes32 refUID,bytes data,uint256 nonce)';
+export const REVOKE_TYPED_SIGNATURE = 'Revoke(bytes32 schema,bytes32 uid,uint256 nonce)';
+export const ATTEST_PRIMARY_TYPE = 'Attest';
+export const REVOKE_PRIMARY_TYPE = 'Revoke';
+export const ATTEST_TYPE = [
     { name: 'schema', type: 'bytes32' },
     { name: 'recipient', type: 'address' },
     { name: 'expirationTime', type: 'uint64' },
@@ -19,39 +13,22 @@ exports.ATTEST_TYPE = [
     { name: 'data', type: 'bytes' },
     { name: 'nonce', type: 'uint256' }
 ];
-exports.REVOKE_TYPE = [
+export const REVOKE_TYPE = [
     { name: 'schema', type: 'bytes32' },
     { name: 'uid', type: 'bytes32' },
     { name: 'nonce', type: 'uint256' }
 ];
-class Delegated extends typed_data_handler_1.TypedDataHandler {
+export class Delegated extends TypedDataHandler {
     constructor(config) {
-        super(config);
-    }
-    getDomainSeparator() {
-        return keccak256(defaultAbiCoder.encode(['bytes32', 'bytes32', 'bytes32', 'uint256', 'address'], [
-            keccak256(toUtf8Bytes(exports.EIP712_DOMAIN)),
-            keccak256(toUtf8Bytes(exports.EIP712_NAME)),
-            keccak256(toUtf8Bytes(this.config.version)),
-            this.config.chainId,
-            this.config.address
-        ]));
-    }
-    getDomainTypedData() {
-        return {
-            name: exports.EIP712_NAME,
-            version: this.config.version,
-            chainId: this.config.chainId,
-            verifyingContract: this.config.address
-        };
+        super({ ...config, name: EIP712_NAME });
     }
     signDelegatedAttestation(params, signer) {
         return this.signTypedDataRequest(params, {
             domain: this.getDomainTypedData(),
-            primaryType: exports.ATTEST_PRIMARY_TYPE,
+            primaryType: ATTEST_PRIMARY_TYPE,
             message: params,
             types: {
-                Attest: exports.ATTEST_TYPE
+                Attest: ATTEST_TYPE
             }
         }, signer);
     }
@@ -61,10 +38,10 @@ class Delegated extends typed_data_handler_1.TypedDataHandler {
     signDelegatedRevocation(params, signer) {
         return this.signTypedDataRequest(params, {
             domain: this.getDomainTypedData(),
-            primaryType: exports.REVOKE_PRIMARY_TYPE,
+            primaryType: REVOKE_PRIMARY_TYPE,
             message: params,
             types: {
-                Revoke: exports.REVOKE_TYPE
+                Revoke: REVOKE_TYPE
             }
         }, signer);
     }
@@ -72,5 +49,4 @@ class Delegated extends typed_data_handler_1.TypedDataHandler {
         return this.verifyTypedDataRequestSignature(attester, response);
     }
 }
-exports.Delegated = Delegated;
 //# sourceMappingURL=delegated.js.map

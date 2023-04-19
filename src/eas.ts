@@ -3,10 +3,17 @@ import { Base, SignerOrProvider, Transaction } from './transaction';
 import {
   getTimestampFromOffchainRevocationEvents,
   getTimestampFromTimestampEvents,
+  getUIDFromDelegatedProxyAttestReceipt,
+  getUIDFromMultiDelegatedProxyAttestReceipt,
   getUIDsFromAttestEvents,
   ZERO_BYTES32
 } from './utils';
-import { EAS__factory, EAS as EASContract } from '@ethereum-attestation-service/eas-contracts';
+import {
+  EAS__factory,
+  EAS as EASContract,
+  EIP712Proxy,
+  EIP712Proxy__factory
+} from '@ethereum-attestation-service/eas-contracts';
 import { BigNumber, BigNumberish, ContractReceipt } from 'ethers';
 
 export interface Attestation {
@@ -78,9 +85,38 @@ export interface MultiDelegatedRevocationRequest extends MultiRevocationRequest 
   revoker: string;
 }
 
+export interface DelegatedProxyAttestationRequest extends DelegatedAttestationRequest {
+  deadline: BigNumberish;
+}
+
+export interface MultiDelegatedProxyAttestationRequest extends MultiDelegatedAttestationRequest {
+  deadline: BigNumberish;
+}
+
+export interface DelegatedProxyRevocationRequest extends DelegatedRevocationRequest {
+  deadline: BigNumberish;
+}
+
+export interface MultiDelegatedProxyRevocationRequest extends MultiDelegatedRevocationRequest {
+  deadline: BigNumberish;
+}
+
+export interface EASOptions {
+  signerOrProvider?: SignerOrProvider;
+  proxy?: string;
+}
+
 export class EAS extends Base<EASContract> {
-  constructor(address: string, signerOrProvider?: SignerOrProvider) {
+  private proxy?: Base<EIP712Proxy>;
+
+  constructor(address: string, options?: EASOptions) {
+    const { signerOrProvider, proxy } = options || {};
+
     super(new EAS__factory(), address, signerOrProvider);
+
+    if (proxy) {
+      this.proxy = new Base<EIP712Proxy>(new EIP712Proxy__factory(), proxy, signerOrProvider);
+    }
   }
 
   // Returns the version of the contract
@@ -114,7 +150,7 @@ export class EAS extends Base<EASContract> {
   }
 
   // Returns the timestamp that the specified data was timestamped with.
-  public getRevocationOffchain(user:string, uid: string): Promise<BigNumberish> {
+  public getRevocationOffchain(user: string, uid: string): Promise<BigNumberish> {
     return this.contract.getRevokeOffchain(user, uid);
   }
 
@@ -292,6 +328,136 @@ export class EAS extends Base<EASContract> {
     return new Transaction(tx, async () => {});
   }
 
+  // Attests to a specific schema via an EIP712 delegation request using an external EIP712 proxy
+  public async attestByDelegationProxy({
+    schema,
+    data: { recipient, data, expirationTime = NO_EXPIRATION, revocable = true, refUID = ZERO_BYTES32, value = 0 },
+    attester,
+    signature,
+    deadline
+  }: DelegatedProxyAttestationRequest): Promise<Transaction<string>> {
+    if (!this.proxy) {
+      throw new Error("Proxy wasn't set");
+    }
+
+    const tx = await this.proxy.contract.attestByDelegation(
+      {
+        schema,
+        data: {
+          recipient,
+          expirationTime,
+          revocable,
+          refUID,
+          data,
+          value
+        },
+        signature,
+        attester,
+        deadline
+      },
+      { value }
+    );
+
+    // eslint-disable-next-line require-await
+    return new Transaction(tx, async (receipt: ContractReceipt) => getUIDFromDelegatedProxyAttestReceipt(receipt));
+  }
+
+  // Multi-attests to multiple schemas via an EIP712 delegation requests using an external EIP712 proxy
+  public async multiAttestByDelegationProxy(
+    requests: MultiDelegatedProxyAttestationRequest[]
+  ): Promise<Transaction<string[]>> {
+    if (!this.proxy) {
+      throw new Error("Proxy wasn't set");
+    }
+
+    const multiAttestationRequests = requests.map((r) => ({
+      schema: r.schema,
+      data: r.data.map((d) => ({
+        recipient: d.recipient,
+        expirationTime: d.expirationTime ?? NO_EXPIRATION,
+        revocable: d.revocable ?? true,
+        refUID: d.refUID ?? ZERO_BYTES32,
+        data: d.data ?? ZERO_BYTES32,
+        value: d.value ?? 0
+      })),
+      signatures: r.signatures,
+      attester: r.attester,
+      deadline: r.deadline
+    }));
+
+    const requestedValue = multiAttestationRequests.reduce((res, { data }) => {
+      const total = data.reduce((res, r) => res.add(r.value), BigNumber.from(0));
+      return res.add(total);
+    }, BigNumber.from(0));
+
+    const tx = await this.proxy.contract.multiAttestByDelegation(multiAttestationRequests, {
+      value: requestedValue
+    });
+
+    // eslint-disable-next-line require-await
+    return new Transaction(tx, async (receipt: ContractReceipt) => getUIDFromMultiDelegatedProxyAttestReceipt(receipt));
+  }
+
+  // Revokes an existing attestation an EIP712 delegation request using an external EIP712 proxy
+  public async revokeByDelegationProxy({
+    schema,
+    data: { uid, value = 0 },
+    signature,
+    revoker,
+    deadline
+  }: DelegatedProxyRevocationRequest): Promise<Transaction<void>> {
+    if (!this.proxy) {
+      throw new Error("Proxy wasn't set");
+    }
+
+    const tx = await this.proxy.contract.revokeByDelegation(
+      {
+        schema,
+        data: {
+          uid,
+          value
+        },
+        signature,
+        revoker,
+        deadline
+      },
+      { value }
+    );
+
+    return new Transaction(tx, async () => {});
+  }
+
+  // Multi-revokes multiple attestations via an EIP712 delegation requests using an external EIP712 proxy
+  public async multiRevokeByDelegationProxy(
+    requests: MultiDelegatedProxyRevocationRequest[]
+  ): Promise<Transaction<void>> {
+    if (!this.proxy) {
+      throw new Error("Proxy wasn't set");
+    }
+
+    const multiRevocationRequests = requests.map((r) => ({
+      schema: r.schema,
+      data: r.data.map((d) => ({
+        uid: d.uid,
+        value: d.value ?? 0
+      })),
+      signatures: r.signatures,
+      revoker: r.revoker,
+      deadline: r.deadline
+    }));
+
+    const requestedValue = multiRevocationRequests.reduce((res, { data }) => {
+      const total = data.reduce((res, r) => res.add(r.value), BigNumber.from(0));
+      return res.add(total);
+    }, BigNumber.from(0));
+
+    const tx = await this.proxy.contract.multiRevokeByDelegation(multiRevocationRequests, {
+      value: requestedValue
+    });
+
+    return new Transaction(tx, async () => {});
+  }
+
   // Timestamps the specified bytes32 data.
   public async timestamp(data: string): Promise<Transaction<BigNumberish>> {
     const tx = await this.contract.timestamp(data);
@@ -325,9 +491,10 @@ export class EAS extends Base<EASContract> {
     const tx = await this.contract.multiRevokeOffchain(uids);
 
     // eslint-disable-next-line require-await
-    return new Transaction(tx, async (receipt: ContractReceipt) => getTimestampFromOffchainRevocationEvents(receipt.events));
+    return new Transaction(tx, async (receipt: ContractReceipt) =>
+      getTimestampFromOffchainRevocationEvents(receipt.events)
+    );
   }
-
 
   // Returns the domain separator used in the encoding of the signatures for attest, and revoke.
   public getDomainSeparator(): Promise<string> {

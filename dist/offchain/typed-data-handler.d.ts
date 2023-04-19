@@ -1,9 +1,12 @@
 import { TypedDataSigner } from '@ethersproject/abstract-signer';
 import { BigNumberish } from 'ethers';
-export interface TypedDataConfig {
+export interface PartialTypedDataConfig {
     address: string;
     version: string;
     chainId: number;
+}
+export interface TypedDataConfig extends PartialTypedDataConfig {
+    name: string;
 }
 export interface DomainTypedData {
     chainId: number;
@@ -46,11 +49,12 @@ export type EIP712Request<T extends EIP712MessageTypes, P extends EIP712Params> 
 export type EIP712Response<T extends EIP712MessageTypes, P extends EIP712Params> = EIP712TypedData<T, P> & {
     signature: Signature;
 };
+export declare const EIP712_DOMAIN = "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)";
 export declare abstract class TypedDataHandler {
     protected config: TypedDataConfig;
     constructor(config: TypedDataConfig);
-    abstract getDomainSeparator(): string;
-    abstract getDomainTypedData(): DomainTypedData;
+    getDomainSeparator(): string;
+    getDomainTypedData(): DomainTypedData;
     signTypedDataRequest<T extends EIP712MessageTypes, P extends EIP712Params>(params: P, types: EIP712TypedData<T, P>, signer: TypedDataSigner): Promise<EIP712Response<T, P>>;
     verifyTypedDataRequestSignature<T extends EIP712MessageTypes, P extends EIP712Params>(attester: string, request: EIP712Response<T, P>): boolean;
 }
