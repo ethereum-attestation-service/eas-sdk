@@ -1,9 +1,12 @@
-import { TypedDataHandler } from './typed-data-handler';
-export const ATTEST_PROXY_TYPED_SIGNATURE = 'Attest(bytes32 schema,address recipient,uint64 expirationTime,bool revocable,bytes32 refUID,bytes data,uint64 deadline)';
-export const REVOKE_PROXY_TYPED_SIGNATURE = 'Revoke(bytes32 schema,bytes32 uid,uint64 deadline)';
-export const ATTEST_PROXY_PRIMARY_TYPE = 'Attest';
-export const REVOKE_PROXY_PRIMARY_TYPE = 'Revoke';
-export const ATTEST_PROXY_TYPE = [
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.DelegatedProxy = exports.REVOKE_PROXY_TYPE = exports.ATTEST_PROXY_TYPE = exports.REVOKE_PROXY_PRIMARY_TYPE = exports.ATTEST_PROXY_PRIMARY_TYPE = exports.REVOKE_PROXY_TYPED_SIGNATURE = exports.ATTEST_PROXY_TYPED_SIGNATURE = void 0;
+const typed_data_handler_1 = require("./typed-data-handler");
+exports.ATTEST_PROXY_TYPED_SIGNATURE = 'Attest(bytes32 schema,address recipient,uint64 expirationTime,bool revocable,bytes32 refUID,bytes data,uint64 deadline)';
+exports.REVOKE_PROXY_TYPED_SIGNATURE = 'Revoke(bytes32 schema,bytes32 uid,uint64 deadline)';
+exports.ATTEST_PROXY_PRIMARY_TYPE = 'Attest';
+exports.REVOKE_PROXY_PRIMARY_TYPE = 'Revoke';
+exports.ATTEST_PROXY_TYPE = [
     { name: 'schema', type: 'bytes32' },
     { name: 'recipient', type: 'address' },
     { name: 'expirationTime', type: 'uint64' },
@@ -12,22 +15,22 @@ export const ATTEST_PROXY_TYPE = [
     { name: 'data', type: 'bytes' },
     { name: 'deadline', type: 'uint64' }
 ];
-export const REVOKE_PROXY_TYPE = [
+exports.REVOKE_PROXY_TYPE = [
     { name: 'schema', type: 'bytes32' },
     { name: 'uid', type: 'bytes32' },
     { name: 'deadline', type: 'uint64' }
 ];
-export class DelegatedProxy extends TypedDataHandler {
+class DelegatedProxy extends typed_data_handler_1.TypedDataHandler {
     constructor(config) {
         super(config);
     }
     signDelegatedProxyAttestation(params, signer) {
         return this.signTypedDataRequest(params, {
             domain: this.getDomainTypedData(),
-            primaryType: ATTEST_PROXY_PRIMARY_TYPE,
+            primaryType: exports.ATTEST_PROXY_PRIMARY_TYPE,
             message: params,
             types: {
-                Attest: ATTEST_PROXY_TYPE
+                Attest: exports.ATTEST_PROXY_TYPE
             }
         }, signer);
     }
@@ -37,10 +40,10 @@ export class DelegatedProxy extends TypedDataHandler {
     signDelegatedProxyRevocation(params, signer) {
         return this.signTypedDataRequest(params, {
             domain: this.getDomainTypedData(),
-            primaryType: REVOKE_PROXY_PRIMARY_TYPE,
+            primaryType: exports.REVOKE_PROXY_PRIMARY_TYPE,
             message: params,
             types: {
-                Revoke: REVOKE_PROXY_TYPE
+                Revoke: exports.REVOKE_PROXY_TYPE
             }
         }, signer);
     }
@@ -48,4 +51,5 @@ export class DelegatedProxy extends TypedDataHandler {
         return this.verifyTypedDataRequestSignature(attester, response);
     }
 }
+exports.DelegatedProxy = DelegatedProxy;
 //# sourceMappingURL=delegated-proxy.js.map

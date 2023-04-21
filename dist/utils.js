@@ -1,28 +1,37 @@
-import { EAS__factory } from '@ethereum-attestation-service/eas-contracts';
-import { Interface } from '@ethersproject/abi';
-import { constants, utils } from 'ethers';
-const { solidityKeccak256, hexlify, toUtf8Bytes } = utils;
-const { AddressZero } = constants;
-export const ZERO_ADDRESS = AddressZero;
-export const ZERO_BYTES = '0x';
-export const ZERO_BYTES32 = '0x0000000000000000000000000000000000000000000000000000000000000000';
-export const getSchemaUID = (schema, resolverAddress, revocable) => solidityKeccak256(['string', 'address', 'bool'], [schema, resolverAddress, revocable]);
-export const getUID = (schema, recipient, attester, time, expirationTime, revocable, refUID, data, bump) => solidityKeccak256(['bytes', 'address', 'address', 'uint64', 'uint64', 'bool', 'bytes32', 'bytes', 'uint32'], [hexlify(toUtf8Bytes(schema)), recipient, attester, time, expirationTime, revocable, refUID, data, bump]);
-export const getOffchainUID = (schema, recipient, time, expirationTime, revocable, refUID, data) => solidityKeccak256(['bytes', 'address', 'address', 'uint64', 'uint64', 'bool', 'bytes32', 'bytes', 'uint32'], [hexlify(toUtf8Bytes(schema)), recipient, ZERO_ADDRESS, time, expirationTime, revocable, refUID, data, 0]);
-export const getUIDsFromMultiAttestTx = async (res) => {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.getTimestampFromOffchainRevocationEvents = exports.getTimestampFromTimestampEvents = exports.getUIDsFromAttestEvents = exports.getUIDFromDelegatedProxyAttestReceipt = exports.getUIDFromDelegatedProxyAttestTx = exports.getUIDFromMultiDelegatedProxyAttestReceipt = exports.getUIDFromMultiDelegatedProxyAttestTx = exports.getUIDFromAttestTx = exports.getUIDsFromMultiAttestTx = exports.getOffchainUID = exports.getUID = exports.getSchemaUID = exports.ZERO_BYTES32 = exports.ZERO_BYTES = exports.ZERO_ADDRESS = void 0;
+const eas_contracts_1 = require("@ethereum-attestation-service/eas-contracts");
+const abi_1 = require("@ethersproject/abi");
+const ethers_1 = require("ethers");
+const { solidityKeccak256, hexlify, toUtf8Bytes } = ethers_1.utils;
+const { AddressZero } = ethers_1.constants;
+exports.ZERO_ADDRESS = AddressZero;
+exports.ZERO_BYTES = '0x';
+exports.ZERO_BYTES32 = '0x0000000000000000000000000000000000000000000000000000000000000000';
+const getSchemaUID = (schema, resolverAddress, revocable) => solidityKeccak256(['string', 'address', 'bool'], [schema, resolverAddress, revocable]);
+exports.getSchemaUID = getSchemaUID;
+const getUID = (schema, recipient, attester, time, expirationTime, revocable, refUID, data, bump) => solidityKeccak256(['bytes', 'address', 'address', 'uint64', 'uint64', 'bool', 'bytes32', 'bytes', 'uint32'], [hexlify(toUtf8Bytes(schema)), recipient, attester, time, expirationTime, revocable, refUID, data, bump]);
+exports.getUID = getUID;
+const getOffchainUID = (schema, recipient, time, expirationTime, revocable, refUID, data) => solidityKeccak256(['bytes', 'address', 'address', 'uint64', 'uint64', 'bool', 'bytes32', 'bytes', 'uint32'], [hexlify(toUtf8Bytes(schema)), recipient, exports.ZERO_ADDRESS, time, expirationTime, revocable, refUID, data, 0]);
+exports.getOffchainUID = getOffchainUID;
+const getUIDsFromMultiAttestTx = async (res) => {
     const receipt = await (await res).wait();
-    return getUIDsFromAttestEvents(receipt.events);
+    return (0, exports.getUIDsFromAttestEvents)(receipt.events);
 };
-export const getUIDFromAttestTx = async (res) => {
-    return (await getUIDsFromMultiAttestTx(res))[0];
+exports.getUIDsFromMultiAttestTx = getUIDsFromMultiAttestTx;
+const getUIDFromAttestTx = async (res) => {
+    return (await (0, exports.getUIDsFromMultiAttestTx)(res))[0];
 };
-export const getUIDFromMultiDelegatedProxyAttestTx = async (res) => {
-    return getUIDFromMultiDelegatedProxyAttestReceipt((await res).wait());
+exports.getUIDFromAttestTx = getUIDFromAttestTx;
+const getUIDFromMultiDelegatedProxyAttestTx = async (res) => {
+    return (0, exports.getUIDFromMultiDelegatedProxyAttestReceipt)((await res).wait());
 };
-export const getUIDFromMultiDelegatedProxyAttestReceipt = async (res) => {
+exports.getUIDFromMultiDelegatedProxyAttestTx = getUIDFromMultiDelegatedProxyAttestTx;
+const getUIDFromMultiDelegatedProxyAttestReceipt = async (res) => {
     const receipt = await res;
     // eslint-disable-next-line camelcase
-    const eas = new Interface(EAS__factory.abi);
+    const eas = new abi_1.Interface(eas_contracts_1.EAS__factory.abi);
     const events = [];
     for (const event of receipt.events || []) {
         events.push({
@@ -30,16 +39,19 @@ export const getUIDFromMultiDelegatedProxyAttestReceipt = async (res) => {
             args: await eas.decodeEventLog('Attested', event.data, event.topics)
         });
     }
-    return getUIDsFromAttestEvents(events);
+    return (0, exports.getUIDsFromAttestEvents)(events);
 };
-export const getUIDFromDelegatedProxyAttestTx = async (res) => {
-    return (await getUIDFromMultiDelegatedProxyAttestTx(res))[0];
+exports.getUIDFromMultiDelegatedProxyAttestReceipt = getUIDFromMultiDelegatedProxyAttestReceipt;
+const getUIDFromDelegatedProxyAttestTx = async (res) => {
+    return (await (0, exports.getUIDFromMultiDelegatedProxyAttestTx)(res))[0];
 };
-export const getUIDFromDelegatedProxyAttestReceipt = async (res) => {
-    return (await getUIDFromMultiDelegatedProxyAttestReceipt(res))[0];
+exports.getUIDFromDelegatedProxyAttestTx = getUIDFromDelegatedProxyAttestTx;
+const getUIDFromDelegatedProxyAttestReceipt = async (res) => {
+    return (await (0, exports.getUIDFromMultiDelegatedProxyAttestReceipt)(res))[0];
 };
+exports.getUIDFromDelegatedProxyAttestReceipt = getUIDFromDelegatedProxyAttestReceipt;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const getUIDsFromAttestEvents = (events) => {
+const getUIDsFromAttestEvents = (events) => {
     if (!events) {
         return [];
     }
@@ -49,7 +61,8 @@ export const getUIDsFromAttestEvents = (events) => {
     }
     return attestedEvents.map((event) => event.args?.uid);
 };
-export const getTimestampFromTimestampEvents = (events) => {
+exports.getUIDsFromAttestEvents = getUIDsFromAttestEvents;
+const getTimestampFromTimestampEvents = (events) => {
     if (!events) {
         return [];
     }
@@ -59,7 +72,8 @@ export const getTimestampFromTimestampEvents = (events) => {
     }
     return timestampedEvents.map((event) => event.args?.timestamp);
 };
-export const getTimestampFromOffchainRevocationEvents = (events) => {
+exports.getTimestampFromTimestampEvents = getTimestampFromTimestampEvents;
+const getTimestampFromOffchainRevocationEvents = (events) => {
     if (!events) {
         return [];
     }
@@ -69,4 +83,5 @@ export const getTimestampFromOffchainRevocationEvents = (events) => {
     }
     return revocationEvents.map((event) => event.args?.timestamp);
 };
+exports.getTimestampFromOffchainRevocationEvents = getTimestampFromOffchainRevocationEvents;
 //# sourceMappingURL=utils.js.map

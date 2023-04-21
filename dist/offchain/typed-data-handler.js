@@ -1,15 +1,18 @@
-import { ZERO_ADDRESS } from '../utils';
-import { utils } from 'ethers';
-const { getAddress, verifyTypedData, hexlify, joinSignature, splitSignature, keccak256, toUtf8Bytes, defaultAbiCoder } = utils;
-export const EIP712_DOMAIN = 'EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)';
-export class TypedDataHandler {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.TypedDataHandler = exports.EIP712_DOMAIN = void 0;
+const utils_1 = require("../utils");
+const ethers_1 = require("ethers");
+const { getAddress, verifyTypedData, hexlify, joinSignature, splitSignature, keccak256, toUtf8Bytes, defaultAbiCoder } = ethers_1.utils;
+exports.EIP712_DOMAIN = 'EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)';
+class TypedDataHandler {
     config;
     constructor(config) {
         this.config = config;
     }
     getDomainSeparator() {
         return keccak256(defaultAbiCoder.encode(['bytes32', 'bytes32', 'bytes32', 'uint256', 'address'], [
-            keccak256(toUtf8Bytes(EIP712_DOMAIN)),
+            keccak256(toUtf8Bytes(exports.EIP712_DOMAIN)),
             keccak256(toUtf8Bytes(this.config.name)),
             keccak256(toUtf8Bytes(this.config.version)),
             this.config.chainId,
@@ -30,7 +33,7 @@ export class TypedDataHandler {
         return { ...types, signature: { v: signature.v, r: signature.r, s: signature.s } };
     }
     verifyTypedDataRequestSignature(attester, request) {
-        if (attester === ZERO_ADDRESS) {
+        if (attester === utils_1.ZERO_ADDRESS) {
             throw new Error('Invalid address');
         }
         const { signature } = request;
@@ -39,4 +42,5 @@ export class TypedDataHandler {
         return getAddress(attester) === getAddress(recoveredAddress);
     }
 }
+exports.TypedDataHandler = TypedDataHandler;
 //# sourceMappingURL=typed-data-handler.js.map

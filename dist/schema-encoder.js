@@ -1,10 +1,13 @@
-import { ZERO_ADDRESS } from './utils';
-import { utils } from 'ethers';
-import { CID } from 'multiformats';
-const { FunctionFragment, defaultAbiCoder, isBytesLike, formatBytes32String } = utils;
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.SchemaEncoder = void 0;
+const utils_1 = require("./utils");
+const ethers_1 = require("ethers");
+const multiformats_1 = require("multiformats");
+const { FunctionFragment, defaultAbiCoder, isBytesLike, formatBytes32String } = ethers_1.utils;
 const TUPLE_TYPE = 'tuple';
 const TUPLE_ARRAY_TYPE = 'tuple[]';
-export class SchemaEncoder {
+class SchemaEncoder {
     schema;
     constructor(schema) {
         this.schema = [];
@@ -130,7 +133,7 @@ export class SchemaEncoder {
     }
     static isCID(cid) {
         try {
-            CID.parse(cid);
+            multiformats_1.CID.parse(cid);
             return true;
         }
         catch {
@@ -138,7 +141,7 @@ export class SchemaEncoder {
         }
     }
     static encodeQmHash(hash) {
-        const a = CID.parse(hash);
+        const a = multiformats_1.CID.parse(hash);
         return defaultAbiCoder.encode(['bytes32'], [a.multihash.digest]);
     }
     static decodeQmHash(bytes32) {
@@ -149,18 +152,18 @@ export class SchemaEncoder {
             size: 32,
             bytes: Uint8Array.from([18, 32, ...digest])
         };
-        const dCID = CID.createV0(dec);
+        const dCID = multiformats_1.CID.createV0(dec);
         return dCID.toString();
     }
     static getDefaultValueForTypeName(typeName) {
-        return typeName === 'bool' ? false : typeName.includes('uint') ? '0' : typeName === 'address' ? ZERO_ADDRESS : '';
+        return typeName === 'bool' ? false : typeName.includes('uint') ? '0' : typeName === 'address' ? utils_1.ZERO_ADDRESS : '';
     }
     static decodeIpfsValue(val) {
         if (isBytesLike(val)) {
             return SchemaEncoder.encodeBytes32Value(val);
         }
         try {
-            const decodedHash = CID.parse(val);
+            const decodedHash = multiformats_1.CID.parse(val);
             const encoded = defaultAbiCoder.encode(['bytes32'], [decodedHash.multihash.digest]);
             return encoded;
         }
@@ -181,4 +184,5 @@ export class SchemaEncoder {
         return this.schema.map((i) => i.signature);
     }
 }
+exports.SchemaEncoder = SchemaEncoder;
 //# sourceMappingURL=schema-encoder.js.map
