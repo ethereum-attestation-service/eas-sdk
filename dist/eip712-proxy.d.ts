@@ -8,6 +8,7 @@ export interface EIP712ProxyOptions {
 export declare class EIP712Proxy extends Base<EIP712ProxyContract> {
     private delegated?;
     constructor(address: string, options?: EIP712ProxyOptions);
+    connect(signerOrProvider: SignerOrProvider): this;
     getVersion(): Promise<string>;
     getEAS(): Promise<string>;
     getName(): Promise<string>;
@@ -15,9 +16,10 @@ export declare class EIP712Proxy extends Base<EIP712ProxyContract> {
     getAttestTypeHash(): Promise<string>;
     getRevokeTypeHash(): Promise<string>;
     getAttester(uid: string): Promise<string>;
-    getDelegated(): Promise<DelegatedProxy>;
+    getDelegated(): Promise<DelegatedProxy> | DelegatedProxy;
     attestByDelegationProxy({ schema, data: { recipient, data, expirationTime, revocable, refUID, value }, attester, signature, deadline }: DelegatedProxyAttestationRequest): Promise<Transaction<string>>;
     multiAttestByDelegationProxy(requests: MultiDelegatedProxyAttestationRequest[]): Promise<Transaction<string[]>>;
     revokeByDelegationProxy({ schema, data: { uid, value }, signature, revoker, deadline }: DelegatedProxyRevocationRequest): Promise<Transaction<void>>;
     multiRevokeByDelegationProxy(requests: MultiDelegatedProxyRevocationRequest[]): Promise<Transaction<void>>;
+    private setDelegated;
 }

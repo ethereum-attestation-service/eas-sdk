@@ -34,4 +34,9 @@ export class Base<C extends Contract> {
 
     return this;
   }
+
+  // Gets the chain ID
+  public async getChainId(): Promise<number> {
+    return (await this.contract.provider.getNetwork()).chainId;
+  }
 }

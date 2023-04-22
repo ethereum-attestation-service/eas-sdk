@@ -13,6 +13,12 @@ class EIP712Proxy extends transaction_1.Base {
         const { signerOrProvider } = options || {};
         super(new eas_contracts_1.EIP712Proxy__factory(), address, signerOrProvider);
     }
+    // Connects the API to a specific signer
+    connect(signerOrProvider) {
+        delete this.delegated;
+        super.connect(signerOrProvider);
+        return this;
+    }
     // Returns the version of the contract
     getVersion() {
         return this.contract.VERSION();
@@ -42,16 +48,11 @@ class EIP712Proxy extends transaction_1.Base {
         return this.contract.getAttester(uid);
     }
     // Returns the delegated attestations helper
-    async getDelegated() {
-        if (!this.delegated) {
-            this.delegated = new offchain_1.DelegatedProxy({
-                name: await this.getName(),
-                address: this.contract.address,
-                version: await this.getVersion(),
-                chainId: (await this.contract.provider.getNetwork()).chainId
-            });
+    getDelegated() {
+        if (this.delegated) {
+            return this.delegated;
         }
-        return this.delegated;
+        return this.setDelegated();
     }
     // Attests to a specific schema via an EIP712 delegation request using an external EIP712 proxy
     async attestByDelegationProxy({ schema, data: { recipient, data, expirationTime = request_1.NO_EXPIRATION, revocable = true, refUID = utils_1.ZERO_BYTES32, value = 0 }, attester, signature, deadline }) {
@@ -132,6 +133,16 @@ class EIP712Proxy extends transaction_1.Base {
             value: requestedValue
         });
         return new transaction_1.Transaction(tx, async () => { });
+    }
+    // Sets the delegated attestations helper
+    async setDelegated() {
+        this.delegated = new offchain_1.DelegatedProxy({
+            name: await this.getName(),
+            address: this.contract.address,
+            version: await this.getVersion(),
+            chainId: await this.getChainId()
+        });
+        return this.delegated;
     }
 }
 exports.EIP712Proxy = EIP712Proxy;

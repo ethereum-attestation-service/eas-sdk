@@ -10,4 +10,5 @@ export declare class Base<C extends Contract> {
     contract: C;
     constructor(factory: ContractFactory, address: string, signerOrProvider?: SignerOrProvider);
     connect(signerOrProvider: SignerOrProvider): this;
+    getChainId(): Promise<number>;
 }

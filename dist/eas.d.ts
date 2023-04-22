@@ -26,6 +26,7 @@ export declare class EAS extends Base<EASContract> {
     private delegated?;
     private offchain?;
     constructor(address: string, options?: EASOptions);
+    connect(signerOrProvider: SignerOrProvider): this;
     getVersion(): Promise<string>;
     getAttestation(uid: string): Promise<Attestation>;
     isAttestationValid(uid: string): Promise<boolean>;
@@ -33,8 +34,8 @@ export declare class EAS extends Base<EASContract> {
     getTimestamp(data: string): Promise<BigNumberish>;
     getRevocationOffchain(user: string, uid: string): Promise<BigNumberish>;
     getEIP712Proxy(): EIP712Proxy | undefined;
-    getDelegated(): Promise<Delegated>;
-    getOffchain(): Promise<Offchain>;
+    getDelegated(): Promise<Delegated> | Delegated;
+    getOffchain(): Promise<Offchain> | Offchain;
     attest({ schema, data: { recipient, data, expirationTime, revocable, refUID, value } }: AttestationRequest): Promise<Transaction<string>>;
     attestByDelegation({ schema, data: { recipient, data, expirationTime, revocable, refUID, value }, attester, signature }: DelegatedAttestationRequest): Promise<Transaction<string>>;
     multiAttest(requests: MultiAttestationRequest[]): Promise<Transaction<string[]>>;
@@ -55,4 +56,6 @@ export declare class EAS extends Base<EASContract> {
     getNonce(address: string): Promise<BigNumber>;
     getAttestTypeHash(): Promise<string>;
     getRevokeTypeHash(): Promise<string>;
+    private setDelegated;
+    private setOffchain;
 }

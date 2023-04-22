@@ -27,6 +27,10 @@ class Base {
         this.contract = this.contract.connect(signerOrProvider);
         return this;
     }
+    // Gets the chain ID
+    async getChainId() {
+        return (await this.contract.provider.getNetwork()).chainId;
+    }
 }
 exports.Base = Base;
 //# sourceMappingURL=transaction.js.map

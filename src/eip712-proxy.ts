@@ -28,6 +28,15 @@ export class EIP712Proxy extends Base<EIP712ProxyContract> {
     super(new EIP712Proxy__factory(), address, signerOrProvider);
   }
 
+  // Connects the API to a specific signer
+  public connect(signerOrProvider: SignerOrProvider) {
+    delete this.delegated;
+
+    super.connect(signerOrProvider);
+
+    return this;
+  }
+
   // Returns the version of the contract
   public getVersion(): Promise<string> {
     return this.contract.VERSION();
@@ -63,17 +72,12 @@ export class EIP712Proxy extends Base<EIP712ProxyContract> {
   }
 
   // Returns the delegated attestations helper
-  public async getDelegated(): Promise<DelegatedProxy> {
-    if (!this.delegated) {
-      this.delegated = new DelegatedProxy({
-        name: await this.getName(),
-        address: this.contract.address,
-        version: await this.getVersion(),
-        chainId: (await this.contract.provider.getNetwork()).chainId
-      });
+  public getDelegated(): Promise<DelegatedProxy> | DelegatedProxy {
+    if (this.delegated) {
+      return this.delegated;
     }
 
-    return this.delegated;
+    return this.setDelegated();
   }
 
   // Attests to a specific schema via an EIP712 delegation request using an external EIP712 proxy
@@ -188,5 +192,17 @@ export class EIP712Proxy extends Base<EIP712ProxyContract> {
     });
 
     return new Transaction(tx, async () => {});
+  }
+
+  // Sets the delegated attestations helper
+  private async setDelegated(): Promise<DelegatedProxy> {
+    this.delegated = new DelegatedProxy({
+      name: await this.getName(),
+      address: this.contract.address,
+      version: await this.getVersion(),
+      chainId: await this.getChainId()
+    });
+
+    return this.delegated;
   }
 }

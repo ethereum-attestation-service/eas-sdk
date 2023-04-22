@@ -20,6 +20,13 @@ class EAS extends transaction_1.Base {
             this.proxy = proxy;
         }
     }
+    // Connects the API to a specific signer
+    connect(signerOrProvider) {
+        delete this.delegated;
+        delete this.offchain;
+        super.connect(signerOrProvider);
+        return this;
+    }
     // Returns the version of the contract
     getVersion() {
         return this.contract.VERSION();
@@ -53,26 +60,18 @@ class EAS extends transaction_1.Base {
         return this.proxy;
     }
     // Returns the delegated attestations helper
-    async getDelegated() {
-        if (!this.delegated) {
-            this.delegated = new offchain_1.Delegated({
-                address: this.contract.address,
-                version: await this.getVersion(),
-                chainId: (await this.contract.provider.getNetwork()).chainId
-            });
+    getDelegated() {
+        if (this.delegated) {
+            return this.delegated;
         }
-        return this.delegated;
+        return this.setDelegated();
     }
     // Returns the offchain attestations helper
-    async getOffchain() {
-        if (!this.offchain) {
-            this.offchain = new offchain_1.Offchain({
-                address: this.contract.address,
-                version: await this.getVersion(),
-                chainId: (await this.contract.provider.getNetwork()).chainId
-            });
+    getOffchain() {
+        if (this.offchain) {
+            return this.offchain;
         }
-        return this.offchain;
+        return this.setOffchain();
     }
     // Attests to a specific schema
     async attest({ schema, data: { recipient, data, expirationTime = request_1.NO_EXPIRATION, revocable = true, refUID = utils_1.ZERO_BYTES32, value = 0 } }) {
@@ -267,6 +266,24 @@ class EAS extends transaction_1.Base {
     // Returns the EIP712 type hash for the revoke function
     getRevokeTypeHash() {
         return this.contract.getRevokeTypeHash();
+    }
+    // Sets the delegated attestations helper
+    async setDelegated() {
+        this.delegated = new offchain_1.Delegated({
+            address: this.contract.address,
+            version: await this.getVersion(),
+            chainId: await this.getChainId()
+        });
+        return this.delegated;
+    }
+    // Sets the offchain attestations helper
+    async setOffchain() {
+        this.offchain = new offchain_1.Offchain({
+            address: this.contract.address,
+            version: await this.getVersion(),
+            chainId: await this.getChainId()
+        });
+        return this.offchain;
     }
 }
 exports.EAS = EAS;

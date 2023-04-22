@@ -60,6 +60,16 @@ export class EAS extends Base<EASContract> {
     }
   }
 
+  // Connects the API to a specific signer
+  public connect(signerOrProvider: SignerOrProvider) {
+    delete this.delegated;
+    delete this.offchain;
+
+    super.connect(signerOrProvider);
+
+    return this;
+  }
+
   // Returns the version of the contract
   public getVersion(): Promise<string> {
     return this.contract.VERSION();
@@ -101,29 +111,21 @@ export class EAS extends Base<EASContract> {
   }
 
   // Returns the delegated attestations helper
-  public async getDelegated(): Promise<Delegated> {
-    if (!this.delegated) {
-      this.delegated = new Delegated({
-        address: this.contract.address,
-        version: await this.getVersion(),
-        chainId: (await this.contract.provider.getNetwork()).chainId
-      });
+  public getDelegated(): Promise<Delegated> | Delegated {
+    if (this.delegated) {
+      return this.delegated;
     }
 
-    return this.delegated;
+    return this.setDelegated();
   }
 
   // Returns the offchain attestations helper
-  public async getOffchain(): Promise<Offchain> {
-    if (!this.offchain) {
-      this.offchain = new Offchain({
-        address: this.contract.address,
-        version: await this.getVersion(),
-        chainId: (await this.contract.provider.getNetwork()).chainId
-      });
+  public getOffchain(): Promise<Offchain> | Offchain {
+    if (this.offchain) {
+      return this.offchain;
     }
 
-    return this.offchain;
+    return this.setOffchain();
   }
 
   // Attests to a specific schema
@@ -394,5 +396,27 @@ export class EAS extends Base<EASContract> {
   // Returns the EIP712 type hash for the revoke function
   public getRevokeTypeHash(): Promise<string> {
     return this.contract.getRevokeTypeHash();
+  }
+
+  // Sets the delegated attestations helper
+  private async setDelegated(): Promise<Delegated> {
+    this.delegated = new Delegated({
+      address: this.contract.address,
+      version: await this.getVersion(),
+      chainId: await this.getChainId()
+    });
+
+    return this.delegated;
+  }
+
+  // Sets the offchain attestations helper
+  private async setOffchain(): Promise<Offchain> {
+    this.offchain = new Offchain({
+      address: this.contract.address,
+      version: await this.getVersion(),
+      chainId: await this.getChainId()
+    });
+
+    return this.offchain;
   }
 }
