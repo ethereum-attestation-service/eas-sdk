@@ -1,3 +1,4 @@
+import { DelegatedProxy } from './offchain';
 import {
   DelegatedProxyAttestationRequest,
   DelegatedProxyRevocationRequest,
@@ -19,6 +20,8 @@ export interface EIP712ProxyOptions {
 }
 
 export class EIP712Proxy extends Base<EIP712ProxyContract> {
+  private delegated?: DelegatedProxy;
+
   constructor(address: string, options?: EIP712ProxyOptions) {
     const { signerOrProvider } = options || {};
 
@@ -57,6 +60,20 @@ export class EIP712Proxy extends Base<EIP712ProxyContract> {
   // Returns the attester for a given uid
   public getAttester(uid: string): Promise<string> {
     return this.contract.getAttester(uid);
+  }
+
+  // Returns the delegated attestations helper
+  public async getDelegated(): Promise<DelegatedProxy> {
+    if (!this.delegated) {
+      this.delegated = new DelegatedProxy({
+        name: await this.getName(),
+        address: this.contract.address,
+        version: await this.getVersion(),
+        chainId: (await this.contract.provider.getNetwork()).chainId
+      });
+    }
+
+    return this.delegated;
   }
 
   // Attests to a specific schema via an EIP712 delegation request using an external EIP712 proxy

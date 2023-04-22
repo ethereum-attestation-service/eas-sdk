@@ -1,12 +1,14 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EIP712Proxy = void 0;
+const offchain_1 = require("./offchain");
 const request_1 = require("./request");
 const transaction_1 = require("./transaction");
 const utils_1 = require("./utils");
 const eas_contracts_1 = require("@ethereum-attestation-service/eas-contracts");
 const ethers_1 = require("ethers");
 class EIP712Proxy extends transaction_1.Base {
+    delegated;
     constructor(address, options) {
         const { signerOrProvider } = options || {};
         super(new eas_contracts_1.EIP712Proxy__factory(), address, signerOrProvider);
@@ -38,6 +40,18 @@ class EIP712Proxy extends transaction_1.Base {
     // Returns the attester for a given uid
     getAttester(uid) {
         return this.contract.getAttester(uid);
+    }
+    // Returns the delegated attestations helper
+    async getDelegated() {
+        if (!this.delegated) {
+            this.delegated = new offchain_1.DelegatedProxy({
+                name: await this.getName(),
+                address: this.contract.address,
+                version: await this.getVersion(),
+                chainId: (await this.contract.provider.getNetwork()).chainId
+            });
+        }
+        return this.delegated;
     }
     // Attests to a specific schema via an EIP712 delegation request using an external EIP712 proxy
     async attestByDelegationProxy({ schema, data: { recipient, data, expirationTime = request_1.NO_EXPIRATION, revocable = true, refUID = utils_1.ZERO_BYTES32, value = 0 }, attester, signature, deadline }) {

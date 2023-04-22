@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EAS = void 0;
 const tslib_1 = require("tslib");
+const offchain_1 = require("./offchain");
 const request_1 = require("./request");
 const transaction_1 = require("./transaction");
 const utils_1 = require("./utils");
@@ -10,6 +11,8 @@ const ethers_1 = require("ethers");
 tslib_1.__exportStar(require("./request"), exports);
 class EAS extends transaction_1.Base {
     proxy;
+    delegated;
+    offchain;
     constructor(address, options) {
         const { signerOrProvider, proxy } = options || {};
         super(new eas_contracts_1.EAS__factory(), address, signerOrProvider);
@@ -48,6 +51,28 @@ class EAS extends transaction_1.Base {
     // Returns the EIP712 proxy
     getEIP712Proxy() {
         return this.proxy;
+    }
+    // Returns the delegated attestations helper
+    async getDelegated() {
+        if (!this.delegated) {
+            this.delegated = new offchain_1.Delegated({
+                address: this.contract.address,
+                version: await this.getVersion(),
+                chainId: (await this.contract.provider.getNetwork()).chainId
+            });
+        }
+        return this.delegated;
+    }
+    // Returns the offchain attestations helper
+    async getOffchain() {
+        if (!this.offchain) {
+            this.offchain = new offchain_1.Offchain({
+                address: this.contract.address,
+                version: await this.getVersion(),
+                chainId: (await this.contract.provider.getNetwork()).chainId
+            });
+        }
+        return this.offchain;
     }
     // Attests to a specific schema
     async attest({ schema, data: { recipient, data, expirationTime = request_1.NO_EXPIRATION, revocable = true, refUID = utils_1.ZERO_BYTES32, value = 0 } }) {

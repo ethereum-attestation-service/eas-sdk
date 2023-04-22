@@ -1,4 +1,5 @@
 import { EIP712Proxy } from './eip712-proxy';
+import { Delegated, Offchain } from './offchain';
 import {
   AttestationRequest,
   DelegatedAttestationRequest,
@@ -46,6 +47,8 @@ export interface EASOptions {
 
 export class EAS extends Base<EASContract> {
   private proxy?: EIP712Proxy;
+  private delegated?: Delegated;
+  private offchain?: Offchain;
 
   constructor(address: string, options?: EASOptions) {
     const { signerOrProvider, proxy } = options || {};
@@ -95,6 +98,32 @@ export class EAS extends Base<EASContract> {
   // Returns the EIP712 proxy
   public getEIP712Proxy(): EIP712Proxy | undefined {
     return this.proxy;
+  }
+
+  // Returns the delegated attestations helper
+  public async getDelegated(): Promise<Delegated> {
+    if (!this.delegated) {
+      this.delegated = new Delegated({
+        address: this.contract.address,
+        version: await this.getVersion(),
+        chainId: (await this.contract.provider.getNetwork()).chainId
+      });
+    }
+
+    return this.delegated;
+  }
+
+  // Returns the offchain attestations helper
+  public async getOffchain(): Promise<Offchain> {
+    if (!this.offchain) {
+      this.offchain = new Offchain({
+        address: this.contract.address,
+        version: await this.getVersion(),
+        chainId: (await this.contract.provider.getNetwork()).chainId
+      });
+    }
+
+    return this.offchain;
   }
 
   // Attests to a specific schema

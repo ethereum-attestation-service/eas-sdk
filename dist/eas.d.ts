@@ -1,4 +1,5 @@
 import { EIP712Proxy } from './eip712-proxy';
+import { Delegated, Offchain } from './offchain';
 import { AttestationRequest, DelegatedAttestationRequest, DelegatedProxyAttestationRequest, DelegatedProxyRevocationRequest, DelegatedRevocationRequest, MultiAttestationRequest, MultiDelegatedAttestationRequest, MultiDelegatedProxyAttestationRequest, MultiDelegatedProxyRevocationRequest, MultiDelegatedRevocationRequest, MultiRevocationRequest, RevocationRequest } from './request';
 import { Base, SignerOrProvider, Transaction } from './transaction';
 import { EAS as EASContract } from '@ethereum-attestation-service/eas-contracts';
@@ -22,6 +23,8 @@ export interface EASOptions {
 }
 export declare class EAS extends Base<EASContract> {
     private proxy?;
+    private delegated?;
+    private offchain?;
     constructor(address: string, options?: EASOptions);
     getVersion(): Promise<string>;
     getAttestation(uid: string): Promise<Attestation>;
@@ -30,6 +33,8 @@ export declare class EAS extends Base<EASContract> {
     getTimestamp(data: string): Promise<BigNumberish>;
     getRevocationOffchain(user: string, uid: string): Promise<BigNumberish>;
     getEIP712Proxy(): EIP712Proxy | undefined;
+    getDelegated(): Promise<Delegated>;
+    getOffchain(): Promise<Offchain>;
     attest({ schema, data: { recipient, data, expirationTime, revocable, refUID, value } }: AttestationRequest): Promise<Transaction<string>>;
     attestByDelegation({ schema, data: { recipient, data, expirationTime, revocable, refUID, value }, attester, signature }: DelegatedAttestationRequest): Promise<Transaction<string>>;
     multiAttest(requests: MultiAttestationRequest[]): Promise<Transaction<string[]>>;
