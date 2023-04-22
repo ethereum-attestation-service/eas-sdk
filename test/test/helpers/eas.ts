@@ -144,6 +144,8 @@ export const expectAttestation = async (
         })
       ).wait();
 
+      expect(await eas.getEIP712Proxy()?.getAttester(uid)).to.equal(txSender.address);
+
       break;
     }
 
@@ -279,6 +281,10 @@ export const expectMultiAttestations = async (
 
       const tx = await eas.connect(txSender).multiAttestByDelegationProxy(multiDelegatedProxyAttestationRequests);
       uids = await tx.wait();
+
+      for (const uid of uids) {
+        expect(await eas.getEIP712Proxy()?.getAttester(uid)).to.equal(txSender.address);
+      }
 
       break;
     }

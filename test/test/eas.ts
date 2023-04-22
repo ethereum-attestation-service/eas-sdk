@@ -1,4 +1,5 @@
 import { EAS, NO_EXPIRATION } from '../../src/eas';
+import { EIP712Proxy } from '../../src/eip712-proxy';
 import { SchemaRegistry } from '../../src/schema-registry';
 import { getSchemaUID, getUIDFromAttestTx } from '../../src/utils';
 import Contracts from '../components/Contracts';
@@ -18,7 +19,7 @@ import { duration, latest } from './helpers/time';
 import { createWallet, Wallet } from './helpers/wallet';
 import {
   EAS as EASContract,
-  EIP712Proxy,
+  EIP712Proxy as EIP712ProxyContract,
   SchemaRegistry as SchemaRegistryContract
 } from '@ethereum-attestation-service/eas-contracts';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
@@ -40,13 +41,15 @@ describe('EAS API', () => {
 
   let registry: SchemaRegistryContract;
   let easContract: EASContract;
-  let proxy: EIP712Proxy;
+  let proxyContract: EIP712ProxyContract;
+
   let eip712Utils: EIP712Utils;
   let eip712ProxyUtils: EIP712ProxyUtils;
   let offchainUtils: OffchainUtils;
 
   let eas: EAS;
   let schemaRegistry: SchemaRegistry;
+  let proxy: EIP712Proxy;
 
   before(async () => {
     accounts = await ethers.getSigners();
@@ -59,18 +62,18 @@ describe('EAS API', () => {
 
     registry = await Contracts.SchemaRegistry.deploy();
     easContract = await Contracts.EAS.deploy(registry.address);
-    proxy = await Contracts.EIP712Proxy.deploy(easContract.address, EIP712_PROXY_NAME);
+    proxyContract = await Contracts.EIP712Proxy.deploy(easContract.address, EIP712_PROXY_NAME);
 
     eip712Utils = await EIP712Utils.fromVerifier(easContract);
-    eip712ProxyUtils = await EIP712ProxyUtils.fromProxy(proxy);
+    eip712ProxyUtils = await EIP712ProxyUtils.fromProxy(proxyContract);
     offchainUtils = await OffchainUtils.fromVerifier(easContract);
   });
 
   context('with a provider', () => {
     beforeEach(() => {
-      eas = new EAS(easContract.address, { signerOrProvider: waffle.provider, proxy: proxy.address });
+      eas = new EAS(easContract.address, { signerOrProvider: waffle.provider });
 
-      schemaRegistry = new SchemaRegistry(registry.address, waffle.provider);
+      schemaRegistry = new SchemaRegistry(registry.address, { signerOrProvider: waffle.provider });
     });
 
     describe('construction', () => {
@@ -132,8 +135,9 @@ describe('EAS API', () => {
 
   context('with a signer', () => {
     beforeEach(() => {
-      eas = new EAS(easContract.address, { signerOrProvider: sender, proxy: proxy.address });
-      schemaRegistry = new SchemaRegistry(registry.address, sender);
+      proxy = new EIP712Proxy(proxyContract.address, { signerOrProvider: sender });
+      eas = new EAS(easContract.address, { signerOrProvider: sender, proxy });
+      schemaRegistry = new SchemaRegistry(registry.address, { signerOrProvider: sender });
     });
 
     describe('attesting', () => {

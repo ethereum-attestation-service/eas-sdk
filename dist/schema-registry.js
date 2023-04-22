@@ -5,7 +5,8 @@ const transaction_1 = require("./transaction");
 const utils_1 = require("./utils");
 const eas_contracts_1 = require("@ethereum-attestation-service/eas-contracts");
 class SchemaRegistry extends transaction_1.Base {
-    constructor(address, signerOrProvider) {
+    constructor(address, options) {
+        const { signerOrProvider } = options || {};
         super(new eas_contracts_1.SchemaRegistry__factory(), address, signerOrProvider);
     }
     // Returns the version of the contract
