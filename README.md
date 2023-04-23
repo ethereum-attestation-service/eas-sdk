@@ -10,21 +10,21 @@ This repository contains the Ethereum Attestation Service SDK, used to interact 
 
 To install the EAS contracts, run the following command within your project directory:
 
-```bash 
-yarn add @ethereum-attestation-service/eas-sdk 
+```sh
+yarn add @ethereum-attestation-service/eas-sdk
 ```
 
 OR
 
-```bash 
-npm install @ethereum-attestation-service/eas-sdk 
+```sh
+npm install @ethereum-attestation-service/eas-sdk
 ```
 
 ## Using the EAS SDK
 
 Import and initialize the library
 
-```javascript 
+```javascript
 import { EAS, Offchain, SchemaEncoder, SchemaRegistry } from "@ethereum-attestation-service/eas-sdk";
 import { ethers } from 'ethers';
 
@@ -94,20 +94,17 @@ Example output:
 }
 ```
 
-
-
-### Creating on-chain attestations
-
+### Creating On-chain Attestations
 
 The `attest` function allows you to create an on-chain attestation for a specific schema. This function takes an object with the following properties:
 
 - `schema`: The UID of the schema for which the attestation is being created.
 - `data`: An object containing the following properties:
-    - `recipient`: The Ethereum address of the recipient of the attestation.
-    - `expirationTime`: A Unix timestamp representing the expiration time of the attestation. Use `0` for no expiration.
-    - `revocable`: A boolean indicating whether the attestation is revocable or not.
-    - `refUID`: (Optional) The UID of a referenced attestation. Use `ZERO_BYTES32` if there is no reference.
-    - `data`: The encoded data for the attestation, which should be generated using the `SchemaEncoder` class.
+  - `recipient`: The Ethereum address of the recipient of the attestation.
+  - `expirationTime`: A Unix timestamp representing the expiration time of the attestation. Use `0` for no expiration.
+  - `revocable`: A boolean indicating whether the attestation is revocable or not.
+  - `refUID`: (Optional) The UID of a referenced attestation. Use `ZERO_BYTES32` if there is no reference.
+  - `data`: The encoded data for the attestation, which should be generated using the `SchemaEncoder` class.
 
 The function returns a Promise that resolves to the UID of the newly created attestation.
 
@@ -143,23 +140,14 @@ const newAttestationUID = await tx.wait();
 console.log("New attestation UID:", newAttestationUID);
 ```
 
-### Creating off-chain attestations
+### Creating Off-chain Attestations
 
 To create an off-chain attestation, you can use the `signOffchainAttestation` function provided by the Offchain class in the EAS SDK. Here's an example:
 
 ```javascript
-import { Offchain, SchemaEncoder } from "@ethereum-attestation-service/eas-sdk";
+import { SchemaEncoder } from "@ethereum-attestation-service/eas-sdk";
 
-const EASContractAddress = "0xC2679fBD37d54388Ce493F1DB75320D236e1815e"; // Sepolia v0.26
-
-// Initialize Offchain class with EAS configuration
-const EAS_CONFIG = {
-  address: EASContractAddress,
-  version: EASVersion, // 0.26
-  chainId: CHAINID,
-};
-
-const offchain = new Offchain(EAS_CONFIG);
+const offchain = await eas.getOffchain();
 
 // Initialize SchemaEncoder with the schema string
 const schemaEncoder = new SchemaEncoder("uint256 eventId, uint8 voteIndex");
@@ -187,11 +175,9 @@ const offchainAttestation = await offchain.signOffchainAttestation({
 
 This function will return a signed off-chain attestation object containing the UID, signature, and attestation data. You can then share this object with the intended recipient or store it for future use.
 
+### Revoking On-chain Attestations
 
-
-### Revoking on-chain attestations
-
-```javascript 
+```javascript
 const transaction = await eas.revoke({
   uid: "0x6776de8122c352b4d671003e58ca112aedb99f34c629a1d1fe3b332504e2943a"
 });
@@ -200,7 +186,7 @@ const transaction = await eas.revoke({
 await transaction.wait();
 ```
 
-### Creating timestamps
+### Creating Timestamps
 
 To create a timestamp for a single piece of data, you can use the `timestamp` function provided by the EAS SDK. Here's an example:
 
@@ -235,7 +221,7 @@ const transaction = await eas.multiTimestamp([data1, data2]);
 await transaction.wait();
 ```
 
-### Revoking off-chain attestations
+### Revoking Off-chain Attestations
 
 To revoke an off-chain attestation, you can use the `revokeOffchain` function provided by the EAS SDK. Here's an example:
 
