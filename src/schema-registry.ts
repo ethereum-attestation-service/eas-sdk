@@ -23,8 +23,14 @@ export interface GetSchemaParams {
   uid: string;
 }
 
+export interface SchemaRegistryOptions {
+  signerOrProvider?: SignerOrProvider;
+}
+
 export class SchemaRegistry extends Base<SchemaRegistryContract> {
-  constructor(address: string, signerOrProvider?: SignerOrProvider) {
+  constructor(address: string, options?: SchemaRegistryOptions) {
+    const { signerOrProvider } = options || {};
+
     super(new SchemaRegistry__factory(), address, signerOrProvider);
   }
 

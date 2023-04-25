@@ -1,19 +1,31 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.EAS = exports.NO_EXPIRATION = void 0;
+exports.EAS = void 0;
+const tslib_1 = require("tslib");
+const offchain_1 = require("./offchain");
+const request_1 = require("./request");
 const transaction_1 = require("./transaction");
 const utils_1 = require("./utils");
 const eas_contracts_1 = require("@ethereum-attestation-service/eas-contracts");
 const ethers_1 = require("ethers");
-exports.NO_EXPIRATION = 0;
+tslib_1.__exportStar(require("./request"), exports);
 class EAS extends transaction_1.Base {
     proxy;
+    delegated;
+    offchain;
     constructor(address, options) {
         const { signerOrProvider, proxy } = options || {};
         super(new eas_contracts_1.EAS__factory(), address, signerOrProvider);
         if (proxy) {
-            this.proxy = new transaction_1.Base(new eas_contracts_1.EIP712Proxy__factory(), proxy, signerOrProvider);
+            this.proxy = proxy;
         }
+    }
+    // Connects the API to a specific signer
+    connect(signerOrProvider) {
+        delete this.delegated;
+        delete this.offchain;
+        super.connect(signerOrProvider);
+        return this;
     }
     // Returns the version of the contract
     getVersion() {
@@ -35,23 +47,41 @@ class EAS extends transaction_1.Base {
         }
         return !attestation.revocationTime.isZero();
     }
-    // Returns the timestamp that the specified data was timestamped with.
+    // Returns the timestamp that the specified data was timestamped with
     getTimestamp(data) {
         return this.contract.getTimestamp(data);
     }
-    // Returns the timestamp that the specified data was timestamped with.
+    // Returns the timestamp that the specified data was timestamped with
     getRevocationOffchain(user, uid) {
         return this.contract.getRevokeOffchain(user, uid);
     }
+    // Returns the EIP712 proxy
+    getEIP712Proxy() {
+        return this.proxy;
+    }
+    // Returns the delegated attestations helper
+    getDelegated() {
+        if (this.delegated) {
+            return this.delegated;
+        }
+        return this.setDelegated();
+    }
+    // Returns the offchain attestations helper
+    getOffchain() {
+        if (this.offchain) {
+            return this.offchain;
+        }
+        return this.setOffchain();
+    }
     // Attests to a specific schema
-    async attest({ schema, data: { recipient, data, expirationTime = exports.NO_EXPIRATION, revocable = true, refUID = utils_1.ZERO_BYTES32, value = 0 } }) {
+    async attest({ schema, data: { recipient, data, expirationTime = request_1.NO_EXPIRATION, revocable = true, refUID = utils_1.ZERO_BYTES32, value = 0 } }) {
         const tx = await this.contract.attest({ schema, data: { recipient, expirationTime, revocable, refUID, data, value } }, {
             value
         });
         return new transaction_1.Transaction(tx, async (receipt) => (await (0, utils_1.getUIDsFromAttestEvents)(receipt.events))[0]);
     }
     // Attests to a specific schema via an EIP712 delegation request
-    async attestByDelegation({ schema, data: { recipient, data, expirationTime = exports.NO_EXPIRATION, revocable = true, refUID = utils_1.ZERO_BYTES32, value = 0 }, attester, signature }) {
+    async attestByDelegation({ schema, data: { recipient, data, expirationTime = request_1.NO_EXPIRATION, revocable = true, refUID = utils_1.ZERO_BYTES32, value = 0 }, attester, signature }) {
         const tx = await this.contract.attestByDelegation({
             schema,
             data: {
@@ -73,7 +103,7 @@ class EAS extends transaction_1.Base {
             schema: r.schema,
             data: r.data.map((d) => ({
                 recipient: d.recipient,
-                expirationTime: d.expirationTime ?? exports.NO_EXPIRATION,
+                expirationTime: d.expirationTime ?? request_1.NO_EXPIRATION,
                 revocable: d.revocable ?? true,
                 refUID: d.refUID ?? utils_1.ZERO_BYTES32,
                 data: d.data ?? utils_1.ZERO_BYTES32,
@@ -96,7 +126,7 @@ class EAS extends transaction_1.Base {
             schema: r.schema,
             data: r.data.map((d) => ({
                 recipient: d.recipient,
-                expirationTime: d.expirationTime ?? exports.NO_EXPIRATION,
+                expirationTime: d.expirationTime ?? request_1.NO_EXPIRATION,
                 revocable: d.revocable ?? true,
                 refUID: d.refUID ?? utils_1.ZERO_BYTES32,
                 data: d.data ?? utils_1.ZERO_BYTES32,
@@ -172,120 +202,56 @@ class EAS extends transaction_1.Base {
         return new transaction_1.Transaction(tx, async () => { });
     }
     // Attests to a specific schema via an EIP712 delegation request using an external EIP712 proxy
-    async attestByDelegationProxy({ schema, data: { recipient, data, expirationTime = exports.NO_EXPIRATION, revocable = true, refUID = utils_1.ZERO_BYTES32, value = 0 }, attester, signature, deadline }) {
+    attestByDelegationProxy(request) {
         if (!this.proxy) {
             throw new Error("Proxy wasn't set");
         }
-        const tx = await this.proxy.contract.attestByDelegation({
-            schema,
-            data: {
-                recipient,
-                expirationTime,
-                revocable,
-                refUID,
-                data,
-                value
-            },
-            signature,
-            attester,
-            deadline
-        }, { value });
-        // eslint-disable-next-line require-await
-        return new transaction_1.Transaction(tx, async (receipt) => (0, utils_1.getUIDFromDelegatedProxyAttestReceipt)(receipt));
+        return this.proxy.attestByDelegationProxy(request);
     }
     // Multi-attests to multiple schemas via an EIP712 delegation requests using an external EIP712 proxy
-    async multiAttestByDelegationProxy(requests) {
+    multiAttestByDelegationProxy(requests) {
         if (!this.proxy) {
             throw new Error("Proxy wasn't set");
         }
-        const multiAttestationRequests = requests.map((r) => ({
-            schema: r.schema,
-            data: r.data.map((d) => ({
-                recipient: d.recipient,
-                expirationTime: d.expirationTime ?? exports.NO_EXPIRATION,
-                revocable: d.revocable ?? true,
-                refUID: d.refUID ?? utils_1.ZERO_BYTES32,
-                data: d.data ?? utils_1.ZERO_BYTES32,
-                value: d.value ?? 0
-            })),
-            signatures: r.signatures,
-            attester: r.attester,
-            deadline: r.deadline
-        }));
-        const requestedValue = multiAttestationRequests.reduce((res, { data }) => {
-            const total = data.reduce((res, r) => res.add(r.value), ethers_1.BigNumber.from(0));
-            return res.add(total);
-        }, ethers_1.BigNumber.from(0));
-        const tx = await this.proxy.contract.multiAttestByDelegation(multiAttestationRequests, {
-            value: requestedValue
-        });
-        // eslint-disable-next-line require-await
-        return new transaction_1.Transaction(tx, async (receipt) => (0, utils_1.getUIDFromMultiDelegatedProxyAttestReceipt)(receipt));
+        return this.proxy.multiAttestByDelegationProxy(requests);
     }
     // Revokes an existing attestation an EIP712 delegation request using an external EIP712 proxy
-    async revokeByDelegationProxy({ schema, data: { uid, value = 0 }, signature, revoker, deadline }) {
+    revokeByDelegationProxy(request) {
         if (!this.proxy) {
             throw new Error("Proxy wasn't set");
         }
-        const tx = await this.proxy.contract.revokeByDelegation({
-            schema,
-            data: {
-                uid,
-                value
-            },
-            signature,
-            revoker,
-            deadline
-        }, { value });
-        return new transaction_1.Transaction(tx, async () => { });
+        return this.proxy.revokeByDelegationProxy(request);
     }
     // Multi-revokes multiple attestations via an EIP712 delegation requests using an external EIP712 proxy
-    async multiRevokeByDelegationProxy(requests) {
+    multiRevokeByDelegationProxy(requests) {
         if (!this.proxy) {
             throw new Error("Proxy wasn't set");
         }
-        const multiRevocationRequests = requests.map((r) => ({
-            schema: r.schema,
-            data: r.data.map((d) => ({
-                uid: d.uid,
-                value: d.value ?? 0
-            })),
-            signatures: r.signatures,
-            revoker: r.revoker,
-            deadline: r.deadline
-        }));
-        const requestedValue = multiRevocationRequests.reduce((res, { data }) => {
-            const total = data.reduce((res, r) => res.add(r.value), ethers_1.BigNumber.from(0));
-            return res.add(total);
-        }, ethers_1.BigNumber.from(0));
-        const tx = await this.proxy.contract.multiRevokeByDelegation(multiRevocationRequests, {
-            value: requestedValue
-        });
-        return new transaction_1.Transaction(tx, async () => { });
+        return this.proxy.multiRevokeByDelegationProxy(requests);
     }
-    // Timestamps the specified bytes32 data.
+    // Timestamps the specified bytes32 data
     async timestamp(data) {
         const tx = await this.contract.timestamp(data);
         return new transaction_1.Transaction(tx, async (receipt) => (await (0, utils_1.getTimestampFromTimestampEvents)(receipt.events))[0]);
     }
-    // Timestamps the specified multiple bytes32 data.
+    // Timestamps the specified multiple bytes32 data
     async multiTimestamp(data) {
         const tx = await this.contract.multiTimestamp(data);
         // eslint-disable-next-line require-await
         return new transaction_1.Transaction(tx, async (receipt) => (0, utils_1.getTimestampFromTimestampEvents)(receipt.events));
     }
-    // Revokes the specified offchain attestation UID.
+    // Revokes the specified offchain attestation UID
     async revokeOffchain(uid) {
         const tx = await this.contract.revokeOffchain(uid);
         return new transaction_1.Transaction(tx, async (receipt) => (await (0, utils_1.getTimestampFromOffchainRevocationEvents)(receipt.events))[0]);
     }
-    // Revokes the specified multiple offchain attestation UIDs.
+    // Revokes the specified multiple offchain attestation UIDs
     async multiRevokeOffchain(uids) {
         const tx = await this.contract.multiRevokeOffchain(uids);
         // eslint-disable-next-line require-await
         return new transaction_1.Transaction(tx, async (receipt) => (0, utils_1.getTimestampFromOffchainRevocationEvents)(receipt.events));
     }
-    // Returns the domain separator used in the encoding of the signatures for attest, and revoke.
+    // Returns the domain separator used in the encoding of the signatures for attest, and revoke
     getDomainSeparator() {
         return this.contract.getDomainSeparator();
     }
@@ -293,13 +259,31 @@ class EAS extends transaction_1.Base {
     getNonce(address) {
         return this.contract.getNonce(address);
     }
-    // Returns the EIP712 type hash for the attest function.
+    // Returns the EIP712 type hash for the attest function
     getAttestTypeHash() {
         return this.contract.getAttestTypeHash();
     }
-    // Returns the EIP712 type hash for the revoke function.
+    // Returns the EIP712 type hash for the revoke function
     getRevokeTypeHash() {
         return this.contract.getRevokeTypeHash();
+    }
+    // Sets the delegated attestations helper
+    async setDelegated() {
+        this.delegated = new offchain_1.Delegated({
+            address: this.contract.address,
+            version: await this.getVersion(),
+            chainId: await this.getChainId()
+        });
+        return this.delegated;
+    }
+    // Sets the offchain attestations helper
+    async setOffchain() {
+        this.offchain = new offchain_1.Offchain({
+            address: this.contract.address,
+            version: await this.getVersion(),
+            chainId: await this.getChainId()
+        });
+        return this.offchain;
     }
 }
 exports.EAS = EAS;
