@@ -2,6 +2,7 @@ import { DelegatedProxy } from './offchain';
 import { DelegatedProxyAttestationRequest, DelegatedProxyRevocationRequest, MultiDelegatedProxyAttestationRequest, MultiDelegatedProxyRevocationRequest } from './request';
 import { Base, SignerOrProvider, Transaction } from './transaction';
 import { EIP712Proxy as EIP712ProxyContract } from '@ethereum-attestation-service/eas-contracts';
+import { PayableOverrides } from 'ethers';
 export interface EIP712ProxyOptions {
     signerOrProvider?: SignerOrProvider;
 }
@@ -17,9 +18,9 @@ export declare class EIP712Proxy extends Base<EIP712ProxyContract> {
     getRevokeTypeHash(): Promise<string>;
     getAttester(uid: string): Promise<string>;
     getDelegated(): Promise<DelegatedProxy> | DelegatedProxy;
-    attestByDelegationProxy({ schema, data: { recipient, data, expirationTime, revocable, refUID, value }, attester, signature, deadline }: DelegatedProxyAttestationRequest): Promise<Transaction<string>>;
-    multiAttestByDelegationProxy(requests: MultiDelegatedProxyAttestationRequest[]): Promise<Transaction<string[]>>;
-    revokeByDelegationProxy({ schema, data: { uid, value }, signature, revoker, deadline }: DelegatedProxyRevocationRequest): Promise<Transaction<void>>;
-    multiRevokeByDelegationProxy(requests: MultiDelegatedProxyRevocationRequest[]): Promise<Transaction<void>>;
+    attestByDelegationProxy({ schema, data: { recipient, data, expirationTime, revocable, refUID, value }, attester, signature, deadline }: DelegatedProxyAttestationRequest, overrides?: PayableOverrides): Promise<Transaction<string>>;
+    multiAttestByDelegationProxy(requests: MultiDelegatedProxyAttestationRequest[], overrides?: PayableOverrides): Promise<Transaction<string[]>>;
+    revokeByDelegationProxy({ schema, data: { uid, value }, signature, revoker, deadline }: DelegatedProxyRevocationRequest, overrides?: PayableOverrides): Promise<Transaction<void>>;
+    multiRevokeByDelegationProxy(requests: MultiDelegatedProxyRevocationRequest[], overrides?: PayableOverrides): Promise<Transaction<void>>;
     private setDelegated;
 }

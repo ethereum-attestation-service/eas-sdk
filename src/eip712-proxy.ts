@@ -13,7 +13,7 @@ import {
   ZERO_BYTES32
 } from './utils';
 import { EIP712Proxy__factory, EIP712Proxy as EIP712ProxyContract } from '@ethereum-attestation-service/eas-contracts';
-import { BigNumber, ContractReceipt } from 'ethers';
+import { BigNumber, ContractReceipt, PayableOverrides } from 'ethers';
 
 export interface EIP712ProxyOptions {
   signerOrProvider?: SignerOrProvider;
@@ -81,13 +81,16 @@ export class EIP712Proxy extends Base<EIP712ProxyContract> {
   }
 
   // Attests to a specific schema via an EIP712 delegation request using an external EIP712 proxy
-  public async attestByDelegationProxy({
-    schema,
-    data: { recipient, data, expirationTime = NO_EXPIRATION, revocable = true, refUID = ZERO_BYTES32, value = 0 },
-    attester,
-    signature,
-    deadline
-  }: DelegatedProxyAttestationRequest): Promise<Transaction<string>> {
+  public async attestByDelegationProxy(
+    {
+      schema,
+      data: { recipient, data, expirationTime = NO_EXPIRATION, revocable = true, refUID = ZERO_BYTES32, value = 0 },
+      attester,
+      signature,
+      deadline
+    }: DelegatedProxyAttestationRequest,
+    overrides?: PayableOverrides
+  ): Promise<Transaction<string>> {
     const tx = await this.contract.attestByDelegation(
       {
         schema,
@@ -103,7 +106,7 @@ export class EIP712Proxy extends Base<EIP712ProxyContract> {
         attester,
         deadline
       },
-      { value }
+      { value, ...overrides }
     );
 
     // eslint-disable-next-line require-await
@@ -112,7 +115,8 @@ export class EIP712Proxy extends Base<EIP712ProxyContract> {
 
   // Multi-attests to multiple schemas via an EIP712 delegation requests using an external EIP712 proxy
   public async multiAttestByDelegationProxy(
-    requests: MultiDelegatedProxyAttestationRequest[]
+    requests: MultiDelegatedProxyAttestationRequest[],
+    overrides?: PayableOverrides
   ): Promise<Transaction<string[]>> {
     const multiAttestationRequests = requests.map((r) => ({
       schema: r.schema,
@@ -135,7 +139,8 @@ export class EIP712Proxy extends Base<EIP712ProxyContract> {
     }, BigNumber.from(0));
 
     const tx = await this.contract.multiAttestByDelegation(multiAttestationRequests, {
-      value: requestedValue
+      value: requestedValue,
+      ...overrides
     });
 
     // eslint-disable-next-line require-await
@@ -143,13 +148,10 @@ export class EIP712Proxy extends Base<EIP712ProxyContract> {
   }
 
   // Revokes an existing attestation an EIP712 delegation request using an external EIP712 proxy
-  public async revokeByDelegationProxy({
-    schema,
-    data: { uid, value = 0 },
-    signature,
-    revoker,
-    deadline
-  }: DelegatedProxyRevocationRequest): Promise<Transaction<void>> {
+  public async revokeByDelegationProxy(
+    { schema, data: { uid, value = 0 }, signature, revoker, deadline }: DelegatedProxyRevocationRequest,
+    overrides?: PayableOverrides
+  ): Promise<Transaction<void>> {
     const tx = await this.contract.revokeByDelegation(
       {
         schema,
@@ -161,7 +163,7 @@ export class EIP712Proxy extends Base<EIP712ProxyContract> {
         revoker,
         deadline
       },
-      { value }
+      { value, ...overrides }
     );
 
     return new Transaction(tx, async () => {});
@@ -169,7 +171,8 @@ export class EIP712Proxy extends Base<EIP712ProxyContract> {
 
   // Multi-revokes multiple attestations via an EIP712 delegation requests using an external EIP712 proxy
   public async multiRevokeByDelegationProxy(
-    requests: MultiDelegatedProxyRevocationRequest[]
+    requests: MultiDelegatedProxyRevocationRequest[],
+    overrides?: PayableOverrides
   ): Promise<Transaction<void>> {
     const multiRevocationRequests = requests.map((r) => ({
       schema: r.schema,
@@ -188,7 +191,8 @@ export class EIP712Proxy extends Base<EIP712ProxyContract> {
     }, BigNumber.from(0));
 
     const tx = await this.contract.multiRevokeByDelegation(multiRevocationRequests, {
-      value: requestedValue
+      value: requestedValue,
+      ...overrides
     });
 
     return new Transaction(tx, async () => {});
