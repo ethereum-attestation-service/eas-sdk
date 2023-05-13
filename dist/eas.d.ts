@@ -41,7 +41,7 @@ export declare class EAS extends Base<EASContract> {
     attestByDelegation({ schema, data: { recipient, data, expirationTime, revocable, refUID, value }, attester, signature }: DelegatedAttestationRequest, overrides?: PayableOverrides): Promise<Transaction<string>>;
     multiAttest(requests: MultiAttestationRequest[], overrides?: PayableOverrides): Promise<Transaction<string[]>>;
     multiAttestByDelegation(requests: MultiDelegatedAttestationRequest[], overrides?: PayableOverrides): Promise<Transaction<string[]>>;
-    revoke({ schema, data: { uid, value } }: RevocationRequest): Promise<Transaction<void>>;
+    revoke({ schema, data: { uid, value } }: RevocationRequest, overrides?: PayableOverrides): Promise<Transaction<void>>;
     revokeByDelegation({ schema, data: { uid, value }, signature, revoker }: DelegatedRevocationRequest, overrides?: PayableOverrides): Promise<Transaction<void>>;
     multiRevoke(requests: MultiRevocationRequest[], overrides?: PayableOverrides): Promise<Transaction<void>>;
     multiRevokeByDelegation(requests: MultiDelegatedRevocationRequest[], overrides?: PayableOverrides): Promise<Transaction<void>>;

@@ -146,8 +146,8 @@ class EAS extends transaction_1.Base {
         return new transaction_1.Transaction(tx, async (receipt) => (0, utils_1.getUIDsFromAttestEvents)(receipt.events));
     }
     // Revokes an existing attestation
-    async revoke({ schema, data: { uid, value = 0 } }) {
-        const tx = await this.contract.revoke({ schema, data: { uid, value } }, { value });
+    async revoke({ schema, data: { uid, value = 0 } }, overrides) {
+        const tx = await this.contract.revoke({ schema, data: { uid, value } }, { value, ...overrides });
         return new transaction_1.Transaction(tx, async () => { });
     }
     // Revokes an existing attestation an EIP712 delegation request

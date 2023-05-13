@@ -240,8 +240,11 @@ export class EAS extends Base<EASContract> {
   }
 
   // Revokes an existing attestation
-  public async revoke({ schema, data: { uid, value = 0 } }: RevocationRequest): Promise<Transaction<void>> {
-    const tx = await this.contract.revoke({ schema, data: { uid, value } }, { value });
+  public async revoke(
+    { schema, data: { uid, value = 0 } }: RevocationRequest,
+    overrides?: PayableOverrides
+  ): Promise<Transaction<void>> {
+    const tx = await this.contract.revoke({ schema, data: { uid, value } }, { value, ...overrides });
 
     return new Transaction(tx, async () => {});
   }
