@@ -23,8 +23,9 @@ import {
   ZERO_BYTES32
 } from './utils';
 import { EAS__factory, EAS as EASContract } from '@ethereum-attestation-service/eas-contracts';
-import { BigNumber, BigNumberish, ContractReceipt } from 'ethers';
+import { BigNumber, BigNumberish, ContractReceipt, Overrides, PayableOverrides } from 'ethers';
 
+export { PayableOverrides, Overrides } from 'ethers';
 export * from './request';
 
 export interface Attestation {
@@ -129,27 +130,31 @@ export class EAS extends Base<EASContract> {
   }
 
   // Attests to a specific schema
-  public async attest({
-    schema,
-    data: { recipient, data, expirationTime = NO_EXPIRATION, revocable = true, refUID = ZERO_BYTES32, value = 0 }
-  }: AttestationRequest): Promise<Transaction<string>> {
+  public async attest(
+    {
+      schema,
+      data: { recipient, data, expirationTime = NO_EXPIRATION, revocable = true, refUID = ZERO_BYTES32, value = 0 }
+    }: AttestationRequest,
+    overrides?: PayableOverrides
+  ): Promise<Transaction<string>> {
     const tx = await this.contract.attest(
       { schema, data: { recipient, expirationTime, revocable, refUID, data, value } },
-      {
-        value
-      }
+      { value, ...overrides }
     );
 
     return new Transaction(tx, async (receipt: ContractReceipt) => (await getUIDsFromAttestEvents(receipt.events))[0]);
   }
 
   // Attests to a specific schema via an EIP712 delegation request
-  public async attestByDelegation({
-    schema,
-    data: { recipient, data, expirationTime = NO_EXPIRATION, revocable = true, refUID = ZERO_BYTES32, value = 0 },
-    attester,
-    signature
-  }: DelegatedAttestationRequest): Promise<Transaction<string>> {
+  public async attestByDelegation(
+    {
+      schema,
+      data: { recipient, data, expirationTime = NO_EXPIRATION, revocable = true, refUID = ZERO_BYTES32, value = 0 },
+      attester,
+      signature
+    }: DelegatedAttestationRequest,
+    overrides?: PayableOverrides
+  ): Promise<Transaction<string>> {
     const tx = await this.contract.attestByDelegation(
       {
         schema,
@@ -164,14 +169,17 @@ export class EAS extends Base<EASContract> {
         signature,
         attester
       },
-      { value }
+      { value, ...overrides }
     );
 
     return new Transaction(tx, async (receipt: ContractReceipt) => (await getUIDsFromAttestEvents(receipt.events))[0]);
   }
 
   // Multi-attests to multiple schemas
-  public async multiAttest(requests: MultiAttestationRequest[]): Promise<Transaction<string[]>> {
+  public async multiAttest(
+    requests: MultiAttestationRequest[],
+    overrides?: PayableOverrides
+  ): Promise<Transaction<string[]>> {
     const multiAttestationRequests = requests.map((r) => ({
       schema: r.schema,
       data: r.data.map((d) => ({
@@ -190,7 +198,8 @@ export class EAS extends Base<EASContract> {
     }, BigNumber.from(0));
 
     const tx = await this.contract.multiAttest(multiAttestationRequests, {
-      value: requestedValue
+      value: requestedValue,
+      ...overrides
     });
 
     // eslint-disable-next-line require-await
@@ -198,7 +207,10 @@ export class EAS extends Base<EASContract> {
   }
 
   // Multi-attests to multiple schemas via an EIP712 delegation requests
-  public async multiAttestByDelegation(requests: MultiDelegatedAttestationRequest[]): Promise<Transaction<string[]>> {
+  public async multiAttestByDelegation(
+    requests: MultiDelegatedAttestationRequest[],
+    overrides?: PayableOverrides
+  ): Promise<Transaction<string[]>> {
     const multiAttestationRequests = requests.map((r) => ({
       schema: r.schema,
       data: r.data.map((d) => ({
@@ -219,7 +231,8 @@ export class EAS extends Base<EASContract> {
     }, BigNumber.from(0));
 
     const tx = await this.contract.multiAttestByDelegation(multiAttestationRequests, {
-      value: requestedValue
+      value: requestedValue,
+      ...overrides
     });
 
     // eslint-disable-next-line require-await
@@ -227,19 +240,20 @@ export class EAS extends Base<EASContract> {
   }
 
   // Revokes an existing attestation
-  public async revoke({ schema, data: { uid, value = 0 } }: RevocationRequest): Promise<Transaction<void>> {
-    const tx = await this.contract.revoke({ schema, data: { uid, value } }, { value });
+  public async revoke(
+    { schema, data: { uid, value = 0 } }: RevocationRequest,
+    overrides?: PayableOverrides
+  ): Promise<Transaction<void>> {
+    const tx = await this.contract.revoke({ schema, data: { uid, value } }, { value, ...overrides });
 
     return new Transaction(tx, async () => {});
   }
 
   // Revokes an existing attestation an EIP712 delegation request
-  public async revokeByDelegation({
-    schema,
-    data: { uid, value = 0 },
-    signature,
-    revoker
-  }: DelegatedRevocationRequest): Promise<Transaction<void>> {
+  public async revokeByDelegation(
+    { schema, data: { uid, value = 0 }, signature, revoker }: DelegatedRevocationRequest,
+    overrides?: PayableOverrides
+  ): Promise<Transaction<void>> {
     const tx = await this.contract.revokeByDelegation(
       {
         schema,
@@ -250,14 +264,17 @@ export class EAS extends Base<EASContract> {
         signature,
         revoker
       },
-      { value }
+      { value, ...overrides }
     );
 
     return new Transaction(tx, async () => {});
   }
 
   // Multi-revokes multiple attestations
-  public async multiRevoke(requests: MultiRevocationRequest[]): Promise<Transaction<void>> {
+  public async multiRevoke(
+    requests: MultiRevocationRequest[],
+    overrides?: PayableOverrides
+  ): Promise<Transaction<void>> {
     const multiRevocationRequests = requests.map((r) => ({
       schema: r.schema,
       data: r.data.map((d) => ({
@@ -272,14 +289,18 @@ export class EAS extends Base<EASContract> {
     }, BigNumber.from(0));
 
     const tx = await this.contract.multiRevoke(multiRevocationRequests, {
-      value: requestedValue
+      value: requestedValue,
+      ...overrides
     });
 
     return new Transaction(tx, async () => {});
   }
 
   // Multi-revokes multiple attestations via an EIP712 delegation requests
-  public async multiRevokeByDelegation(requests: MultiDelegatedRevocationRequest[]): Promise<Transaction<void>> {
+  public async multiRevokeByDelegation(
+    requests: MultiDelegatedRevocationRequest[],
+    overrides?: PayableOverrides
+  ): Promise<Transaction<void>> {
     const multiRevocationRequests = requests.map((r) => ({
       schema: r.schema,
       data: r.data.map((d) => ({
@@ -296,53 +317,64 @@ export class EAS extends Base<EASContract> {
     }, BigNumber.from(0));
 
     const tx = await this.contract.multiRevokeByDelegation(multiRevocationRequests, {
-      value: requestedValue
+      value: requestedValue,
+      ...overrides
     });
 
     return new Transaction(tx, async () => {});
   }
 
   // Attests to a specific schema via an EIP712 delegation request using an external EIP712 proxy
-  public attestByDelegationProxy(request: DelegatedProxyAttestationRequest): Promise<Transaction<string>> {
+  public attestByDelegationProxy(
+    request: DelegatedProxyAttestationRequest,
+    overrides?: PayableOverrides
+  ): Promise<Transaction<string>> {
     if (!this.proxy) {
       throw new Error("Proxy wasn't set");
     }
 
-    return this.proxy.attestByDelegationProxy(request);
+    return this.proxy.attestByDelegationProxy(request, overrides);
   }
 
   // Multi-attests to multiple schemas via an EIP712 delegation requests using an external EIP712 proxy
   public multiAttestByDelegationProxy(
-    requests: MultiDelegatedProxyAttestationRequest[]
+    requests: MultiDelegatedProxyAttestationRequest[],
+    overrides?: PayableOverrides
   ): Promise<Transaction<string[]>> {
     if (!this.proxy) {
       throw new Error("Proxy wasn't set");
     }
 
-    return this.proxy.multiAttestByDelegationProxy(requests);
+    return this.proxy.multiAttestByDelegationProxy(requests, overrides);
   }
 
   // Revokes an existing attestation an EIP712 delegation request using an external EIP712 proxy
-  public revokeByDelegationProxy(request: DelegatedProxyRevocationRequest): Promise<Transaction<void>> {
+  public revokeByDelegationProxy(
+    request: DelegatedProxyRevocationRequest,
+    overrides?: PayableOverrides
+  ): Promise<Transaction<void>> {
     if (!this.proxy) {
       throw new Error("Proxy wasn't set");
     }
 
-    return this.proxy.revokeByDelegationProxy(request);
+    return this.proxy.revokeByDelegationProxy(request, overrides);
   }
 
   // Multi-revokes multiple attestations via an EIP712 delegation requests using an external EIP712 proxy
-  public multiRevokeByDelegationProxy(requests: MultiDelegatedProxyRevocationRequest[]): Promise<Transaction<void>> {
+  public multiRevokeByDelegationProxy(
+    requests: MultiDelegatedProxyRevocationRequest[],
+    overrides?: PayableOverrides
+  ): Promise<Transaction<void>> {
     if (!this.proxy) {
       throw new Error("Proxy wasn't set");
     }
 
-    return this.proxy.multiRevokeByDelegationProxy(requests);
+    return this.proxy.multiRevokeByDelegationProxy(requests, overrides);
   }
 
   // Timestamps the specified bytes32 data
-  public async timestamp(data: string): Promise<Transaction<BigNumberish>> {
-    const tx = await this.contract.timestamp(data);
+  public async timestamp(data: string, overrides?: Overrides): Promise<Transaction<BigNumberish>> {
+    const tx = await this.contract.timestamp(data, overrides ?? {});
 
     return new Transaction(
       tx,
@@ -351,16 +383,16 @@ export class EAS extends Base<EASContract> {
   }
 
   // Timestamps the specified multiple bytes32 data
-  public async multiTimestamp(data: string[]): Promise<Transaction<BigNumberish[]>> {
-    const tx = await this.contract.multiTimestamp(data);
+  public async multiTimestamp(data: string[], overrides?: Overrides): Promise<Transaction<BigNumberish[]>> {
+    const tx = await this.contract.multiTimestamp(data, overrides ?? {});
 
     // eslint-disable-next-line require-await
     return new Transaction(tx, async (receipt: ContractReceipt) => getTimestampFromTimestampEvents(receipt.events));
   }
 
   // Revokes the specified offchain attestation UID
-  public async revokeOffchain(uid: string): Promise<Transaction<BigNumberish>> {
-    const tx = await this.contract.revokeOffchain(uid);
+  public async revokeOffchain(uid: string, overrides?: Overrides): Promise<Transaction<BigNumberish>> {
+    const tx = await this.contract.revokeOffchain(uid, overrides ?? {});
 
     return new Transaction(
       tx,
@@ -369,8 +401,8 @@ export class EAS extends Base<EASContract> {
   }
 
   // Revokes the specified multiple offchain attestation UIDs
-  public async multiRevokeOffchain(uids: string[]): Promise<Transaction<BigNumberish[]>> {
-    const tx = await this.contract.multiRevokeOffchain(uids);
+  public async multiRevokeOffchain(uids: string[], overrides?: Overrides): Promise<Transaction<BigNumberish[]>> {
+    const tx = await this.contract.multiRevokeOffchain(uids, overrides ?? {});
 
     // eslint-disable-next-line require-await
     return new Transaction(tx, async (receipt: ContractReceipt) =>

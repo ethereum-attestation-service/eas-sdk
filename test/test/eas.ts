@@ -145,126 +145,138 @@ describe('EAS API', () => {
       ]) {
         context(`via ${signatureType} attestation`, () => {
           for (const revocable of [true, false]) {
-            context(`with ${revocable ? 'a revocable' : 'an irrevocable'} registered schema`, () => {
-              const schema1 = 'bool like';
-              const schema2 = 'bytes32 proposalId, bool vote';
-              let schema1Id: string;
-              let schema2Id: string;
+            for (const [maxPriorityFeePerGas, maxFeePerGas] of [
+              [undefined, undefined],
+              [1000000000, 200000000000]
+            ]) {
+              context(
+                maxPriorityFeePerGas && maxFeePerGas
+                  ? `with maxPriorityFeePerGas=${maxPriorityFeePerGas.toString()}, maxFeePerGas=${maxFeePerGas.toString()} overrides`
+                  : 'with default fees',
+                () => {
+                  context(`with ${revocable ? 'a revocable' : 'an irrevocable'} registered schema`, () => {
+                    const schema1 = 'bool like';
+                    const schema2 = 'bytes32 proposalId, bool vote';
+                    let schema1Id: string;
+                    let schema2Id: string;
 
-              beforeEach(async () => {
-                const tx1 = await schemaRegistry.register({ schema: schema1, revocable });
-                const tx2 = await schemaRegistry.register({ schema: schema2, revocable });
+                    beforeEach(async () => {
+                      const tx1 = await schemaRegistry.register({ schema: schema1, revocable });
+                      const tx2 = await schemaRegistry.register({ schema: schema2, revocable });
 
-                schema1Id = await tx1.wait();
-                schema2Id = await tx2.wait();
-              });
+                      schema1Id = await tx1.wait();
+                      schema2Id = await tx2.wait();
+                    });
 
-              it('should be able to query the schema registry', async () => {
-                const schemaData = await registry.getSchema(schema1Id);
-                expect(schemaData.uid).to.equal(schema1Id);
-                expect(schemaData.resolver).to.equal(ZERO_ADDRESS);
-                expect(schemaData.revocable).to.equal(revocable);
-                expect(schemaData.schema).to.equal(schema1);
-              });
+                    it('should be able to query the schema registry', async () => {
+                      const schemaData = await registry.getSchema(schema1Id);
+                      expect(schemaData.uid).to.equal(schema1Id);
+                      expect(schemaData.resolver).to.equal(ZERO_ADDRESS);
+                      expect(schemaData.revocable).to.equal(revocable);
+                      expect(schemaData.schema).to.equal(schema1);
+                    });
 
-              it('should allow attestation to an empty recipient', async () => {
-                await expectAttestation(
-                  eas,
-                  schema1Id,
-                  {
-                    recipient: ZERO_ADDRESS,
-                    expirationTime,
-                    revocable,
-                    data
-                  },
-                  { signatureType, from: sender }
-                );
-              });
+                    it('should allow attestation to an empty recipient', async () => {
+                      await expectAttestation(
+                        eas,
+                        schema1Id,
+                        {
+                          recipient: ZERO_ADDRESS,
+                          expirationTime,
+                          revocable,
+                          data
+                        },
+                        { signatureType, from: sender, maxFeePerGas, maxPriorityFeePerGas }
+                      );
+                    });
 
-              it('should allow self attestations', async () => {
-                await expectAttestation(
-                  eas,
-                  schema1Id,
-                  { recipient: sender.address, expirationTime, revocable, data },
-                  { signatureType, from: sender }
-                );
-              });
+                    it('should allow self attestations', async () => {
+                      await expectAttestation(
+                        eas,
+                        schema1Id,
+                        { recipient: sender.address, expirationTime, revocable, data },
+                        { signatureType, from: sender, maxFeePerGas, maxPriorityFeePerGas }
+                      );
+                    });
 
-              it('should allow multiple attestations', async () => {
-                await expectAttestation(
-                  eas,
-                  schema1Id,
-                  { recipient: recipient.address, expirationTime, revocable, data: hexlify(0) },
-                  { signatureType, from: sender }
-                );
+                    it('should allow multiple attestations', async () => {
+                      await expectAttestation(
+                        eas,
+                        schema1Id,
+                        { recipient: recipient.address, expirationTime, revocable, data: hexlify(0) },
+                        { signatureType, from: sender, maxFeePerGas, maxPriorityFeePerGas }
+                      );
 
-                await expectAttestation(
-                  eas,
-                  schema1Id,
-                  { recipient: recipient2.address, expirationTime, revocable, data: hexlify(1) },
-                  { signatureType, from: sender }
-                );
-              });
+                      await expectAttestation(
+                        eas,
+                        schema1Id,
+                        { recipient: recipient2.address, expirationTime, revocable, data: hexlify(1) },
+                        { signatureType, from: sender, maxFeePerGas, maxPriorityFeePerGas }
+                      );
+                    });
 
-              if (signatureType !== SignatureType.Offchain) {
-                it('should allow multi attestations', async () => {
-                  await expectMultiAttestations(
-                    eas,
-                    [
-                      {
-                        schema: schema1Id,
-                        data: [
-                          { recipient: recipient.address, expirationTime, revocable, data: hexlify(0) },
-                          { recipient: recipient2.address, expirationTime, revocable, data: hexlify(1) }
-                        ]
-                      },
-                      {
-                        schema: schema2Id,
-                        data: [
-                          { recipient: recipient.address, expirationTime, revocable, data: hexlify(2) },
-                          { recipient: recipient2.address, expirationTime, revocable, data: hexlify(3) }
-                        ]
-                      }
-                    ],
-                    { signatureType, from: sender }
-                  );
-                });
-              }
+                    if (signatureType !== SignatureType.Offchain) {
+                      it('should allow multi attestations', async () => {
+                        await expectMultiAttestations(
+                          eas,
+                          [
+                            {
+                              schema: schema1Id,
+                              data: [
+                                { recipient: recipient.address, expirationTime, revocable, data: hexlify(0) },
+                                { recipient: recipient2.address, expirationTime, revocable, data: hexlify(1) }
+                              ]
+                            },
+                            {
+                              schema: schema2Id,
+                              data: [
+                                { recipient: recipient.address, expirationTime, revocable, data: hexlify(2) },
+                                { recipient: recipient2.address, expirationTime, revocable, data: hexlify(3) }
+                              ]
+                            }
+                          ],
+                          { signatureType, from: sender, maxFeePerGas, maxPriorityFeePerGas }
+                        );
+                      });
+                    }
 
-              it('should allow attestation without expiration time', async () => {
-                await expectAttestation(
-                  eas,
-                  schema1Id,
-                  { recipient: recipient.address, expirationTime: NO_EXPIRATION, revocable, data },
-                  { signatureType, from: sender }
-                );
-              });
+                    it('should allow attestation without expiration time', async () => {
+                      await expectAttestation(
+                        eas,
+                        schema1Id,
+                        { recipient: recipient.address, expirationTime: NO_EXPIRATION, revocable, data },
+                        { signatureType, from: sender, maxFeePerGas, maxPriorityFeePerGas }
+                      );
+                    });
 
-              it('should allow attestation without any data', async () => {
-                await expectAttestation(
-                  eas,
-                  schema1Id,
-                  { recipient: recipient.address, expirationTime, revocable, data: ZERO_BYTES },
-                  { signatureType, from: sender }
-                );
-              });
+                    it('should allow attestation without any data', async () => {
+                      await expectAttestation(
+                        eas,
+                        schema1Id,
+                        { recipient: recipient.address, expirationTime, revocable, data: ZERO_BYTES },
+                        { signatureType, from: sender, maxFeePerGas, maxPriorityFeePerGas }
+                      );
+                    });
 
-              it('should store referenced attestation', async () => {
-                const uid = await (
-                  await eas.attest({
-                    schema: schema1Id,
-                    data: { recipient: recipient.address, expirationTime, revocable, data }
-                  })
-                ).wait();
+                    it('should store referenced attestation', async () => {
+                      const uid = await (
+                        await eas.attest({
+                          schema: schema1Id,
+                          data: { recipient: recipient.address, expirationTime, revocable, data }
+                        })
+                      ).wait();
 
-                await expectAttestation(
-                  eas,
-                  schema1Id,
-                  { recipient: recipient.address, expirationTime, revocable, refUID: uid, data },
-                  { signatureType, from: sender }
-                );
-              });
-            });
+                      await expectAttestation(
+                        eas,
+                        schema1Id,
+                        { recipient: recipient.address, expirationTime, revocable, refUID: uid, data },
+                        { signatureType, from: sender, maxFeePerGas, maxPriorityFeePerGas }
+                      );
+                    });
+                  });
+                }
+              );
+            }
           }
         });
       }
@@ -288,62 +300,84 @@ describe('EAS API', () => {
       });
 
       for (const signatureType of [SignatureType.Direct, SignatureType.Delegated, SignatureType.DelegatedProxy]) {
-        context(`via ${signatureType} revocation`, () => {
-          beforeEach(async () => {
-            uids1 = [];
+        for (const [maxPriorityFeePerGas, maxFeePerGas] of [
+          [undefined, undefined],
+          [1000000000, 200000000000]
+        ]) {
+          context(
+            maxPriorityFeePerGas && maxFeePerGas
+              ? `with maxPriorityFeePerGas=${maxPriorityFeePerGas.toString()}, maxFeePerGas=${maxFeePerGas.toString()} overrides`
+              : 'with default fees',
+            () => {
+              context(`via ${signatureType} revocation`, () => {
+                beforeEach(async () => {
+                  uids1 = [];
 
-            for (let i = 0; i < 2; i++) {
-              const uid = await expectAttestation(
-                eas,
-                schema1Id,
-                { recipient: recipient.address, expirationTime: NO_EXPIRATION, data: hexlify(i + 1) },
-                { signatureType, from: sender }
-              );
+                  for (let i = 0; i < 2; i++) {
+                    const uid = await expectAttestation(
+                      eas,
+                      schema1Id,
+                      { recipient: recipient.address, expirationTime: NO_EXPIRATION, data: hexlify(i + 1) },
+                      { signatureType, from: sender, maxPriorityFeePerGas, maxFeePerGas }
+                    );
 
-              uids1.push(uid);
+                    uids1.push(uid);
+                  }
+
+                  uids2 = [];
+
+                  for (let i = 0; i < 2; i++) {
+                    const uid = await expectAttestation(
+                      eas,
+                      schema2Id,
+                      { recipient: recipient.address, expirationTime: NO_EXPIRATION, data: hexlify(i + 1) },
+                      { signatureType, from: sender, maxPriorityFeePerGas, maxFeePerGas }
+                    );
+
+                    uids2.push(uid);
+                  }
+                });
+
+                it('should allow to revoke existing attestations', async () => {
+                  for (const uid of uids1) {
+                    await expectRevocation(
+                      eas,
+                      schema1Id,
+                      { uid },
+                      { signatureType, from: sender, maxPriorityFeePerGas, maxFeePerGas }
+                    );
+                  }
+
+                  for (const uid of uids2) {
+                    await expectRevocation(
+                      eas,
+                      schema2Id,
+                      { uid },
+                      { signatureType, from: sender, maxPriorityFeePerGas, maxFeePerGas }
+                    );
+                  }
+                });
+
+                it('should allow to multi-revoke existing attestations', async () => {
+                  await expectMultiRevocations(
+                    eas,
+                    [
+                      {
+                        schema: schema1Id,
+                        data: [{ uid: uids1[0] }, { uid: uids1[1] }]
+                      },
+                      {
+                        schema: schema2Id,
+                        data: [{ uid: uids2[0] }, { uid: uids2[1] }]
+                      }
+                    ],
+                    { signatureType, from: sender, maxPriorityFeePerGas, maxFeePerGas }
+                  );
+                });
+              });
             }
-
-            uids2 = [];
-
-            for (let i = 0; i < 2; i++) {
-              const uid = await expectAttestation(
-                eas,
-                schema2Id,
-                { recipient: recipient.address, expirationTime: NO_EXPIRATION, data: hexlify(i + 1) },
-                { signatureType, from: sender }
-              );
-
-              uids2.push(uid);
-            }
-          });
-
-          it('should allow to revoke existing attestations', async () => {
-            for (const uid of uids1) {
-              await expectRevocation(eas, schema1Id, { uid }, { signatureType, from: sender });
-            }
-
-            for (const uid of uids2) {
-              await expectRevocation(eas, schema2Id, { uid }, { signatureType, from: sender });
-            }
-          });
-
-          it('should allow to multi-revoke existing attestations', async () => {
-            await expectMultiRevocations(
-              eas,
-              [
-                {
-                  schema: schema1Id,
-                  data: [{ uid: uids1[0] }, { uid: uids1[1] }]
-                },
-                {
-                  schema: schema2Id,
-                  data: [{ uid: uids2[0] }, { uid: uids2[1] }]
-                }
-              ],
-              { signatureType, from: sender }
-            );
-          });
-        });
+          );
+        }
       }
     });
 
@@ -352,38 +386,67 @@ describe('EAS API', () => {
       const data2 = formatBytes32String('0x4567');
       const data3 = formatBytes32String('0x6666');
 
-      it('should timestamp a single data', async () => {
-        const tx = await eas.timestamp(data1);
-        const timestamp = await tx.wait();
-        expect(timestamp).to.equal(await latest());
+      for (const [maxPriorityFeePerGas, maxFeePerGas] of [
+        [undefined, undefined],
+        [1000000000, 200000000000]
+      ]) {
+        context(
+          maxPriorityFeePerGas && maxFeePerGas
+            ? `with maxPriorityFeePerGas=${maxPriorityFeePerGas.toString()}, maxFeePerGas=${maxFeePerGas.toString()} overrides`
+            : 'with default fees',
+          () => {
+            const overrides = maxPriorityFeePerGas && maxFeePerGas ? { maxPriorityFeePerGas, maxFeePerGas } : undefined;
 
-        expect(await eas.getTimestamp(data1)).to.equal(timestamp);
+            it('should timestamp a single data', async () => {
+              const tx = await eas.timestamp(data1, overrides);
+              const timestamp = await tx.wait();
+              expect(timestamp).to.equal(await latest());
 
-        const tx2 = await eas.timestamp(data2);
-        const timestamp2 = await tx2.wait();
-        expect(timestamp2).to.equal(await latest());
+              expect(await eas.getTimestamp(data1)).to.equal(timestamp);
 
-        expect(await eas.getTimestamp(data2)).to.equal(timestamp2);
-      });
+              if (maxPriorityFeePerGas && maxFeePerGas) {
+                expect(tx.tx.maxPriorityFeePerGas).to.equal(maxPriorityFeePerGas);
+                expect(tx.tx.maxFeePerGas).to.equal(maxFeePerGas);
+              }
 
-      it('should timestamp multiple data', async () => {
-        const data = [data1, data2];
-        const tx = await eas.multiTimestamp([data1, data2]);
-        const timestamps = await tx.wait();
+              const tx2 = await eas.timestamp(data2, overrides);
+              const timestamp2 = await tx2.wait();
+              expect(timestamp2).to.equal(await latest());
 
-        const currentTime = await latest();
+              expect(await eas.getTimestamp(data2)).to.equal(timestamp2);
 
-        for (const [i, d] of data.entries()) {
-          const timestamp = timestamps[i];
-          expect(timestamp).to.equal(currentTime);
+              if (maxPriorityFeePerGas && maxFeePerGas) {
+                expect(tx2.tx.maxPriorityFeePerGas).to.equal(maxPriorityFeePerGas);
+                expect(tx2.tx.maxFeePerGas).to.equal(maxFeePerGas);
+              }
+            });
 
-          expect(await eas.getTimestamp(d)).to.equal(timestamp);
-        }
-      });
+            it('should timestamp multiple data', async () => {
+              const data = [data1, data2];
+              const tx = await eas.multiTimestamp([data1, data2], overrides);
+              const timestamps = await tx.wait();
 
-      it("should return 0 for any data that wasn't timestamped multiple data", async () => {
-        expect(await eas.getTimestamp(data3)).to.equal(0);
-      });
+              const currentTime = await latest();
+
+              for (const [i, d] of data.entries()) {
+                const timestamp = timestamps[i];
+                expect(timestamp).to.equal(currentTime);
+
+                expect(await eas.getTimestamp(d)).to.equal(timestamp);
+              }
+
+              if (maxPriorityFeePerGas && maxFeePerGas) {
+                expect(tx.tx.maxPriorityFeePerGas).to.equal(maxPriorityFeePerGas);
+                expect(tx.tx.maxFeePerGas).to.equal(maxFeePerGas);
+              }
+            });
+
+            it("should return 0 for any data that wasn't timestamped multiple data", async () => {
+              expect(await eas.getTimestamp(data3)).to.equal(0);
+            });
+          }
+        );
+      }
     });
 
     describe('revoking offchain', () => {
@@ -391,34 +454,63 @@ describe('EAS API', () => {
       const data2 = formatBytes32String('0x4567');
       const data3 = formatBytes32String('0x6666');
 
-      it('should revoke a single data', async () => {
-        const tx = await eas.revokeOffchain(data1);
-        const timestamp = await tx.wait();
-        expect(timestamp).to.equal(await latest());
+      for (const [maxPriorityFeePerGas, maxFeePerGas] of [
+        [undefined, undefined],
+        [1000000000, 200000000000]
+      ]) {
+        context(
+          maxPriorityFeePerGas && maxFeePerGas
+            ? `with maxPriorityFeePerGas=${maxPriorityFeePerGas.toString()}, maxFeePerGas=${maxFeePerGas.toString()} overrides`
+            : 'with default fees',
+          () => {
+            const overrides = maxPriorityFeePerGas && maxFeePerGas ? { maxPriorityFeePerGas, maxFeePerGas } : undefined;
 
-        expect(await eas.getRevocationOffchain(sender.address, data1)).to.equal(timestamp);
+            it('should revoke a single data', async () => {
+              const tx = await eas.revokeOffchain(data1, overrides);
+              const timestamp = await tx.wait();
+              expect(timestamp).to.equal(await latest());
 
-        const tx2 = await eas.revokeOffchain(data2);
-        const timestamp2 = await tx2.wait();
-        expect(timestamp2).to.equal(await latest());
+              expect(await eas.getRevocationOffchain(sender.address, data1)).to.equal(timestamp);
 
-        expect(await eas.getRevocationOffchain(sender.address, data2)).to.equal(timestamp2);
-      });
+              if (maxPriorityFeePerGas && maxFeePerGas) {
+                expect(tx.tx.maxPriorityFeePerGas).to.equal(maxPriorityFeePerGas);
+                expect(tx.tx.maxFeePerGas).to.equal(maxFeePerGas);
+              }
 
-      it('should revoke multiple data', async () => {
-        const data = [data1, data2];
-        const tx = await eas.multiRevokeOffchain([data1, data2]);
-        const timestamps = await tx.wait();
+              const tx2 = await eas.revokeOffchain(data2, overrides);
+              const timestamp2 = await tx2.wait();
+              expect(timestamp2).to.equal(await latest());
 
-        const currentTime = await latest();
+              expect(await eas.getRevocationOffchain(sender.address, data2)).to.equal(timestamp2);
 
-        for (const [i, d] of data.entries()) {
-          const timestamp = timestamps[i];
-          expect(timestamp).to.equal(currentTime);
+              if (maxPriorityFeePerGas && maxFeePerGas) {
+                expect(tx2.tx.maxPriorityFeePerGas).to.equal(maxPriorityFeePerGas);
+                expect(tx2.tx.maxFeePerGas).to.equal(maxFeePerGas);
+              }
+            });
 
-          expect(await eas.getRevocationOffchain(sender.address, d)).to.equal(timestamp);
-        }
-      });
+            it('should revoke multiple data', async () => {
+              const data = [data1, data2];
+              const tx = await eas.multiRevokeOffchain([data1, data2], overrides);
+              const timestamps = await tx.wait();
+
+              const currentTime = await latest();
+
+              for (const [i, d] of data.entries()) {
+                const timestamp = timestamps[i];
+                expect(timestamp).to.equal(currentTime);
+
+                expect(await eas.getRevocationOffchain(sender.address, d)).to.equal(timestamp);
+              }
+
+              if (maxPriorityFeePerGas && maxFeePerGas) {
+                expect(tx.tx.maxPriorityFeePerGas).to.equal(maxPriorityFeePerGas);
+                expect(tx.tx.maxFeePerGas).to.equal(maxFeePerGas);
+              }
+            });
+          }
+        );
+      }
 
       it("should return 0 for any data that wasn't revoked multiple data", async () => {
         expect(await eas.getRevocationOffchain(sender.address, data3)).to.equal(0);
