@@ -1,29 +1,55 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Offchain = exports.DOMAIN_NAME = exports.ATTESTATION_TYPE = exports.ATTESTATION_PRIMARY_TYPE = void 0;
+exports.Offchain = exports.OFFCHAIN_ATTESTATION_TYPES = exports.OFFCHAIN_ATTESTATION_VERSION = void 0;
 const utils_1 = require("../utils");
 const delegated_1 = require("./delegated");
 const typed_data_handler_1 = require("./typed-data-handler");
 const ethers_1 = require("ethers");
 const { keccak256, toUtf8Bytes, defaultAbiCoder } = ethers_1.utils;
-exports.ATTESTATION_PRIMARY_TYPE = 'Attestation';
-exports.ATTESTATION_TYPE = [
-    { name: 'schema', type: 'bytes32' },
-    { name: 'recipient', type: 'address' },
-    { name: 'time', type: 'uint64' },
-    { name: 'expirationTime', type: 'uint64' },
-    { name: 'revocable', type: 'bool' },
-    { name: 'refUID', type: 'bytes32' },
-    { name: 'data', type: 'bytes' }
-];
-exports.DOMAIN_NAME = 'EAS Attestation';
+exports.OFFCHAIN_ATTESTATION_VERSION = 1;
+exports.OFFCHAIN_ATTESTATION_TYPES = {
+    0: {
+        domainName: 'EAS Attestation',
+        primaryType: 'Attestation',
+        types: [
+            { name: 'schema', type: 'bytes32' },
+            { name: 'recipient', type: 'address' },
+            { name: 'time', type: 'uint64' },
+            { name: 'expirationTime', type: 'uint64' },
+            { name: 'revocable', type: 'bool' },
+            { name: 'refUID', type: 'bytes32' },
+            { name: 'data', type: 'bytes' }
+        ]
+    },
+    1: {
+        domainName: 'EAS Attestation',
+        primaryType: 'Attest',
+        types: [
+            { name: 'version', type: 'uint16' },
+            { name: 'schema', type: 'bytes32' },
+            { name: 'recipient', type: 'address' },
+            { name: 'time', type: 'uint64' },
+            { name: 'expirationTime', type: 'uint64' },
+            { name: 'revocable', type: 'bool' },
+            { name: 'refUID', type: 'bytes32' },
+            { name: 'data', type: 'bytes' }
+        ]
+    }
+};
 class Offchain extends typed_data_handler_1.TypedDataHandler {
-    constructor(config) {
+    version;
+    type;
+    constructor(config, version) {
+        if (version > exports.OFFCHAIN_ATTESTATION_VERSION) {
+            throw new Error('Unsupported version');
+        }
         super({ ...config, name: delegated_1.EIP712_NAME });
+        this.version = version;
+        this.type = exports.OFFCHAIN_ATTESTATION_TYPES[this.version];
     }
     getDomainSeparator() {
         return keccak256(defaultAbiCoder.encode(['bytes32', 'bytes32', 'uint256', 'address'], [
-            keccak256(toUtf8Bytes(exports.DOMAIN_NAME)),
+            keccak256(toUtf8Bytes(this.type.domainName)),
             keccak256(toUtf8Bytes(this.config.version)),
             this.config.chainId,
             this.config.address
@@ -31,7 +57,7 @@ class Offchain extends typed_data_handler_1.TypedDataHandler {
     }
     getDomainTypedData() {
         return {
-            name: exports.DOMAIN_NAME,
+            name: this.type.domainName,
             version: this.config.version,
             chainId: this.config.chainId,
             verifyingContract: this.config.address
@@ -41,10 +67,10 @@ class Offchain extends typed_data_handler_1.TypedDataHandler {
         const uid = Offchain.getOffchainUID(params);
         const signedRequest = await this.signTypedDataRequest(params, {
             domain: this.getDomainTypedData(),
-            primaryType: exports.ATTESTATION_PRIMARY_TYPE,
+            primaryType: this.type.primaryType,
             message: params,
             types: {
-                Attest: exports.ATTESTATION_TYPE
+                Attest: this.type.types
             }
         }, signer);
         return {
@@ -57,7 +83,7 @@ class Offchain extends typed_data_handler_1.TypedDataHandler {
             this.verifyTypedDataRequestSignature(attester, request));
     }
     static getOffchainUID(params) {
-        return (0, utils_1.getOffchainUID)(params.schema, params.recipient, params.time, params.expirationTime, params.revocable, params.refUID, params.data);
+        return (0, utils_1.getOffchainUID)(params.version, params.schema, params.recipient, params.time, params.expirationTime, params.revocable, params.refUID, params.data);
     }
 }
 exports.Offchain = Offchain;
