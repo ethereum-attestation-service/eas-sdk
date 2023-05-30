@@ -24,6 +24,7 @@ interface OffchainAttestationType {
 }
 
 export const OFFCHAIN_ATTESTATION_VERSION = 1;
+const LEGACY_OFFCHAIN_ATTESTATION_VERSION = 0;
 
 export const OFFCHAIN_ATTESTATION_TYPES: Record<number, OffchainAttestationType> = {
   0: {
@@ -142,7 +143,7 @@ export class Offchain extends TypedDataHandler {
 
   public static getOffchainUID(params: OffchainAttestationParams): string {
     return getOffchainUID(
-      params.version,
+      params.version ?? LEGACY_OFFCHAIN_ATTESTATION_VERSION,
       params.schema,
       params.recipient,
       params.time,
