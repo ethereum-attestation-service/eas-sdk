@@ -175,6 +175,12 @@ const offchainAttestation = await offchain.signOffchainAttestation({
 
 This function will return a signed off-chain attestation object containing the UID, signature, and attestation data. You can then share this object with the intended recipient or store it for future use.
 
+#### Versioning
+
+Since the off-chain attestation protocol is being constantly evolved and improved, we've recently added versioning to help the applications to support both older and newer types of attestation. Starting from version `1`, we have added a `version` field to its typed data, which is seamlessly supported by both `signOffchainAttestation` and `verifyOffchainAttestationSignature` function.
+
+Please note that using the `getOffchainUID` function for the previous legacy version, requires passing `{ version: 0 }` explicitly.
+
 ### Revoking On-chain Attestations
 
 ```javascript
