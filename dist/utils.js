@@ -13,7 +13,27 @@ const getSchemaUID = (schema, resolverAddress, revocable) => solidityKeccak256([
 exports.getSchemaUID = getSchemaUID;
 const getUID = (schema, recipient, attester, time, expirationTime, revocable, refUID, data, bump) => solidityKeccak256(['bytes', 'address', 'address', 'uint64', 'uint64', 'bool', 'bytes32', 'bytes', 'uint32'], [hexlify(toUtf8Bytes(schema)), recipient, attester, time, expirationTime, revocable, refUID, data, bump]);
 exports.getUID = getUID;
-const getOffchainUID = (schema, recipient, time, expirationTime, revocable, refUID, data) => solidityKeccak256(['bytes', 'address', 'address', 'uint64', 'uint64', 'bool', 'bytes32', 'bytes', 'uint32'], [hexlify(toUtf8Bytes(schema)), recipient, exports.ZERO_ADDRESS, time, expirationTime, revocable, refUID, data, 0]);
+const getOffchainUID = (version, schema, recipient, time, expirationTime, revocable, refUID, data) => {
+    switch (version) {
+        case 0:
+            return solidityKeccak256(['bytes', 'address', 'address', 'uint64', 'uint64', 'bool', 'bytes32', 'bytes', 'uint32'], [hexlify(toUtf8Bytes(schema)), recipient, exports.ZERO_ADDRESS, time, expirationTime, revocable, refUID, data, 0]);
+        case 1:
+            return solidityKeccak256(['uint16', 'bytes', 'address', 'address', 'uint64', 'uint64', 'bool', 'bytes32', 'bytes', 'uint32'], [
+                version,
+                hexlify(toUtf8Bytes(schema)),
+                recipient,
+                exports.ZERO_ADDRESS,
+                time,
+                expirationTime,
+                revocable,
+                refUID,
+                data,
+                0
+            ]);
+        default:
+            throw new Error('Unsupported version');
+    }
+};
 exports.getOffchainUID = getOffchainUID;
 const getUIDsFromMultiAttestTx = async (res) => {
     const receipt = await (await res).wait();

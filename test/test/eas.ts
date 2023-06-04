@@ -1,5 +1,6 @@
 import { EAS, NO_EXPIRATION } from '../../src/eas';
 import { EIP712Proxy } from '../../src/eip712-proxy';
+import { Offchain } from '../../src/offchain';
 import { SchemaRegistry } from '../../src/schema-registry';
 import { getSchemaUID, getUIDFromAttestTx } from '../../src/utils';
 import Contracts from '../components/Contracts';
@@ -449,71 +450,118 @@ describe('EAS API', () => {
       }
     });
 
-    describe('revoking offchain', () => {
-      const data1 = formatBytes32String('0x1234');
-      const data2 = formatBytes32String('0x4567');
-      const data3 = formatBytes32String('0x6666');
+    describe('offchain attestations', () => {
+      let offchain: Offchain;
+      const schema = 'bool like';
+      const schemaId = getSchemaUID(schema, ZERO_ADDRESS, true);
 
-      for (const [maxPriorityFeePerGas, maxFeePerGas] of [
-        [undefined, undefined],
-        [1000000000, 200000000000]
-      ]) {
-        context(
-          maxPriorityFeePerGas && maxFeePerGas
-            ? `with maxPriorityFeePerGas=${maxPriorityFeePerGas.toString()}, maxFeePerGas=${maxFeePerGas.toString()} overrides`
-            : 'with default fees',
-          () => {
-            const overrides = maxPriorityFeePerGas && maxFeePerGas ? { maxPriorityFeePerGas, maxFeePerGas } : undefined;
+      beforeEach(async () => {
+        offchain = await eas.getOffchain();
+      });
 
-            it('should revoke a single data', async () => {
-              const tx = await eas.revokeOffchain(data1, overrides);
-              const timestamp = await tx.wait();
-              expect(timestamp).to.equal(await latest());
+      describe('versioning', () => {
+        it('should support version 0', async () => {
+          const response = await offchain.signOffchainAttestation(
+            {
+              version: 0,
+              schema: schemaId,
+              recipient: recipient.address,
+              time: await latest(),
+              expirationTime: NO_EXPIRATION,
+              revocable: false,
+              refUID: ZERO_BYTES32,
+              data: ZERO_BYTES
+            },
+            sender
+          );
+          expect(await offchain.verifyOffchainAttestationSignature(sender.address, response)).to.be.true;
+        });
 
-              expect(await eas.getRevocationOffchain(sender.address, data1)).to.equal(timestamp);
+        it('should support version 1', async () => {
+          const response = await offchain.signOffchainAttestation(
+            {
+              version: 1,
+              schema: schemaId,
+              recipient: recipient.address,
+              time: await latest(),
+              expirationTime: NO_EXPIRATION,
+              revocable: false,
+              refUID: ZERO_BYTES32,
+              data: ZERO_BYTES
+            },
+            sender
+          );
+          expect(await offchain.verifyOffchainAttestationSignature(sender.address, response)).to.be.true;
+        });
+      });
 
-              if (maxPriorityFeePerGas && maxFeePerGas) {
-                expect(tx.tx.maxPriorityFeePerGas).to.equal(maxPriorityFeePerGas);
-                expect(tx.tx.maxFeePerGas).to.equal(maxFeePerGas);
-              }
+      describe('revocation', () => {
+        const data1 = formatBytes32String('0x1234');
+        const data2 = formatBytes32String('0x4567');
+        const data3 = formatBytes32String('0x6666');
 
-              const tx2 = await eas.revokeOffchain(data2, overrides);
-              const timestamp2 = await tx2.wait();
-              expect(timestamp2).to.equal(await latest());
+        for (const [maxPriorityFeePerGas, maxFeePerGas] of [
+          [undefined, undefined],
+          [1000000000, 200000000000]
+        ]) {
+          context(
+            maxPriorityFeePerGas && maxFeePerGas
+              ? `with maxPriorityFeePerGas=${maxPriorityFeePerGas.toString()}, maxFeePerGas=${maxFeePerGas.toString()} overrides`
+              : 'with default fees',
+            () => {
+              const overrides =
+                maxPriorityFeePerGas && maxFeePerGas ? { maxPriorityFeePerGas, maxFeePerGas } : undefined;
 
-              expect(await eas.getRevocationOffchain(sender.address, data2)).to.equal(timestamp2);
+              it('should revoke a single data', async () => {
+                const tx = await eas.revokeOffchain(data1, overrides);
+                const timestamp = await tx.wait();
+                expect(timestamp).to.equal(await latest());
 
-              if (maxPriorityFeePerGas && maxFeePerGas) {
-                expect(tx2.tx.maxPriorityFeePerGas).to.equal(maxPriorityFeePerGas);
-                expect(tx2.tx.maxFeePerGas).to.equal(maxFeePerGas);
-              }
-            });
+                expect(await eas.getRevocationOffchain(sender.address, data1)).to.equal(timestamp);
 
-            it('should revoke multiple data', async () => {
-              const data = [data1, data2];
-              const tx = await eas.multiRevokeOffchain([data1, data2], overrides);
-              const timestamps = await tx.wait();
+                if (maxPriorityFeePerGas && maxFeePerGas) {
+                  expect(tx.tx.maxPriorityFeePerGas).to.equal(maxPriorityFeePerGas);
+                  expect(tx.tx.maxFeePerGas).to.equal(maxFeePerGas);
+                }
 
-              const currentTime = await latest();
+                const tx2 = await eas.revokeOffchain(data2, overrides);
+                const timestamp2 = await tx2.wait();
+                expect(timestamp2).to.equal(await latest());
 
-              for (const [i, d] of data.entries()) {
-                const timestamp = timestamps[i];
-                expect(timestamp).to.equal(currentTime);
+                expect(await eas.getRevocationOffchain(sender.address, data2)).to.equal(timestamp2);
 
-                expect(await eas.getRevocationOffchain(sender.address, d)).to.equal(timestamp);
-              }
+                if (maxPriorityFeePerGas && maxFeePerGas) {
+                  expect(tx2.tx.maxPriorityFeePerGas).to.equal(maxPriorityFeePerGas);
+                  expect(tx2.tx.maxFeePerGas).to.equal(maxFeePerGas);
+                }
+              });
 
-              if (maxPriorityFeePerGas && maxFeePerGas) {
-                expect(tx.tx.maxPriorityFeePerGas).to.equal(maxPriorityFeePerGas);
-                expect(tx.tx.maxFeePerGas).to.equal(maxFeePerGas);
-              }
-            });
-          }
-        );
-      }
+              it('should revoke multiple data', async () => {
+                const data = [data1, data2];
+                const tx = await eas.multiRevokeOffchain([data1, data2], overrides);
+                const timestamps = await tx.wait();
 
-      it("should return 0 for any data that wasn't revoked multiple data", async () => {
-        expect(await eas.getRevocationOffchain(sender.address, data3)).to.equal(0);
+                const currentTime = await latest();
+
+                for (const [i, d] of data.entries()) {
+                  const timestamp = timestamps[i];
+                  expect(timestamp).to.equal(currentTime);
+
+                  expect(await eas.getRevocationOffchain(sender.address, d)).to.equal(timestamp);
+                }
+
+                if (maxPriorityFeePerGas && maxFeePerGas) {
+                  expect(tx.tx.maxPriorityFeePerGas).to.equal(maxPriorityFeePerGas);
+                  expect(tx.tx.maxFeePerGas).to.equal(maxFeePerGas);
+                }
+              });
+            }
+          );
+        }
+
+        it("should return 0 for any data that wasn't revoked multiple data", async () => {
+          expect(await eas.getRevocationOffchain(sender.address, data3)).to.equal(0);
+        });
       });
     });
   });

@@ -3,10 +3,15 @@ import { TypedDataSigner } from '@ethersproject/abstract-signer';
 import { BigNumberish } from 'ethers';
 export { EIP712Request, PartialTypedDataConfig, EIP712MessageTypes } from './typed-data-handler';
 export { TypedDataSigner } from '@ethersproject/abstract-signer';
-export declare const ATTESTATION_PRIMARY_TYPE = "Attestation";
-export declare const ATTESTATION_TYPE: TypedData[];
-export declare const DOMAIN_NAME = "EAS Attestation";
+interface OffchainAttestationType {
+    domainName: string;
+    primaryType: string;
+    types: TypedData[];
+}
+export declare const OFFCHAIN_ATTESTATION_VERSION = 1;
+export declare const OFFCHAIN_ATTESTATION_TYPES: Record<number, OffchainAttestationType>;
 export type OffchainAttestationParams = {
+    version: number;
     schema: string;
     recipient: string;
     time: BigNumberish;
@@ -19,7 +24,9 @@ export interface SignedOffchainAttestation extends EIP712Response<EIP712MessageT
     uid: string;
 }
 export declare class Offchain extends TypedDataHandler {
-    constructor(config: PartialTypedDataConfig);
+    readonly version: number;
+    private readonly type;
+    constructor(config: PartialTypedDataConfig, version: number);
     getDomainSeparator(): string;
     getDomainTypedData(): DomainTypedData;
     signOffchainAttestation(params: OffchainAttestationParams, signer: TypedDataSigner): Promise<SignedOffchainAttestation>;

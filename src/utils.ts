@@ -30,6 +30,7 @@ export const getUID = (
   );
 
 export const getOffchainUID = (
+  version: number,
   schema: string,
   recipient: string,
   time: BigNumberish,
@@ -37,11 +38,35 @@ export const getOffchainUID = (
   revocable: boolean,
   refUID: string,
   data: string
-) =>
-  solidityKeccak256(
-    ['bytes', 'address', 'address', 'uint64', 'uint64', 'bool', 'bytes32', 'bytes', 'uint32'],
-    [hexlify(toUtf8Bytes(schema)), recipient, ZERO_ADDRESS, time, expirationTime, revocable, refUID, data, 0]
-  );
+) => {
+  switch (version) {
+    case 0:
+      return solidityKeccak256(
+        ['bytes', 'address', 'address', 'uint64', 'uint64', 'bool', 'bytes32', 'bytes', 'uint32'],
+        [hexlify(toUtf8Bytes(schema)), recipient, ZERO_ADDRESS, time, expirationTime, revocable, refUID, data, 0]
+      );
+
+    case 1:
+      return solidityKeccak256(
+        ['uint16', 'bytes', 'address', 'address', 'uint64', 'uint64', 'bool', 'bytes32', 'bytes', 'uint32'],
+        [
+          version,
+          hexlify(toUtf8Bytes(schema)),
+          recipient,
+          ZERO_ADDRESS,
+          time,
+          expirationTime,
+          revocable,
+          refUID,
+          data,
+          0
+        ]
+      );
+
+    default:
+      throw new Error('Unsupported version');
+  }
+};
 
 export const getUIDsFromMultiAttestTx = async (
   res: Promise<ContractTransaction> | ContractTransaction

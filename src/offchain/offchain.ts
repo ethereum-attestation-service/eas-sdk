@@ -17,20 +17,47 @@ const { keccak256, toUtf8Bytes, defaultAbiCoder } = utils;
 export { EIP712Request, PartialTypedDataConfig, EIP712MessageTypes } from './typed-data-handler';
 export { TypedDataSigner } from '@ethersproject/abstract-signer';
 
-export const ATTESTATION_PRIMARY_TYPE = 'Attestation';
-export const ATTESTATION_TYPE: TypedData[] = [
-  { name: 'schema', type: 'bytes32' },
-  { name: 'recipient', type: 'address' },
-  { name: 'time', type: 'uint64' },
-  { name: 'expirationTime', type: 'uint64' },
-  { name: 'revocable', type: 'bool' },
-  { name: 'refUID', type: 'bytes32' },
-  { name: 'data', type: 'bytes' }
-];
+interface OffchainAttestationType {
+  domainName: string;
+  primaryType: string;
+  types: TypedData[];
+}
 
-export const DOMAIN_NAME = 'EAS Attestation';
+export const OFFCHAIN_ATTESTATION_VERSION = 1;
+const LEGACY_OFFCHAIN_ATTESTATION_VERSION = 0;
+
+export const OFFCHAIN_ATTESTATION_TYPES: Record<number, OffchainAttestationType> = {
+  0: {
+    domainName: 'EAS Attestation',
+    primaryType: 'Attestation',
+    types: [
+      { name: 'schema', type: 'bytes32' },
+      { name: 'recipient', type: 'address' },
+      { name: 'time', type: 'uint64' },
+      { name: 'expirationTime', type: 'uint64' },
+      { name: 'revocable', type: 'bool' },
+      { name: 'refUID', type: 'bytes32' },
+      { name: 'data', type: 'bytes' }
+    ]
+  },
+  1: {
+    domainName: 'EAS Attestation',
+    primaryType: 'Attest',
+    types: [
+      { name: 'version', type: 'uint16' },
+      { name: 'schema', type: 'bytes32' },
+      { name: 'recipient', type: 'address' },
+      { name: 'time', type: 'uint64' },
+      { name: 'expirationTime', type: 'uint64' },
+      { name: 'revocable', type: 'bool' },
+      { name: 'refUID', type: 'bytes32' },
+      { name: 'data', type: 'bytes' }
+    ]
+  }
+};
 
 export type OffchainAttestationParams = {
+  version: number;
   schema: string;
   recipient: string;
   time: BigNumberish;
@@ -45,8 +72,18 @@ export interface SignedOffchainAttestation extends EIP712Response<EIP712MessageT
 }
 
 export class Offchain extends TypedDataHandler {
-  public constructor(config: PartialTypedDataConfig) {
+  public readonly version: number;
+  private readonly type: OffchainAttestationType;
+
+  public constructor(config: PartialTypedDataConfig, version: number) {
+    if (version > OFFCHAIN_ATTESTATION_VERSION) {
+      throw new Error('Unsupported version');
+    }
+
     super({ ...config, name: EIP712_NAME });
+
+    this.version = version;
+    this.type = OFFCHAIN_ATTESTATION_TYPES[this.version];
   }
 
   public getDomainSeparator() {
@@ -54,7 +91,7 @@ export class Offchain extends TypedDataHandler {
       defaultAbiCoder.encode(
         ['bytes32', 'bytes32', 'uint256', 'address'],
         [
-          keccak256(toUtf8Bytes(DOMAIN_NAME)),
+          keccak256(toUtf8Bytes(this.type.domainName)),
           keccak256(toUtf8Bytes(this.config.version)),
           this.config.chainId,
           this.config.address
@@ -65,7 +102,7 @@ export class Offchain extends TypedDataHandler {
 
   public getDomainTypedData(): DomainTypedData {
     return {
-      name: DOMAIN_NAME,
+      name: this.type.domainName,
       version: this.config.version,
       chainId: this.config.chainId,
       verifyingContract: this.config.address
@@ -82,10 +119,10 @@ export class Offchain extends TypedDataHandler {
       params,
       {
         domain: this.getDomainTypedData(),
-        primaryType: ATTESTATION_PRIMARY_TYPE,
+        primaryType: this.type.primaryType,
         message: params,
         types: {
-          Attest: ATTESTATION_TYPE
+          Attest: this.type.types
         }
       },
       signer
@@ -106,6 +143,7 @@ export class Offchain extends TypedDataHandler {
 
   public static getOffchainUID(params: OffchainAttestationParams): string {
     return getOffchainUID(
+      params.version ?? LEGACY_OFFCHAIN_ATTESTATION_VERSION,
       params.schema,
       params.recipient,
       params.time,

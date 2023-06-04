@@ -1,5 +1,5 @@
 import { EIP712Proxy } from './eip712-proxy';
-import { Delegated, Offchain } from './offchain';
+import { Delegated, Offchain, OFFCHAIN_ATTESTATION_VERSION } from './offchain';
 import {
   AttestationRequest,
   DelegatedAttestationRequest,
@@ -443,11 +443,14 @@ export class EAS extends Base<EASContract> {
 
   // Sets the offchain attestations helper
   private async setOffchain(): Promise<Offchain> {
-    this.offchain = new Offchain({
-      address: this.contract.address,
-      version: await this.getVersion(),
-      chainId: await this.getChainId()
-    });
+    this.offchain = new Offchain(
+      {
+        address: this.contract.address,
+        version: await this.getVersion(),
+        chainId: await this.getChainId()
+      },
+      OFFCHAIN_ATTESTATION_VERSION
+    );
 
     return this.offchain;
   }

@@ -12,11 +12,13 @@ import {
 } from '../../../src/eas';
 import {
   EIP712AttestationParams,
+  EIP712AttestationProxyParams,
   EIP712MessageTypes,
   EIP712Response,
-  EIP712RevocationParams
-} from '../../../src/offchain/delegated';
-import { EIP712AttestationProxyParams, EIP712RevocationProxyParams } from '../../../src/offchain/delegated-proxy';
+  EIP712RevocationParams,
+  EIP712RevocationProxyParams,
+  OFFCHAIN_ATTESTATION_VERSION
+} from '../../../src/offchain';
 import { Transaction } from '../../../src/transaction';
 import { getOffchainUID } from '../../../src/utils';
 import { ZERO_BYTES, ZERO_BYTES32 } from '../../utils/Constants';
@@ -161,9 +163,19 @@ export const expectAttestation = async (
       const offchain = await eas.getOffchain();
 
       const now = await latest();
-      const uid = getOffchainUID(schema, recipient, now, expirationTime, revocable, refUID, data);
+      const uid = getOffchainUID(
+        OFFCHAIN_ATTESTATION_VERSION,
+        schema,
+        recipient,
+        now,
+        expirationTime,
+        revocable,
+        refUID,
+        data
+      );
       const response = await offchain.signOffchainAttestation(
         {
+          version: OFFCHAIN_ATTESTATION_VERSION,
           schema,
           recipient,
           time: now,
