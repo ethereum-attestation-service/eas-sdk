@@ -1,6 +1,6 @@
 import { EAS__factory } from '@ethereum-attestation-service/eas-contracts';
 import { Interface } from '@ethersproject/abi';
-import { BigNumberish, constants, ContractReceipt, ContractTransaction, Event, utils } from 'ethers';
+import {BigNumberish, constants, ContractReceipt, ContractTransaction, Event, utils} from 'ethers';
 
 const { solidityKeccak256, hexlify, toUtf8Bytes } = utils;
 
@@ -156,3 +156,4 @@ export const getTimestampFromOffchainRevocationEvents = (events?: Event[]): BigN
 
   return revocationEvents.map((event) => event.args?.timestamp);
 };
+
