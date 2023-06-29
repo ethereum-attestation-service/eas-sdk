@@ -21,6 +21,7 @@
     "@ethersproject/wallet": "^5.7.0",
     "@trivago/prettier-plugin-sort-imports": "^4.1.1",
     "@types/node": "^18.15.11",
+    "@types/pako": "^2.0.0",
     "@typescript-eslint/eslint-plugin": "^5.59.0",
     "@typescript-eslint/parser": "^5.59.0",
     "eslint": "^8.38.0",
@@ -36,6 +37,8 @@
   "dependencies": {
     "@ethereum-attestation-service/eas-contracts": "^0.27.1",
     "ethers": "^5.7.2",
-    "multiformats": "9.9.0"
+    "js-base64": "^3.7.5",
+    "multiformats": "9.9.0",
+    "pako": "^2.1.0"
   }
 }
