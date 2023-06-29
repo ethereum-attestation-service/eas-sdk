@@ -4,4 +4,5 @@ const tslib_1 = require("tslib");
 tslib_1.__exportStar(require("./delegated"), exports);
 tslib_1.__exportStar(require("./delegated-proxy"), exports);
 tslib_1.__exportStar(require("./offchain"), exports);
+tslib_1.__exportStar(require("./offchain-utils"), exports);
 //# sourceMappingURL=index.js.map
