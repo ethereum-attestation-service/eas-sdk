@@ -37,6 +37,10 @@ export class Base<C extends Contract> {
 
   // Gets the chain ID
   public async getChainId(): Promise<number> {
+    if (!this.contract.provider) {
+      throw new Error("Unable to get the chain ID: provider wasn't set");
+    }
+
     return (await this.contract.provider.getNetwork()).chainId;
   }
 }
