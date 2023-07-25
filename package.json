@@ -1,6 +1,6 @@
 {
   "name": "@ethereum-attestation-service/eas-sdk",
-  "version": "1.0.0",
+  "version": "1.0.0-beta.0",
   "description": "Ethereum Attestation Service - TypeScript/JavaScript SDK",
   "repository": "git@github.com:ethereum-attestation-service/eas-sdk.git",
   "author": "Leonid Beder <leonid@lbeder.com>",
@@ -12,18 +12,19 @@
   ],
   "scripts": {
     "build": "rm -rf dist && tsc --build tsconfig.json",
-    "test": "cd test && yarn test",
+    "test": "cd test && pnpm test",
     "lint": "eslint -c .eslintrc --ext .ts src test",
     "format": "prettier --check --write src/**/*.ts test/test/**/*.ts  --config .prettierrc",
-    "prepare:release": "yarn lint && yarn test && yarn build"
+    "prepare:release": "pnpm lint && pnpm test && pnpm build"
   },
   "devDependencies": {
     "@ethersproject/wallet": "^5.7.0",
-    "@trivago/prettier-plugin-sort-imports": "^4.1.1",
-    "@types/node": "^20.4.2",
+    "@metamask/eth-sig-util": "^6.0.0",
+    "@trivago/prettier-plugin-sort-imports": "^4.2.0",
+    "@types/node": "^20.4.4",
     "@types/pako": "^2.0.0",
-    "@typescript-eslint/eslint-plugin": "^6.0.0",
-    "@typescript-eslint/parser": "^6.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.2.0",
+    "@typescript-eslint/parser": "^6.2.0",
     "eslint": "^8.45.0",
     "eslint-plugin-import": "^2.27.5",
     "eslint-plugin-prefer-arrow": "^1.2.3",
@@ -32,11 +33,12 @@
     "prettier": "^2.8.7",
     "prettier-package-json": "^2.8.0",
     "ts-node": "^10.9.1",
+    "tslib": "^2.6.1",
     "typescript": "^5.1.6"
   },
   "dependencies": {
-    "@ethereum-attestation-service/eas-contracts": "^0.28.1",
-    "ethers": "^5.7.2",
+    "@ethereum-attestation-service/eas-contracts": "ethereum-attestation-service/eas-contracts",
+    "ethers": "^6.6.5",
     "js-base64": "^3.7.5",
     "multiformats": "9.9.0",
     "pako": "^2.1.0"

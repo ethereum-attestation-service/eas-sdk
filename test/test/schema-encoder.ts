@@ -1,9 +1,7 @@
 import { SchemaEncoder } from '../../src/schema-encoder';
 import { ZERO_ADDRESS } from '../utils/Constants';
 import chai from './helpers/chai';
-import { BigNumber, utils } from 'ethers';
-
-const { defaultAbiCoder } = utils;
+import { AbiCoder } from 'ethers';
 
 const { expect } = chai;
 
@@ -218,7 +216,7 @@ describe('SchemaEncoder', () => {
         inputs: [
           {
             in: [
-              { type: 'uint256', name: 'id', value: BigNumber.from(123) },
+              { type: 'uint256', name: 'id', value: 123n },
               {
                 type: 'ipfsHash',
                 name: 'hash',
@@ -226,7 +224,7 @@ describe('SchemaEncoder', () => {
               }
             ],
             out: [
-              { type: 'uint256', name: 'id', value: BigNumber.from(123) },
+              { type: 'uint256', name: 'id', value: 123n },
               {
                 type: 'bytes32',
                 name: 'hash',
@@ -236,7 +234,7 @@ describe('SchemaEncoder', () => {
           },
           {
             in: [
-              { type: 'uint256', name: 'id', value: BigNumber.from(0) },
+              { type: 'uint256', name: 'id', value: 0n },
               {
                 type: 'ipfsHash',
                 name: 'hash',
@@ -244,7 +242,7 @@ describe('SchemaEncoder', () => {
               }
             ],
             out: [
-              { type: 'uint256', name: 'id', value: BigNumber.from(0) },
+              { type: 'uint256', name: 'id', value: 0n },
               {
                 type: 'bytes32',
                 name: 'hash',
@@ -254,7 +252,7 @@ describe('SchemaEncoder', () => {
           },
           {
             in: [
-              { type: 'uint256', name: 'id', value: BigNumber.from(1_000_000) },
+              { type: 'uint256', name: 'id', value: 1_000_000n },
               {
                 type: 'ipfsHash',
                 name: 'hash',
@@ -262,7 +260,7 @@ describe('SchemaEncoder', () => {
               }
             ],
             out: [
-              { type: 'uint256', name: 'id', value: BigNumber.from(1_000_000) },
+              { type: 'uint256', name: 'id', value: 1_000_000n },
               {
                 type: 'bytes32',
                 name: 'hash',
@@ -464,7 +462,7 @@ describe('SchemaEncoder', () => {
     ]) {
       for (const params of inputs) {
         context(schema, () => {
-          context(`params ${JSON.stringify(params)}`, () => {
+          context(`params ${JSON.stringify(params, (_, v) => (v && v.toString()) || v)}`, () => {
             let schemaEncoder: SchemaEncoder;
 
             beforeEach(() => {
@@ -474,7 +472,7 @@ describe('SchemaEncoder', () => {
             it('should properly encode and decode data', () => {
               const encoded = schemaEncoder.encodeData(params.in);
               expect(encoded).to.equal(
-                defaultAbiCoder.encode(
+                AbiCoder.defaultAbiCoder().encode(
                   types,
                   params.in.map((p) => p.value)
                 )
@@ -521,7 +519,7 @@ describe('SchemaEncoder', () => {
         schema: 'uint256 id,ipfsHash hash',
         inputs: [
           [
-            { type: 'uint128', name: 'id', value: BigNumber.from(123) },
+            { type: 'uint128', name: 'id', value: 123n },
             {
               type: 'ipfsHash',
               name: 'hash',
@@ -529,7 +527,7 @@ describe('SchemaEncoder', () => {
             }
           ],
           [
-            { type: 'uint256', name: 'id', value: BigNumber.from(0) },
+            { type: 'uint256', name: 'id', value: 0n },
             {
               type: 'ipfsHash222',
               name: 'hash',
@@ -541,7 +539,7 @@ describe('SchemaEncoder', () => {
     ]) {
       for (const params of inputs) {
         context(schema, () => {
-          context(`params ${JSON.stringify(params)}`, () => {
+          context(`params ${JSON.stringify(params, (_, v) => (v && v.toString()) || v)}`, () => {
             let schemaEncoder: SchemaEncoder;
 
             beforeEach(() => {
@@ -609,7 +607,7 @@ describe('SchemaEncoder', () => {
     ]) {
       for (const params of inputs) {
         context(schema, () => {
-          context(`params ${JSON.stringify(params)}`, () => {
+          context(`params ${JSON.stringify(params, (_, v) => (v && v.toString()) || v)}`, () => {
             let schemaEncoder: SchemaEncoder;
 
             beforeEach(() => {

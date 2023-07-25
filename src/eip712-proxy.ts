@@ -13,7 +13,7 @@ import {
   ZERO_BYTES32
 } from './utils';
 import { EIP712Proxy__factory, EIP712Proxy as EIP712ProxyContract } from '@ethereum-attestation-service/eas-contracts';
-import { BigNumber, ContractReceipt, PayableOverrides } from 'ethers';
+import { TransactionReceipt, Overrides } from 'ethers';
 
 export interface EIP712ProxyOptions {
   signerOrProvider?: SignerOrProvider;
@@ -39,7 +39,7 @@ export class EIP712Proxy extends Base<EIP712ProxyContract> {
 
   // Returns the version of the contract
   public getVersion(): Promise<string> {
-    return this.contract.VERSION();
+    return this.contract.VERSION() || this.contract.version();
   }
 
   // Returns the address of the EAS contract
@@ -84,12 +84,12 @@ export class EIP712Proxy extends Base<EIP712ProxyContract> {
   public async attestByDelegationProxy(
     {
       schema,
-      data: { recipient, data, expirationTime = NO_EXPIRATION, revocable = true, refUID = ZERO_BYTES32, value = 0 },
+      data: { recipient, data, expirationTime = NO_EXPIRATION, revocable = true, refUID = ZERO_BYTES32, value = 0n },
       attester,
       signature,
       deadline
     }: DelegatedProxyAttestationRequest,
-    overrides?: PayableOverrides
+    overrides?: Overrides
   ): Promise<Transaction<string>> {
     const tx = await this.contract.attestByDelegation(
       {
@@ -110,13 +110,13 @@ export class EIP712Proxy extends Base<EIP712ProxyContract> {
     );
 
     // eslint-disable-next-line require-await
-    return new Transaction(tx, async (receipt: ContractReceipt) => getUIDFromDelegatedProxyAttestReceipt(receipt));
+    return new Transaction(tx, async (receipt: TransactionReceipt) => getUIDFromDelegatedProxyAttestReceipt(receipt));
   }
 
   // Multi-attests to multiple schemas via an EIP712 delegation requests using an external EIP712 proxy
   public async multiAttestByDelegationProxy(
     requests: MultiDelegatedProxyAttestationRequest[],
-    overrides?: PayableOverrides
+    overrides?: Overrides
   ): Promise<Transaction<string[]>> {
     const multiAttestationRequests = requests.map((r) => ({
       schema: r.schema,
@@ -126,7 +126,7 @@ export class EIP712Proxy extends Base<EIP712ProxyContract> {
         revocable: d.revocable ?? true,
         refUID: d.refUID ?? ZERO_BYTES32,
         data: d.data ?? ZERO_BYTES32,
-        value: d.value ?? 0
+        value: d.value ?? 0n
       })),
       signatures: r.signatures,
       attester: r.attester,
@@ -134,9 +134,9 @@ export class EIP712Proxy extends Base<EIP712ProxyContract> {
     }));
 
     const requestedValue = multiAttestationRequests.reduce((res, { data }) => {
-      const total = data.reduce((res, r) => res.add(r.value), BigNumber.from(0));
-      return res.add(total);
-    }, BigNumber.from(0));
+      const total = data.reduce((res, r) => res + r.value, 0n);
+      return res + total;
+    }, 0n);
 
     const tx = await this.contract.multiAttestByDelegation(multiAttestationRequests, {
       value: requestedValue,
@@ -144,13 +144,15 @@ export class EIP712Proxy extends Base<EIP712ProxyContract> {
     });
 
     // eslint-disable-next-line require-await
-    return new Transaction(tx, async (receipt: ContractReceipt) => getUIDFromMultiDelegatedProxyAttestReceipt(receipt));
+    return new Transaction(tx, async (receipt: TransactionReceipt) =>
+      getUIDFromMultiDelegatedProxyAttestReceipt(receipt)
+    );
   }
 
   // Revokes an existing attestation an EIP712 delegation request using an external EIP712 proxy
   public async revokeByDelegationProxy(
-    { schema, data: { uid, value = 0 }, signature, revoker, deadline }: DelegatedProxyRevocationRequest,
-    overrides?: PayableOverrides
+    { schema, data: { uid, value = 0n }, signature, revoker, deadline }: DelegatedProxyRevocationRequest,
+    overrides?: Overrides
   ): Promise<Transaction<void>> {
     const tx = await this.contract.revokeByDelegation(
       {
@@ -172,13 +174,13 @@ export class EIP712Proxy extends Base<EIP712ProxyContract> {
   // Multi-revokes multiple attestations via an EIP712 delegation requests using an external EIP712 proxy
   public async multiRevokeByDelegationProxy(
     requests: MultiDelegatedProxyRevocationRequest[],
-    overrides?: PayableOverrides
+    overrides?: Overrides
   ): Promise<Transaction<void>> {
     const multiRevocationRequests = requests.map((r) => ({
       schema: r.schema,
       data: r.data.map((d) => ({
         uid: d.uid,
-        value: d.value ?? 0
+        value: d.value ?? 0n
       })),
       signatures: r.signatures,
       revoker: r.revoker,
@@ -186,9 +188,9 @@ export class EIP712Proxy extends Base<EIP712ProxyContract> {
     }));
 
     const requestedValue = multiRevocationRequests.reduce((res, { data }) => {
-      const total = data.reduce((res, r) => res.add(r.value), BigNumber.from(0));
-      return res.add(total);
-    }, BigNumber.from(0));
+      const total = data.reduce((res, r) => res + r.value, 0n);
+      return res + total;
+    }, 0n);
 
     const tx = await this.contract.multiRevokeByDelegation(multiRevocationRequests, {
       value: requestedValue,
@@ -202,7 +204,7 @@ export class EIP712Proxy extends Base<EIP712ProxyContract> {
   private async setDelegated(): Promise<DelegatedProxy> {
     this.delegated = new DelegatedProxy({
       name: await this.getName(),
-      address: this.contract.address,
+      address: await this.contract.getAddress(),
       version: await this.getVersion(),
       chainId: await this.getChainId()
     });

@@ -20,6 +20,12 @@ OR
 npm install @ethereum-attestation-service/eas-sdk
 ```
 
+OR
+
+```sh
+pnpm add @ethereum-attestation-service/eas-sdk
+```
+
 ## Using the EAS SDK
 
 Import and initialize the library

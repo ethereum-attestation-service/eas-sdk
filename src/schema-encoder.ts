@@ -1,15 +1,13 @@
 import { ZERO_ADDRESS } from './utils';
-import { BigNumber, utils } from 'ethers';
+import { AbiCoder, encodeBytes32String, FunctionFragment, isBytesLike } from 'ethers';
 import { CID } from 'multiformats';
 import { MultihashDigest } from 'multiformats/types/src/cid';
-
-const { FunctionFragment, defaultAbiCoder, isBytesLike, formatBytes32String } = utils;
 
 export type SchemaValue =
   | string
   | boolean
   | number
-  | BigNumber
+  | bigint
   | Record<string, unknown>
   | Record<string, unknown>[]
   | unknown[];
@@ -43,7 +41,7 @@ export class SchemaEncoder {
     const fragment = FunctionFragment.from(`func(${fixedSchema})`);
 
     // The following verification will throw in case of an incorrect schema
-    defaultAbiCoder.getDefaultValue(fragment.inputs);
+    AbiCoder.defaultAbiCoder().getDefaultValue(fragment.inputs);
 
     for (const paramType of fragment.inputs) {
       const { name, components } = paramType;
@@ -105,16 +103,16 @@ export class SchemaEncoder {
         schemaItem.type === 'bytes32' && schemaItem.name === 'ipfsHash'
           ? SchemaEncoder.decodeIpfsValue(value as string)
           : schemaItem.type === 'bytes32' && typeof value === 'string' && !isBytesLike(value)
-          ? formatBytes32String(value)
+          ? encodeBytes32String(value)
           : value
       );
     }
 
-    return defaultAbiCoder.encode(this.signatures(), data);
+    return AbiCoder.defaultAbiCoder().encode(this.signatures(), data);
   }
 
   public decodeData(data: string): SchemaDecodedItem[] {
-    const values = defaultAbiCoder.decode(this.signatures(), data);
+    const values = AbiCoder.defaultAbiCoder().decode(this.signatures(), data);
 
     return this.schema.map((s, i) => {
       const fragment = FunctionFragment.from(`func(${s.signature})`);
@@ -198,7 +196,7 @@ export class SchemaEncoder {
 
   public static encodeQmHash(hash: string): string {
     const a = CID.parse(hash);
-    return defaultAbiCoder.encode(['bytes32'], [a.multihash.digest]);
+    return AbiCoder.defaultAbiCoder().encode(['bytes32'], [a.multihash.digest]);
   }
 
   public static decodeQmHash(bytes32: string): string {
@@ -225,7 +223,7 @@ export class SchemaEncoder {
 
     try {
       const decodedHash = CID.parse(val);
-      const encoded = defaultAbiCoder.encode(['bytes32'], [decodedHash.multihash.digest]);
+      const encoded = AbiCoder.defaultAbiCoder().encode(['bytes32'], [decodedHash.multihash.digest]);
 
       return encoded;
     } catch {
@@ -235,10 +233,10 @@ export class SchemaEncoder {
 
   private static encodeBytes32Value(value: string) {
     try {
-      defaultAbiCoder.encode(['bytes32'], [value]);
+      AbiCoder.defaultAbiCoder().encode(['bytes32'], [value]);
       return value;
     } catch (e) {
-      return formatBytes32String(value);
+      return encodeBytes32String(value);
     }
   }
 
