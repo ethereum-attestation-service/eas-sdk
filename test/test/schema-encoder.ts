@@ -63,19 +63,19 @@ describe('SchemaEncoder', () => {
         schema: 'bytes32,uint8,uint32',
         decodedSchema: [
           {
-            name: null,
+            name: '',
             type: 'bytes32',
             signature: 'bytes32',
             value: ''
           },
           {
-            name: null,
+            name: '',
             type: 'uint8',
             signature: 'uint8',
             value: '0'
           },
           {
-            name: null,
+            name: '',
             type: 'uint32',
             signature: 'uint32',
             value: '0'

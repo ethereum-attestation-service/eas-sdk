@@ -132,8 +132,6 @@ export class Offchain extends TypedDataHandler {
   }
 
   public verifyOffchainAttestationSignature(attester: string, request: SignedOffchainAttestation): boolean {
-    console.log('request.uid', request.uid);
-    console.log('Offchain.getOffchainUID(request.message)', Offchain.getOffchainUID(request.message));
     return (
       request.uid === Offchain.getOffchainUID(request.message) &&
       this.verifyTypedDataRequestSignature(attester, request)

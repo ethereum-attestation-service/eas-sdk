@@ -44,18 +44,21 @@ export class SchemaEncoder {
     AbiCoder.defaultAbiCoder().getDefaultValue(fragment.inputs);
 
     for (const paramType of fragment.inputs) {
-      const { name, components } = paramType;
+      const { name, arrayChildren } = paramType;
+
       let { type } = paramType;
       let signature = name ? `${type} ${name}` : type;
       const signatureSuffix = name ? ` ${name}` : '';
       let typeName = type;
 
-      const componentsType = `(${(components || []).map((c) => c.type).join(',')})`;
-      const componentsFullType = `(${(components || [])
-        .map((c) => (c.name ? `${c.type} ${c.name}` : c.type))
-        .join(',')})`;
+      const isArray = arrayChildren;
+      const components = paramType.components ?? arrayChildren?.components ?? [];
+      const componentsType = `(${components.map((c) => c.type).join(',')})${isArray ? '[]' : ''}`;
+      const componentsFullType = `(${components.map((c) => (c.name ? `${c.type} ${c.name}` : c.type)).join(',')})${
+        isArray ? '[]' : ''
+      }`;
 
-      if (type === TUPLE_TYPE) {
+      if (type.startsWith(TUPLE_TYPE)) {
         type = componentsType;
         signature = `${componentsFullType}${signatureSuffix}`;
       } else if (type === TUPLE_ARRAY_TYPE) {
@@ -112,7 +115,7 @@ export class SchemaEncoder {
   }
 
   public decodeData(data: string): SchemaDecodedItem[] {
-    const values = AbiCoder.defaultAbiCoder().decode(this.signatures(), data);
+    const values = AbiCoder.defaultAbiCoder().decode(this.signatures(), data).toArray();
 
     return this.schema.map((s, i) => {
       const fragment = FunctionFragment.from(`func(${s.signature})`);
@@ -123,14 +126,15 @@ export class SchemaEncoder {
 
       let value = values[i];
       const input = fragment.inputs[0];
-      const { components } = input;
-      if (value.length > 0 && components) {
+      const components = input.components ?? input.arrayChildren?.components ?? [];
+
+      if (value.length > 0 && typeof value !== 'string' && components) {
         if (Array.isArray(value[0])) {
           const namedValues = [];
 
           for (const val of value) {
             const namedValue = [];
-            const rawValues = val.filter((v: unknown) => typeof v !== 'object');
+            const rawValues = val.toArray().filter((v: unknown) => typeof v !== 'object');
 
             for (const [k, v] of rawValues.entries()) {
               const component = components[k];
