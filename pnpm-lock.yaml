@@ -6,8 +6,8 @@ settings:
 
 dependencies:
   '@ethereum-attestation-service/eas-contracts':
-    specifier: ethereum-attestation-service/eas-contracts
-    version: github.com/ethereum-attestation-service/eas-contracts/b3490a0313aa1a4bcf08065f603378c1aa53e110(ts-node@10.9.1)(typescript@5.1.6)
+    specifier: 1.0.0-beta.0
+    version: 1.0.0-beta.0(ts-node@10.9.1)(typescript@5.1.6)
   ethers:
     specifier: ^6.6.5
     version: 6.6.5
@@ -266,6 +266,18 @@ packages:
     resolution: {integrity: sha512-Ag+9YM4ocKQx9AarydN0KY2j0ErMHNIocPDrVo8zAE44xLTjEtz81OdR68/cydGtk6m6jDb5Za3r2useMzYmSw==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
     dev: true
+
+  /@ethereum-attestation-service/eas-contracts@1.0.0-beta.0(ts-node@10.9.1)(typescript@5.1.6):
+    resolution: {integrity: sha512-kMe8XVl5QXI1L8ANqlVJqLv3WDs2uzz9+dzY9LUXvBKWF00tBhNji9lxEg4LKN0vz4YVL9bAUDuDeeSv8BOWdw==}
+    dependencies:
+      hardhat: 2.17.0(ts-node@10.9.1)(typescript@5.1.6)
+    transitivePeerDependencies:
+      - bufferutil
+      - supports-color
+      - ts-node
+      - typescript
+      - utf-8-validate
+    dev: false
 
   /@ethereumjs/rlp@4.0.1:
     resolution: {integrity: sha512-tqsQiBQDQdmPWE1xkkBq4rlSW5QZpLOUJ5RJh2/9fug+q9tnUhuZoVLk7s0scUIKTOzEtR72DFBXI4WiZcMpvw==}
@@ -4131,20 +4143,3 @@ packages:
   /yocto-queue@0.1.0:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
-
-  github.com/ethereum-attestation-service/eas-contracts/b3490a0313aa1a4bcf08065f603378c1aa53e110(ts-node@10.9.1)(typescript@5.1.6):
-    resolution: {tarball: https://codeload.github.com/ethereum-attestation-service/eas-contracts/tar.gz/b3490a0313aa1a4bcf08065f603378c1aa53e110}
-    id: github.com/ethereum-attestation-service/eas-contracts/b3490a0313aa1a4bcf08065f603378c1aa53e110
-    name: '@ethereum-attestation-service/eas-contracts'
-    version: 1.1.0-beta.0
-    prepare: true
-    requiresBuild: true
-    dependencies:
-      hardhat: 2.17.0(ts-node@10.9.1)(typescript@5.1.6)
-    transitivePeerDependencies:
-      - bufferutil
-      - supports-color
-      - ts-node
-      - typescript
-      - utf-8-validate
-    dev: false
