@@ -13,6 +13,7 @@ import {
   ZERO_BYTES32
 } from './utils';
 import { EIP712Proxy__factory, EIP712Proxy as EIP712ProxyContract } from '@ethereum-attestation-service/eas-contracts';
+import { legacyVersion } from './legacy/version';
 import { TransactionReceipt, Overrides } from 'ethers';
 
 export interface EIP712ProxyOptions {
@@ -38,8 +39,8 @@ export class EIP712Proxy extends Base<EIP712ProxyContract> {
   }
 
   // Returns the version of the contract
-  public getVersion(): Promise<string> {
-    return this.contract.VERSION() || this.contract.version();
+  public async getVersion(): Promise<string> {
+    return (await legacyVersion(this.contract)) ?? this.contract.version();
   }
 
   // Returns the address of the EAS contract

@@ -4,6 +4,7 @@ import {
   SchemaRegistry__factory,
   SchemaRegistry as SchemaRegistryContract
 } from '@ethereum-attestation-service/eas-contracts';
+import { legacyVersion } from './legacy/version';
 import { TransactionReceipt } from 'ethers';
 
 export declare type SchemaRecord = {
@@ -35,8 +36,8 @@ export class SchemaRegistry extends Base<SchemaRegistryContract> {
   }
 
   // Returns the version of the contract
-  public getVersion(): Promise<string> {
-    return this.contract.VERSION() || this.contract.version();
+  public async getVersion(): Promise<string> {
+    return (await legacyVersion(this.contract)) ?? this.contract.version();
   }
 
   // Registers a new schema and returns its UID

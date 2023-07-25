@@ -23,6 +23,7 @@ import {
   ZERO_BYTES32
 } from './utils';
 import { EAS__factory, EAS as EASContract } from '@ethereum-attestation-service/eas-contracts';
+import { legacyVersion } from './legacy/version';
 import { Overrides, TransactionReceipt } from 'ethers';
 
 export { Overrides } from 'ethers';
@@ -72,8 +73,8 @@ export class EAS extends Base<EASContract> {
   }
 
   // Returns the version of the contract
-  public getVersion(): Promise<string> {
-    return this.contract.VERSION() || this.contract.version();
+  public async getVersion(): Promise<string> {
+    return (await legacyVersion(this.contract)) ?? this.contract.version();
   }
 
   // Returns an existing schema by attestation UID
