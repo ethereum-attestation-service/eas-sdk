@@ -3,7 +3,6 @@ import {
   AttestationShareablePackageObject,
   createOffchainURL,
   decodeBase64ZippedBase64,
-  NO_EXPIRATION,
   Offchain,
   zipAndEncodeToBase64
 } from '../../src';
