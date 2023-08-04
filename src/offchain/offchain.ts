@@ -9,13 +9,10 @@ import {
   TypedData,
   TypedDataHandler
 } from './typed-data-handler';
-import { TypedDataSigner } from '@ethersproject/abstract-signer';
-import { BigNumberish, utils } from 'ethers';
 
-const { keccak256, toUtf8Bytes, defaultAbiCoder } = utils;
+import { AbiCoder, keccak256, toUtf8Bytes, BaseWallet } from 'ethers';
 
 export { EIP712Request, PartialTypedDataConfig, EIP712MessageTypes } from './typed-data-handler';
-export { TypedDataSigner } from '@ethersproject/abstract-signer';
 
 interface OffchainAttestationType {
   domainName: string;
@@ -60,8 +57,8 @@ export type OffchainAttestationParams = {
   version: number;
   schema: string;
   recipient: string;
-  time: BigNumberish;
-  expirationTime: BigNumberish;
+  time: bigint;
+  expirationTime: bigint;
   revocable: boolean;
   refUID: string;
   data: string;
@@ -88,7 +85,7 @@ export class Offchain extends TypedDataHandler {
 
   public getDomainSeparator() {
     return keccak256(
-      defaultAbiCoder.encode(
+      AbiCoder.defaultAbiCoder().encode(
         ['bytes32', 'bytes32', 'uint256', 'address'],
         [
           keccak256(toUtf8Bytes(this.type.domainName)),
@@ -111,7 +108,7 @@ export class Offchain extends TypedDataHandler {
 
   public async signOffchainAttestation(
     params: OffchainAttestationParams,
-    signer: TypedDataSigner
+    signer: BaseWallet
   ): Promise<SignedOffchainAttestation> {
     const uid = Offchain.getOffchainUID(params);
 

@@ -5,7 +5,6 @@ const utils_1 = require("../utils");
 const delegated_1 = require("./delegated");
 const typed_data_handler_1 = require("./typed-data-handler");
 const ethers_1 = require("ethers");
-const { keccak256, toUtf8Bytes, defaultAbiCoder } = ethers_1.utils;
 exports.OFFCHAIN_ATTESTATION_VERSION = 1;
 const LEGACY_OFFCHAIN_ATTESTATION_VERSION = 0;
 exports.OFFCHAIN_ATTESTATION_TYPES = {
@@ -49,9 +48,9 @@ class Offchain extends typed_data_handler_1.TypedDataHandler {
         this.type = exports.OFFCHAIN_ATTESTATION_TYPES[this.version];
     }
     getDomainSeparator() {
-        return keccak256(defaultAbiCoder.encode(['bytes32', 'bytes32', 'uint256', 'address'], [
-            keccak256(toUtf8Bytes(this.type.domainName)),
-            keccak256(toUtf8Bytes(this.config.version)),
+        return (0, ethers_1.keccak256)(ethers_1.AbiCoder.defaultAbiCoder().encode(['bytes32', 'bytes32', 'uint256', 'address'], [
+            (0, ethers_1.keccak256)((0, ethers_1.toUtf8Bytes)(this.type.domainName)),
+            (0, ethers_1.keccak256)((0, ethers_1.toUtf8Bytes)(this.config.version)),
             this.config.chainId,
             this.config.address
         ]));

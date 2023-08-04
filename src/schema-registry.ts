@@ -4,7 +4,8 @@ import {
   SchemaRegistry__factory,
   SchemaRegistry as SchemaRegistryContract
 } from '@ethereum-attestation-service/eas-contracts';
-import { ContractReceipt } from 'ethers';
+import { legacyVersion } from './legacy/version';
+import { TransactionReceipt } from 'ethers';
 
 export declare type SchemaRecord = {
   uid: string;
@@ -35,8 +36,8 @@ export class SchemaRegistry extends Base<SchemaRegistryContract> {
   }
 
   // Returns the version of the contract
-  public getVersion(): Promise<string> {
-    return this.contract.VERSION();
+  public async getVersion(): Promise<string> {
+    return (await legacyVersion(this.contract)) ?? this.contract.version();
   }
 
   // Registers a new schema and returns its UID
@@ -48,7 +49,9 @@ export class SchemaRegistry extends Base<SchemaRegistryContract> {
     const tx = await this.contract.register(schema, resolverAddress, revocable);
 
     // eslint-disable-next-line require-await
-    return new Transaction(tx, async (_receipt: ContractReceipt) => getSchemaUID(schema, resolverAddress, revocable));
+    return new Transaction(tx, async (_receipt: TransactionReceipt) =>
+      getSchemaUID(schema, resolverAddress, revocable)
+    );
   }
 
   // Returns an existing schema by a schema UID

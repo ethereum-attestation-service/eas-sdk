@@ -1,6 +1,4 @@
-import '@nomiclabs/hardhat-ethers';
-import '@nomiclabs/hardhat-waffle';
-import '@typechain/hardhat';
+import '@nomicfoundation/hardhat-toolbox';
 import 'hardhat-dependency-compiler';
 import { HardhatUserConfig } from 'hardhat/config';
 
@@ -29,6 +27,10 @@ const config: HardhatUserConfig = {
         bytecodeHash: 'none'
       }
     }
+  },
+
+  typechain: {
+    target: 'ethers-v6'
   },
 
   dependencyCompiler: {

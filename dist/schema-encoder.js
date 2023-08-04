@@ -4,7 +4,6 @@ exports.SchemaEncoder = void 0;
 const utils_1 = require("./utils");
 const ethers_1 = require("ethers");
 const multiformats_1 = require("multiformats");
-const { FunctionFragment, defaultAbiCoder, isBytesLike, formatBytes32String } = ethers_1.utils;
 const TUPLE_TYPE = 'tuple';
 const TUPLE_ARRAY_TYPE = 'tuple[]';
 class SchemaEncoder {
@@ -12,20 +11,20 @@ class SchemaEncoder {
     constructor(schema) {
         this.schema = [];
         const fixedSchema = schema.replace(/ipfsHash/g, 'bytes32');
-        const fragment = FunctionFragment.from(`func(${fixedSchema})`);
+        const fragment = ethers_1.FunctionFragment.from(`func(${fixedSchema})`);
         // The following verification will throw in case of an incorrect schema
-        defaultAbiCoder.getDefaultValue(fragment.inputs);
+        ethers_1.AbiCoder.defaultAbiCoder().getDefaultValue(fragment.inputs);
         for (const paramType of fragment.inputs) {
-            const { name, components } = paramType;
+            const { name, arrayChildren } = paramType;
             let { type } = paramType;
             let signature = name ? `${type} ${name}` : type;
             const signatureSuffix = name ? ` ${name}` : '';
             let typeName = type;
-            const componentsType = `(${(components || []).map((c) => c.type).join(',')})`;
-            const componentsFullType = `(${(components || [])
-                .map((c) => (c.name ? `${c.type} ${c.name}` : c.type))
-                .join(',')})`;
-            if (type === TUPLE_TYPE) {
+            const isArray = arrayChildren;
+            const components = paramType.components ?? arrayChildren?.components ?? [];
+            const componentsType = `(${components.map((c) => c.type).join(',')})${isArray ? '[]' : ''}`;
+            const componentsFullType = `(${components.map((c) => (c.name ? `${c.type} ${c.name}` : c.type)).join(',')})${isArray ? '[]' : ''}`;
+            if (type.startsWith(TUPLE_TYPE)) {
                 type = componentsType;
                 signature = `${componentsFullType}${signatureSuffix}`;
             }
@@ -63,28 +62,28 @@ class SchemaEncoder {
             }
             data.push(schemaItem.type === 'bytes32' && schemaItem.name === 'ipfsHash'
                 ? SchemaEncoder.decodeIpfsValue(value)
-                : schemaItem.type === 'bytes32' && typeof value === 'string' && !isBytesLike(value)
-                    ? formatBytes32String(value)
+                : schemaItem.type === 'bytes32' && typeof value === 'string' && !(0, ethers_1.isBytesLike)(value)
+                    ? (0, ethers_1.encodeBytes32String)(value)
                     : value);
         }
-        return defaultAbiCoder.encode(this.signatures(), data);
+        return ethers_1.AbiCoder.defaultAbiCoder().encode(this.signatures(), data);
     }
     decodeData(data) {
-        const values = defaultAbiCoder.decode(this.signatures(), data);
+        const values = ethers_1.AbiCoder.defaultAbiCoder().decode(this.signatures(), data).toArray();
         return this.schema.map((s, i) => {
-            const fragment = FunctionFragment.from(`func(${s.signature})`);
+            const fragment = ethers_1.FunctionFragment.from(`func(${s.signature})`);
             if (fragment.inputs.length !== 1) {
                 throw new Error(`Unexpected inputs: ${fragment.inputs}`);
             }
             let value = values[i];
             const input = fragment.inputs[0];
-            const { components } = input;
-            if (value.length > 0 && components) {
+            const components = input.components ?? input.arrayChildren?.components ?? [];
+            if (value.length > 0 && typeof value !== 'string' && components) {
                 if (Array.isArray(value[0])) {
                     const namedValues = [];
                     for (const val of value) {
                         const namedValue = [];
-                        const rawValues = val.filter((v) => typeof v !== 'object');
+                        const rawValues = val.toArray().filter((v) => typeof v !== 'object');
                         for (const [k, v] of rawValues.entries()) {
                             const component = components[k];
                             namedValue.push({ name: component.name, type: component.type, value: v });
@@ -142,7 +141,7 @@ class SchemaEncoder {
     }
     static encodeQmHash(hash) {
         const a = multiformats_1.CID.parse(hash);
-        return defaultAbiCoder.encode(['bytes32'], [a.multihash.digest]);
+        return ethers_1.AbiCoder.defaultAbiCoder().encode(['bytes32'], [a.multihash.digest]);
     }
     static decodeQmHash(bytes32) {
         const digest = Uint8Array.from(Buffer.from(bytes32.slice(2), 'hex'));
@@ -159,12 +158,12 @@ class SchemaEncoder {
         return typeName === 'bool' ? false : typeName.includes('uint') ? '0' : typeName === 'address' ? utils_1.ZERO_ADDRESS : '';
     }
     static decodeIpfsValue(val) {
-        if (isBytesLike(val)) {
+        if ((0, ethers_1.isBytesLike)(val)) {
             return SchemaEncoder.encodeBytes32Value(val);
         }
         try {
             const decodedHash = multiformats_1.CID.parse(val);
-            const encoded = defaultAbiCoder.encode(['bytes32'], [decodedHash.multihash.digest]);
+            const encoded = ethers_1.AbiCoder.defaultAbiCoder().encode(['bytes32'], [decodedHash.multihash.digest]);
             return encoded;
         }
         catch {
@@ -173,11 +172,11 @@ class SchemaEncoder {
     }
     static encodeBytes32Value(value) {
         try {
-            defaultAbiCoder.encode(['bytes32'], [value]);
+            ethers_1.AbiCoder.defaultAbiCoder().encode(['bytes32'], [value]);
             return value;
         }
         catch (e) {
-            return formatBytes32String(value);
+            return (0, ethers_1.encodeBytes32String)(value);
         }
     }
     signatures() {

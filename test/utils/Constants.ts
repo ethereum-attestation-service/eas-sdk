@@ -1,10 +1,6 @@
-import { ethers } from 'ethers';
+import { ZeroAddress } from 'ethers';
 
-const {
-  constants: { AddressZero }
-} = ethers;
-
-export const ZERO_ADDRESS = AddressZero;
+export const ZERO_ADDRESS = ZeroAddress;
 export const ZERO_BYTES = '0x';
 export const ZERO_BYTES32 = '0x0000000000000000000000000000000000000000000000000000000000000000';
 

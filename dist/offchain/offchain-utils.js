@@ -5,29 +5,29 @@ const tslib_1 = require("tslib");
 const ethers_1 = require("ethers");
 const Base64 = tslib_1.__importStar(require("js-base64"));
 const pako_1 = tslib_1.__importDefault(require("pako"));
-function createOffchainURL(pkg) {
-    const base64 = zipAndEncodeToBase64(pkg);
+const createOffchainURL = (pkg) => {
+    const base64 = (0, exports.zipAndEncodeToBase64)(pkg);
     return `/offchain/url/#attestation=${encodeURIComponent(base64)}`;
-}
+};
 exports.createOffchainURL = createOffchainURL;
-function zipAndEncodeToBase64(pkg) {
-    const compacted = compactOffchainAttestationPackage(pkg);
-    const jsoned = JSON.stringify(compacted);
+const zipAndEncodeToBase64 = (pkg) => {
+    const compacted = (0, exports.compactOffchainAttestationPackage)(pkg);
+    const jsoned = JSON.stringify(compacted, (_, value) => (typeof value === 'bigint' ? value.toString() : value));
     const gzipped = pako_1.default.deflate(jsoned, { level: 9 });
     return Base64.fromUint8Array(gzipped);
-}
+};
 exports.zipAndEncodeToBase64 = zipAndEncodeToBase64;
-function decodeBase64ZippedBase64(base64) {
+const decodeBase64ZippedBase64 = (base64) => {
     const fromBase64 = Base64.toUint8Array(base64);
     const jsonStr = pako_1.default.inflate(fromBase64, { to: 'string' });
     const compacted = JSON.parse(jsonStr);
-    return uncompactOffchainAttestationPackage(compacted);
-}
+    return (0, exports.uncompactOffchainAttestationPackage)(compacted);
+};
 exports.decodeBase64ZippedBase64 = decodeBase64ZippedBase64;
-function compactOffchainAttestationPackage(pkg) {
+const compactOffchainAttestationPackage = (pkg) => {
     const signer = pkg.signer;
     let sig = pkg.sig;
-    if (isSignedOffchainAttestationV1(sig)) {
+    if ((0, exports.isSignedOffchainAttestationV1)(sig)) {
         sig = convertV1AttestationToV2(sig);
     }
     return [
@@ -40,18 +40,18 @@ function compactOffchainAttestationPackage(pkg) {
         signer,
         sig.uid,
         sig.message.schema,
-        sig.message.recipient === ethers_1.ethers.constants.AddressZero ? '0' : sig.message.recipient,
+        sig.message.recipient === ethers_1.ZeroAddress ? '0' : sig.message.recipient,
         Number(sig.message.time),
         Number(sig.message.expirationTime),
-        sig.message.refUID === ethers_1.ethers.constants.HashZero ? '0' : sig.message.refUID,
+        sig.message.refUID === ethers_1.ZeroHash ? '0' : sig.message.refUID,
         sig.message.revocable,
         sig.message.data,
         Number(sig.message.nonce),
         sig.message.version
     ];
-}
+};
 exports.compactOffchainAttestationPackage = compactOffchainAttestationPackage;
-function uncompactOffchainAttestationPackage(compacted) {
+const uncompactOffchainAttestationPackage = (compacted) => {
     const version = compacted[16] ? compacted[16] : 0;
     const attestTypes = {
         Attest: [
@@ -110,22 +110,22 @@ function uncompactOffchainAttestationPackage(compacted) {
             message: {
                 version,
                 schema: compacted[8],
-                recipient: compacted[9] === '0' ? ethers_1.ethers.constants.AddressZero : compacted[9],
-                time: compacted[10],
-                expirationTime: compacted[11],
-                refUID: compacted[12] === '0' ? ethers_1.ethers.constants.HashZero : compacted[12],
+                recipient: compacted[9] === '0' ? ethers_1.ZeroAddress : compacted[9],
+                time: BigInt(compacted[10]),
+                expirationTime: BigInt(compacted[11]),
+                refUID: compacted[12] === '0' ? ethers_1.ZeroHash : compacted[12],
                 revocable: compacted[13],
                 data: compacted[14],
-                nonce: compacted[15]
+                nonce: BigInt(compacted[15])
             }
         },
         signer: compacted[6]
     };
-}
+};
 exports.uncompactOffchainAttestationPackage = uncompactOffchainAttestationPackage;
-function isSignedOffchainAttestationV1(attestation) {
+const isSignedOffchainAttestationV1 = (attestation) => {
     return 'v' in attestation && 'r' in attestation && 's' in attestation;
-}
+};
 exports.isSignedOffchainAttestationV1 = isSignedOffchainAttestationV1;
 function convertV1AttestationToV2(attestation) {
     const { v, r, s, ...rest } = attestation;

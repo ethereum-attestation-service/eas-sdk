@@ -12,7 +12,7 @@ export interface AttestationShareablePackageObject {
 }
 export type CompactAttestationShareablePackageObject = [
     contractVersion: string,
-    chainId: number,
+    chainId: bigint,
     verifyingContract: string,
     r: string,
     s: string,
@@ -29,9 +29,9 @@ export type CompactAttestationShareablePackageObject = [
     nonce: number,
     offchainVersion?: number
 ];
-export declare function createOffchainURL(pkg: AttestationShareablePackageObject): string;
-export declare function zipAndEncodeToBase64(pkg: AttestationShareablePackageObject): string;
-export declare function decodeBase64ZippedBase64(base64: string): AttestationShareablePackageObject;
-export declare function compactOffchainAttestationPackage(pkg: AttestationShareablePackageObject): CompactAttestationShareablePackageObject;
-export declare function uncompactOffchainAttestationPackage(compacted: CompactAttestationShareablePackageObject): AttestationShareablePackageObject;
-export declare function isSignedOffchainAttestationV1(attestation: SignedOffchainAttestation | SignedOffchainAttestationV1): attestation is SignedOffchainAttestationV1;
+export declare const createOffchainURL: (pkg: AttestationShareablePackageObject) => string;
+export declare const zipAndEncodeToBase64: (pkg: AttestationShareablePackageObject) => string;
+export declare const decodeBase64ZippedBase64: (base64: string) => AttestationShareablePackageObject;
+export declare const compactOffchainAttestationPackage: (pkg: AttestationShareablePackageObject) => CompactAttestationShareablePackageObject;
+export declare const uncompactOffchainAttestationPackage: (compacted: CompactAttestationShareablePackageObject) => AttestationShareablePackageObject;
+export declare const isSignedOffchainAttestationV1: (attestation: SignedOffchainAttestation | SignedOffchainAttestationV1) => attestation is SignedOffchainAttestationV1;

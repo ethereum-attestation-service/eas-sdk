@@ -10,6 +10,9 @@ class Transaction {
     }
     async wait(confirmations) {
         const receipt = await this.tx.wait(confirmations);
+        if (!receipt) {
+            throw new Error(`Unable to confirm: ${this.tx}`);
+        }
         return this.waitCallback(receipt);
     }
 }
@@ -29,10 +32,11 @@ class Base {
     }
     // Gets the chain ID
     async getChainId() {
-        if (!this.contract.provider) {
+        const provider = this.contract.runner?.provider;
+        if (!provider) {
             throw new Error("Unable to get the chain ID: provider wasn't set");
         }
-        return (await this.contract.provider.getNetwork()).chainId;
+        return (await provider.getNetwork()).chainId;
     }
 }
 exports.Base = Base;

@@ -1,9 +1,7 @@
 import { getSchemaUID, getUID } from '../../src/utils';
 import { ZERO_ADDRESS, ZERO_BYTES32 } from '../utils/Constants';
 import chai from './helpers/chai';
-import { utils } from 'ethers';
-
-const { solidityKeccak256, toUtf8Bytes, hexlify } = utils;
+import { toUtf8Bytes, hexlify, solidityPackedKeccak256 } from 'ethers';
 
 const { expect } = chai;
 
@@ -23,8 +21,8 @@ describe('utils', () => {
           '0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC',
           '0x90F79bf6EB2c4f870365E785982E1f101E93b906'
         ]) {
-          for (const time of [1, 12345, 1669299342]) {
-            for (const expirationTime of [0, 1669299342]) {
+          for (const time of [1n, 12345n, 1669299342n]) {
+            for (const expirationTime of [0n, 1669299342n]) {
               for (const revocable of [true, false]) {
                 for (const refUID of [
                   ZERO_BYTES32,
@@ -39,7 +37,7 @@ describe('utils', () => {
                             expect(
                               getUID(schema, recipient, attester, time, expirationTime, revocable, refUID, data, bump)
                             ).to.equal(
-                              solidityKeccak256(
+                              solidityPackedKeccak256(
                                 [
                                   'bytes',
                                   'address',
@@ -93,7 +91,7 @@ describe('utils', () => {
           context(`schema=${schema},resolver=${resolver}},revocable=${revocable}`, () => {
             it('should properly derive uid', () => {
               expect(getSchemaUID(schema, resolver, revocable)).to.equal(
-                solidityKeccak256(['string', 'address', 'bool'], [schema, resolver, revocable])
+                solidityPackedKeccak256(['string', 'address', 'bool'], [schema, resolver, revocable])
               );
             });
           });

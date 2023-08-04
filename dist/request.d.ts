@@ -1,13 +1,12 @@
 import { Signature } from './offchain/typed-data-handler';
-import { BigNumberish } from 'ethers';
-export declare const NO_EXPIRATION = 0;
+export declare const NO_EXPIRATION = 0n;
 export interface AttestationRequestData {
     recipient: string;
     data: string;
-    expirationTime?: BigNumberish;
+    expirationTime?: bigint;
     revocable?: boolean;
     refUID?: string;
-    value?: BigNumberish;
+    value?: bigint;
 }
 export interface AttestationRequest {
     schema: string;
@@ -27,7 +26,7 @@ export interface MultiDelegatedAttestationRequest extends MultiAttestationReques
 }
 export interface RevocationRequestData {
     uid: string;
-    value?: BigNumberish;
+    value?: bigint;
 }
 export interface RevocationRequest {
     schema: string;
@@ -46,14 +45,14 @@ export interface MultiDelegatedRevocationRequest extends MultiRevocationRequest 
     revoker: string;
 }
 export interface DelegatedProxyAttestationRequest extends DelegatedAttestationRequest {
-    deadline: BigNumberish;
+    deadline: bigint;
 }
 export interface MultiDelegatedProxyAttestationRequest extends MultiDelegatedAttestationRequest {
-    deadline: BigNumberish;
+    deadline: bigint;
 }
 export interface DelegatedProxyRevocationRequest extends DelegatedRevocationRequest {
-    deadline: BigNumberish;
+    deadline: bigint;
 }
 export interface MultiDelegatedProxyRevocationRequest extends MultiDelegatedRevocationRequest {
-    deadline: BigNumberish;
+    deadline: bigint;
 }

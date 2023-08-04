@@ -23,9 +23,8 @@ import { Transaction } from '../../../src/transaction';
 import { getOffchainUID } from '../../../src/utils';
 import { ZERO_BYTES, ZERO_BYTES32 } from '../../utils/Constants';
 import { latest } from './time';
-import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { expect } from 'chai';
-import { BigNumberish, Wallet } from 'ethers';
+import { BaseWallet } from 'ethers';
 
 export enum SignatureType {
   Direct = 'direct',
@@ -36,11 +35,11 @@ export enum SignatureType {
 
 interface RequestOptions {
   signatureType?: SignatureType;
-  deadline?: number;
-  from: Wallet | SignerWithAddress;
-  value?: BigNumberish;
-  maxPriorityFeePerGas?: BigNumberish | Promise<BigNumberish>;
-  maxFeePerGas?: BigNumberish | Promise<BigNumberish>;
+  deadline?: bigint;
+  from: BaseWallet;
+  value?: bigint;
+  maxPriorityFeePerGas?: bigint | Promise<bigint>;
+  maxFeePerGas?: bigint | Promise<bigint>;
 }
 
 export interface AttestationOptions extends RequestOptions {
@@ -62,7 +61,7 @@ export const expectAttestation = async (
     revocable = true,
     refUID = ZERO_BYTES32,
     data = ZERO_BYTES,
-    value = 0
+    value = 0n
   } = request;
   const {
     from: txSender,
@@ -74,7 +73,10 @@ export const expectAttestation = async (
 
   let uid;
 
-  const overrides = maxPriorityFeePerGas && maxFeePerGas ? { maxPriorityFeePerGas, maxFeePerGas } : undefined;
+  const overrides =
+    maxPriorityFeePerGas && maxFeePerGas
+      ? { maxPriorityFeePerGas: maxPriorityFeePerGas?.toString(), maxFeePerGas: maxFeePerGas?.toString() }
+      : undefined;
   let tx: Transaction<string> | undefined;
 
   switch (signatureType) {
@@ -186,6 +188,7 @@ export const expectAttestation = async (
         },
         txSender
       );
+
       expect(response.uid).to.equal(uid);
       expect(await offchain.verifyOffchainAttestationSignature(txSender.address, response)).to.be.true;
 
@@ -212,12 +215,15 @@ export const expectMultiAttestations = async (
     from: txSender,
     signatureType = SignatureType.Direct,
     deadline = NO_EXPIRATION,
-
     maxPriorityFeePerGas,
     maxFeePerGas
   } = options;
 
-  const overrides = maxPriorityFeePerGas && maxFeePerGas ? { maxPriorityFeePerGas, maxFeePerGas } : undefined;
+  const overrides =
+    maxPriorityFeePerGas && maxFeePerGas
+      ? { maxPriorityFeePerGas: maxPriorityFeePerGas?.toString(), maxFeePerGas: maxFeePerGas?.toString() }
+      : undefined;
+
   let tx: Transaction<string[]> | undefined;
   let uids: string[] = [];
 
@@ -256,7 +262,7 @@ export const expectMultiAttestations = async (
 
           responses.push(response);
 
-          nonce = nonce.add(1);
+          nonce++;
         }
 
         multiDelegatedAttestationRequests.push({
@@ -344,7 +350,7 @@ export const expectRevocation = async (
   request: RevocationRequestData,
   options: RevocationOptions
 ) => {
-  const { uid, value = 0 } = request;
+  const { uid, value = 0n } = request;
   const {
     from: txSender,
     signatureType = SignatureType.Direct,
@@ -354,7 +360,10 @@ export const expectRevocation = async (
     maxFeePerGas
   } = options;
 
-  const overrides = maxPriorityFeePerGas && maxFeePerGas ? { maxPriorityFeePerGas, maxFeePerGas } : undefined;
+  const overrides =
+    maxPriorityFeePerGas && maxFeePerGas
+      ? { maxPriorityFeePerGas: maxPriorityFeePerGas?.toString(), maxFeePerGas: maxFeePerGas?.toString() }
+      : undefined;
   let tx: Transaction<void> | undefined;
 
   switch (signatureType) {
@@ -434,7 +443,10 @@ export const expectMultiRevocations = async (
     maxFeePerGas
   } = options;
 
-  const overrides = maxPriorityFeePerGas && maxFeePerGas ? { maxPriorityFeePerGas, maxFeePerGas } : undefined;
+  const overrides =
+    maxPriorityFeePerGas && maxFeePerGas
+      ? { maxPriorityFeePerGas: maxPriorityFeePerGas?.toString(), maxFeePerGas: maxFeePerGas?.toString() }
+      : undefined;
   let tx: Transaction<void> | undefined;
 
   switch (signatureType) {
@@ -460,7 +472,7 @@ export const expectMultiRevocations = async (
 
           responses.push(response);
 
-          nonce = nonce.add(1);
+          nonce++;
         }
 
         multiDelegatedRevocationRequests.push({

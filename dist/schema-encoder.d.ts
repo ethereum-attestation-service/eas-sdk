@@ -1,5 +1,4 @@
-import { BigNumber } from 'ethers';
-export type SchemaValue = string | boolean | number | BigNumber | Record<string, unknown> | Record<string, unknown>[] | unknown[];
+export type SchemaValue = string | boolean | number | bigint | Record<string, unknown> | Record<string, unknown>[] | unknown[];
 export interface SchemaItem {
     name: string;
     type: string;
