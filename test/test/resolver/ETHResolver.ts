@@ -1,15 +1,15 @@
-import { EAS } from '../../../src/eas';
-import { SchemaRegistry } from '../../../src/schema-registry';
-import Contracts from '../../components/Contracts';
-import { ETHResolver } from '../../typechain-types';
-import { createWallet, getBalance } from '../helpers/wallet';
 import {
   EAS as EASContract,
   SchemaRegistry as SchemaRegistryContract
 } from '@ethereum-attestation-service/eas-contracts';
 import { expect } from 'chai';
-import { Signer, BaseWallet } from 'ethers';
+import { BaseWallet, Signer } from 'ethers';
 import { ethers } from 'hardhat';
+import { EAS } from '../../../src/eas';
+import { SchemaRegistry } from '../../../src/schema-registry';
+import Contracts from '../../components/Contracts';
+import { ETHResolver } from '../../typechain-types';
+import { createWallet, getBalance } from '../helpers/wallet';
 
 describe('ETHResolver', () => {
   let accounts: Signer[];

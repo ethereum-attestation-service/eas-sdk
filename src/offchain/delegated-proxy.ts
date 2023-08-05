@@ -1,3 +1,4 @@
+import { BaseWallet } from 'ethers';
 import { EIP712AttestationParams, EIP712RevocationParams } from './delegated';
 import { EIP712MessageTypes, EIP712Response, TypedData, TypedDataConfig, TypedDataHandler } from './typed-data-handler';
 
@@ -8,7 +9,6 @@ export {
   EIP712Response,
   TypedDataConfig
 } from './typed-data-handler';
-import { BaseWallet } from 'ethers';
 
 export const ATTEST_PROXY_TYPED_SIGNATURE =
   'Attest(bytes32 schema,address recipient,uint64 expirationTime,bool revocable,bytes32 refUID,bytes data,uint64 deadline)';

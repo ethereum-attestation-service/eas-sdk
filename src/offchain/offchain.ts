@@ -1,3 +1,4 @@
+import { AbiCoder, BaseWallet, keccak256, toUtf8Bytes } from 'ethers';
 import { getOffchainUID } from '../utils';
 import { EIP712_NAME } from './delegated';
 import {
@@ -9,8 +10,6 @@ import {
   TypedData,
   TypedDataHandler
 } from './typed-data-handler';
-
-import { AbiCoder, keccak256, toUtf8Bytes, BaseWallet } from 'ethers';
 
 export { EIP712Request, PartialTypedDataConfig, EIP712MessageTypes } from './typed-data-handler';
 

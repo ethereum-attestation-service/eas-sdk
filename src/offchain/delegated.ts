@@ -1,3 +1,4 @@
+import { BaseWallet } from 'ethers';
 import {
   EIP712MessageTypes,
   EIP712Params,
@@ -14,7 +15,6 @@ export {
   EIP712Response,
   PartialTypedDataConfig
 } from './typed-data-handler';
-import { BaseWallet } from 'ethers';
 
 export const EIP712_NAME = 'EAS';
 export const ATTEST_TYPED_SIGNATURE =

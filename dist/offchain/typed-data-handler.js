@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TypedDataHandler = exports.EIP712_DOMAIN = void 0;
-const utils_1 = require("../utils");
 const ethers_1 = require("ethers");
+const utils_1 = require("../utils");
 exports.EIP712_DOMAIN = 'EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)';
 class TypedDataHandler {
     config;

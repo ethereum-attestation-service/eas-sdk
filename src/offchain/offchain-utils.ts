@@ -1,7 +1,7 @@
-import { EIP712MessageTypes, SignedOffchainAttestation } from './offchain';
 import { ZeroAddress, ZeroHash } from 'ethers';
 import * as Base64 from 'js-base64';
 import pako from 'pako';
+import { EIP712MessageTypes, SignedOffchainAttestation } from './offchain';
 
 export interface SignedOffchainAttestationV1 extends Omit<SignedOffchainAttestation, 'signature'> {
   r: string;

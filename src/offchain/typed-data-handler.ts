@@ -1,14 +1,14 @@
-import { ZERO_ADDRESS } from '../utils';
 import {
   AbiCoder,
+  BaseWallet,
   getAddress,
   hexlify,
   keccak256,
   Signature as Sig,
   toUtf8Bytes,
-  verifyTypedData,
-  BaseWallet
+  verifyTypedData
 } from 'ethers';
+import { ZERO_ADDRESS } from '../utils';
 
 export interface PartialTypedDataConfig {
   address: string;

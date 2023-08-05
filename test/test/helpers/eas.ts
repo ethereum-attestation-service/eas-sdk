@@ -1,3 +1,5 @@
+import { expect } from 'chai';
+import { BaseWallet } from 'ethers';
 import {
   AttestationRequestData,
   EAS,
@@ -23,8 +25,6 @@ import { Transaction } from '../../../src/transaction';
 import { getOffchainUID } from '../../../src/utils';
 import { ZERO_BYTES, ZERO_BYTES32 } from '../../utils/Constants';
 import { latest } from './time';
-import { expect } from 'chai';
-import { BaseWallet } from 'ethers';
 
 export enum SignatureType {
   Direct = 'direct',
