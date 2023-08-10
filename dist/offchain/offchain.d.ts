@@ -1,5 +1,4 @@
-import { BaseWallet } from 'ethers';
-import { DomainTypedData, EIP712MessageTypes, EIP712Params, EIP712Response, PartialTypedDataConfig, TypedData, TypedDataHandler } from './typed-data-handler';
+import { DomainTypedData, EIP712MessageTypes, EIP712Params, EIP712Response, PartialTypedDataConfig, TypedData, TypedDataHandler, SignerOrWallet } from './typed-data-handler';
 export { EIP712Request, PartialTypedDataConfig, EIP712MessageTypes } from './typed-data-handler';
 interface OffchainAttestationType {
     domainName: string;
@@ -27,7 +26,7 @@ export declare class Offchain extends TypedDataHandler {
     constructor(config: PartialTypedDataConfig, version: number);
     getDomainSeparator(): string;
     getDomainTypedData(): DomainTypedData;
-    signOffchainAttestation(params: OffchainAttestationParams, signer: BaseWallet): Promise<SignedOffchainAttestation>;
+    signOffchainAttestation(params: OffchainAttestationParams, signer: SignerOrWallet): Promise<SignedOffchainAttestation>;
     verifyOffchainAttestationSignature(attester: string, request: SignedOffchainAttestation): boolean;
     static getOffchainUID(params: OffchainAttestationParams): string;
 }

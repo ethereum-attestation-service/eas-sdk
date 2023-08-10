@@ -1,6 +1,6 @@
 import {
   AbiCoder,
-  BaseWallet,
+  Signer,
   getAddress,
   hexlify,
   keccak256,
@@ -35,17 +35,17 @@ export interface TypedDataParams {
 export interface TypedData {
   name: string;
   type:
-    | 'bool'
-    | 'uint8'
-    | 'uint16'
-    | 'uint32'
-    | 'uint64'
-    | 'uint128'
-    | 'uint256'
-    | 'address'
-    | 'string'
-    | 'bytes'
-    | 'bytes32';
+  | 'bool'
+  | 'uint8'
+  | 'uint16'
+  | 'uint32'
+  | 'uint64'
+  | 'uint128'
+  | 'uint256'
+  | 'address'
+  | 'string'
+  | 'bytes'
+  | 'bytes32';
 }
 
 export interface EIP712DomainTypedData {
@@ -118,7 +118,7 @@ export abstract class TypedDataHandler {
   public async signTypedDataRequest<T extends EIP712MessageTypes, P extends EIP712Params>(
     params: P,
     types: EIP712TypedData<T, P>,
-    signer: BaseWallet
+    signer: Signer
   ): Promise<EIP712Response<T, P>> {
     const rawSignature = await signer.signTypedData(types.domain, types.types, params);
     const signature = Sig.from(rawSignature);
