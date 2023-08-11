@@ -1,4 +1,4 @@
-import { BaseWallet } from 'ethers';
+import { Signer } from 'ethers';
 export interface PartialTypedDataConfig {
     address: string;
     version: string;
@@ -54,6 +54,6 @@ export declare abstract class TypedDataHandler {
     constructor(config: TypedDataConfig);
     getDomainSeparator(): string;
     getDomainTypedData(): DomainTypedData;
-    signTypedDataRequest<T extends EIP712MessageTypes, P extends EIP712Params>(params: P, types: EIP712TypedData<T, P>, signer: BaseWallet): Promise<EIP712Response<T, P>>;
+    signTypedDataRequest<T extends EIP712MessageTypes, P extends EIP712Params>(params: P, types: EIP712TypedData<T, P>, signer: Signer): Promise<EIP712Response<T, P>>;
     verifyTypedDataRequestSignature<T extends EIP712MessageTypes, P extends EIP712Params>(attester: string, request: EIP712Response<T, P>): boolean;
 }

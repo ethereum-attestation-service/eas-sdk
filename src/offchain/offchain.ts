@@ -1,4 +1,4 @@
-import { AbiCoder, BaseWallet, keccak256, toUtf8Bytes } from 'ethers';
+import { AbiCoder, Signer, keccak256, toUtf8Bytes } from 'ethers';
 import { getOffchainUID } from '../utils';
 import { EIP712_NAME } from './delegated';
 import {
@@ -107,7 +107,7 @@ export class Offchain extends TypedDataHandler {
 
   public async signOffchainAttestation(
     params: OffchainAttestationParams,
-    signer: BaseWallet
+    signer: Signer
   ): Promise<SignedOffchainAttestation> {
     const uid = Offchain.getOffchainUID(params);
 
