@@ -141,7 +141,8 @@ export const expectAttestation = async (
         txSender
       );
 
-      expect(await delegated.verifyDelegatedProxyAttestationSignature(await txSender.getAddress(), response)).to.be.true;
+      expect(await delegated.verifyDelegatedProxyAttestationSignature(await txSender.getAddress(), response)).to.be
+        .true;
 
       tx = await eas.connect(txSender).attestByDelegationProxy(
         {
@@ -305,7 +306,8 @@ export const expectMultiAttestations = async (
             txSender
           );
 
-          expect(await delegated.verifyDelegatedProxyAttestationSignature(await txSender.getAddress(), response)).to.be.true;
+          expect(await delegated.verifyDelegatedProxyAttestationSignature(await txSender.getAddress(), response)).to.be
+            .true;
 
           responses.push(response);
         }
@@ -506,7 +508,8 @@ export const expectMultiRevocations = async (
             txSender
           );
 
-          expect(await delegated.verifyDelegatedProxyRevocationSignature(await txSender.getAddress(), response)).to.be.true;
+          expect(await delegated.verifyDelegatedProxyRevocationSignature(await txSender.getAddress(), response)).to.be
+            .true;
 
           responses.push(response);
         }
