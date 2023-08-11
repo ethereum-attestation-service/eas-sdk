@@ -3,7 +3,7 @@ import {
   SchemaRegistry as SchemaRegistryContract
 } from '@ethereum-attestation-service/eas-contracts';
 import { expect } from 'chai';
-import { BaseWallet, Signer } from 'ethers';
+import { Signer } from 'ethers';
 import { ethers } from 'hardhat';
 import { EAS } from '../../../src/eas';
 import { SchemaRegistry } from '../../../src/schema-registry';
@@ -14,7 +14,7 @@ import { createWallet, getBalance } from '../helpers/wallet';
 describe('ETHResolver', () => {
   let accounts: Signer[];
   let recipient: Signer;
-  let sender: BaseWallet;
+  let sender: Signer;
 
   let registry: SchemaRegistryContract;
   let easContract: EASContract;

@@ -1,4 +1,4 @@
-import { BaseWallet } from 'ethers';
+import { Signer } from 'ethers';
 import { EIP712AttestationParams, EIP712RevocationParams } from './delegated';
 import { EIP712MessageTypes, EIP712Response, TypedData, TypedDataConfig, TypedDataHandler } from './typed-data-handler';
 
@@ -45,7 +45,7 @@ export class DelegatedProxy extends TypedDataHandler {
 
   public signDelegatedProxyAttestation(
     params: EIP712AttestationProxyParams,
-    signer: BaseWallet
+    signer: Signer
   ): Promise<EIP712Response<EIP712MessageTypes, EIP712AttestationProxyParams>> {
     return this.signTypedDataRequest<EIP712MessageTypes, EIP712AttestationProxyParams>(
       params,
@@ -70,7 +70,7 @@ export class DelegatedProxy extends TypedDataHandler {
 
   public signDelegatedProxyRevocation(
     params: EIP712RevocationProxyParams,
-    signer: BaseWallet
+    signer: Signer
   ): Promise<EIP712Response<EIP712MessageTypes, EIP712RevocationProxyParams>> {
     return this.signTypedDataRequest<EIP712MessageTypes, EIP712RevocationProxyParams>(
       params,

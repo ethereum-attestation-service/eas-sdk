@@ -21,7 +21,7 @@ import {
   SchemaRegistry as SchemaRegistryContract
 } from '@ethereum-attestation-service/eas-contracts';
 import { ethers } from 'hardhat';
-import { Signer, BaseWallet, encodeBytes32String } from 'ethers';
+import { Signer, encodeBytes32String } from 'ethers';
 
 const { expect } = chai;
 
@@ -29,7 +29,7 @@ const EIP712_PROXY_NAME = 'EAS-Proxy';
 
 describe('EAS API', () => {
   let accounts: Signer[];
-  let sender: BaseWallet;
+  let sender: Signer;
   let recipient: Signer;
   let recipient2: Signer;
 
@@ -190,7 +190,7 @@ describe('EAS API', () => {
                       await expectAttestation(
                         eas,
                         schema1Id,
-                        { recipient: sender.address, expirationTime, revocable, data },
+                        { recipient: await sender.getAddress(), expirationTime, revocable, data },
                         { signatureType, from: sender, maxFeePerGas, maxPriorityFeePerGas }
                       );
                     });
@@ -507,7 +507,7 @@ describe('EAS API', () => {
             },
             sender
           );
-          expect(await offchain.verifyOffchainAttestationSignature(sender.address, response)).to.be.true;
+          expect(await offchain.verifyOffchainAttestationSignature(await sender.getAddress(), response)).to.be.true;
         });
 
         it('should support version 1', async () => {
@@ -524,7 +524,7 @@ describe('EAS API', () => {
             },
             sender
           );
-          expect(await offchain.verifyOffchainAttestationSignature(sender.address, response)).to.be.true;
+          expect(await offchain.verifyOffchainAttestationSignature(await sender.getAddress(), response)).to.be.true;
         });
       });
 
@@ -550,7 +550,7 @@ describe('EAS API', () => {
                 const timestamp = await tx.wait();
                 expect(timestamp).to.equal(await latest());
 
-                expect(await eas.getRevocationOffchain(sender.address, data1)).to.equal(timestamp);
+                expect(await eas.getRevocationOffchain(await sender.getAddress(), data1)).to.equal(timestamp);
 
                 if (maxPriorityFeePerGas && maxFeePerGas) {
                   expect(tx.tx.maxPriorityFeePerGas).to.equal(maxPriorityFeePerGas);
@@ -561,7 +561,7 @@ describe('EAS API', () => {
                 const timestamp2 = await tx2.wait();
                 expect(timestamp2).to.equal(await latest());
 
-                expect(await eas.getRevocationOffchain(sender.address, data2)).to.equal(timestamp2);
+                expect(await eas.getRevocationOffchain(await sender.getAddress(), data2)).to.equal(timestamp2);
 
                 if (maxPriorityFeePerGas && maxFeePerGas) {
                   expect(tx2.tx.maxPriorityFeePerGas).to.equal(maxPriorityFeePerGas);
@@ -580,7 +580,7 @@ describe('EAS API', () => {
                   const timestamp = timestamps[i];
                   expect(timestamp).to.equal(currentTime);
 
-                  expect(await eas.getRevocationOffchain(sender.address, d)).to.equal(timestamp);
+                  expect(await eas.getRevocationOffchain(await sender.getAddress(), d)).to.equal(timestamp);
                 }
 
                 if (maxPriorityFeePerGas && maxFeePerGas) {
@@ -593,7 +593,7 @@ describe('EAS API', () => {
         }
 
         it("should return 0 for any data that wasn't revoked multiple data", async () => {
-          expect(await eas.getRevocationOffchain(sender.address, data3)).to.equal(0);
+          expect(await eas.getRevocationOffchain(await sender.getAddress(), data3)).to.equal(0);
         });
       });
     });
