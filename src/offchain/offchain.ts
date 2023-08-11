@@ -1,4 +1,4 @@
-import { AbiCoder, Signer, keccak256, toUtf8Bytes } from 'ethers';
+import { AbiCoder, keccak256, Signer, toUtf8Bytes } from 'ethers';
 import { getOffchainUID } from '../utils';
 import { EIP712_NAME } from './delegated';
 import {

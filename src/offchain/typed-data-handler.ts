@@ -1,10 +1,10 @@
 import {
   AbiCoder,
-  Signer,
   getAddress,
   hexlify,
   keccak256,
   Signature as Sig,
+  Signer,
   toUtf8Bytes,
   verifyTypedData
 } from 'ethers';
@@ -35,17 +35,17 @@ export interface TypedDataParams {
 export interface TypedData {
   name: string;
   type:
-  | 'bool'
-  | 'uint8'
-  | 'uint16'
-  | 'uint32'
-  | 'uint64'
-  | 'uint128'
-  | 'uint256'
-  | 'address'
-  | 'string'
-  | 'bytes'
-  | 'bytes32';
+    | 'bool'
+    | 'uint8'
+    | 'uint16'
+    | 'uint32'
+    | 'uint64'
+    | 'uint128'
+    | 'uint256'
+    | 'address'
+    | 'string'
+    | 'bytes'
+    | 'bytes32';
 }
 
 export interface EIP712DomainTypedData {
