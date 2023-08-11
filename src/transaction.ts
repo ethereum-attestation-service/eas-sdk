@@ -1,24 +1,27 @@
-import { Contract, ContractFactory, ContractReceipt, ContractTransaction, providers, Signer } from 'ethers';
+import { BaseContract, ContractFactory, Provider, Signer, TransactionReceipt, TransactionResponse } from 'ethers';
 
-export declare type SignerOrProvider = Signer | providers.Provider;
+export declare type SignerOrProvider = Signer | Provider;
 
 export class Transaction<T> {
-  public readonly tx: ContractTransaction;
-  private readonly waitCallback: (receipt: ContractReceipt) => Promise<T>;
+  public readonly tx: TransactionResponse;
+  private readonly waitCallback: (receipt: TransactionReceipt) => Promise<T>;
 
-  constructor(tx: ContractTransaction, waitCallback: (receipt: ContractReceipt) => Promise<T>) {
+  constructor(tx: TransactionResponse, waitCallback: (receipt: TransactionReceipt) => Promise<T>) {
     this.tx = tx;
     this.waitCallback = waitCallback;
   }
 
   public async wait(confirmations?: number): Promise<T> {
     const receipt = await this.tx.wait(confirmations);
+    if (!receipt) {
+      throw new Error(`Unable to confirm: ${this.tx}`);
+    }
 
     return this.waitCallback(receipt);
   }
 }
 
-export class Base<C extends Contract> {
+export class Base<C extends BaseContract> {
   public contract: C;
 
   constructor(factory: ContractFactory, address: string, signerOrProvider?: SignerOrProvider) {
@@ -36,11 +39,12 @@ export class Base<C extends Contract> {
   }
 
   // Gets the chain ID
-  public async getChainId(): Promise<number> {
-    if (!this.contract.provider) {
+  public async getChainId(): Promise<bigint> {
+    const provider = this.contract.runner?.provider;
+    if (!provider) {
       throw new Error("Unable to get the chain ID: provider wasn't set");
     }
 
-    return (await this.contract.provider.getNetwork()).chainId;
+    return (await provider.getNetwork()).chainId;
   }
 }

@@ -1,7 +1,7 @@
-import { EIP712MessageTypes, SignedOffchainAttestation } from './offchain';
-import { ethers } from 'ethers';
+import { ZeroAddress, ZeroHash } from 'ethers';
 import * as Base64 from 'js-base64';
 import pako from 'pako';
+import { EIP712MessageTypes, SignedOffchainAttestation } from './offchain';
 
 export interface SignedOffchainAttestationV1 extends Omit<SignedOffchainAttestation, 'signature'> {
   r: string;
@@ -18,7 +18,7 @@ export interface AttestationShareablePackageObject {
 
 export type CompactAttestationShareablePackageObject = [
   contractVersion: string,
-  chainId: number,
+  chainId: bigint,
   verifyingContract: string,
   r: string,
   s: string,
@@ -36,21 +36,21 @@ export type CompactAttestationShareablePackageObject = [
   offchainVersion?: number
 ];
 
-export function createOffchainURL(pkg: AttestationShareablePackageObject) {
+export const createOffchainURL = (pkg: AttestationShareablePackageObject) => {
   const base64 = zipAndEncodeToBase64(pkg);
   return `/offchain/url/#attestation=${encodeURIComponent(base64)}`;
-}
+};
 
-export function zipAndEncodeToBase64(pkg: AttestationShareablePackageObject) {
+export const zipAndEncodeToBase64 = (pkg: AttestationShareablePackageObject) => {
   const compacted = compactOffchainAttestationPackage(pkg);
 
-  const jsoned = JSON.stringify(compacted);
+  const jsoned = JSON.stringify(compacted, (_, value) => (typeof value === 'bigint' ? value.toString() : value));
 
   const gzipped = pako.deflate(jsoned, { level: 9 });
   return Base64.fromUint8Array(gzipped);
-}
+};
 
-export function decodeBase64ZippedBase64(base64: string): AttestationShareablePackageObject {
+export const decodeBase64ZippedBase64 = (base64: string): AttestationShareablePackageObject => {
   const fromBase64 = Base64.toUint8Array(base64);
 
   const jsonStr = pako.inflate(fromBase64, { to: 'string' });
@@ -58,11 +58,11 @@ export function decodeBase64ZippedBase64(base64: string): AttestationShareablePa
   const compacted: CompactAttestationShareablePackageObject = JSON.parse(jsonStr);
 
   return uncompactOffchainAttestationPackage(compacted);
-}
+};
 
-export function compactOffchainAttestationPackage(
+export const compactOffchainAttestationPackage = (
   pkg: AttestationShareablePackageObject
-): CompactAttestationShareablePackageObject {
+): CompactAttestationShareablePackageObject => {
   const signer = pkg.signer;
   let sig = pkg.sig;
 
@@ -80,20 +80,20 @@ export function compactOffchainAttestationPackage(
     signer,
     sig.uid,
     sig.message.schema,
-    sig.message.recipient === ethers.constants.AddressZero ? '0' : sig.message.recipient,
+    sig.message.recipient === ZeroAddress ? '0' : sig.message.recipient,
     Number(sig.message.time),
     Number(sig.message.expirationTime),
-    sig.message.refUID === ethers.constants.HashZero ? '0' : sig.message.refUID,
+    sig.message.refUID === ZeroHash ? '0' : sig.message.refUID,
     sig.message.revocable,
     sig.message.data,
     Number(sig.message.nonce),
     sig.message.version
   ];
-}
+};
 
-export function uncompactOffchainAttestationPackage(
+export const uncompactOffchainAttestationPackage = (
   compacted: CompactAttestationShareablePackageObject
-): AttestationShareablePackageObject {
+): AttestationShareablePackageObject => {
   const version = compacted[16] ? compacted[16] : 0;
 
   const attestTypes: EIP712MessageTypes = {
@@ -155,24 +155,24 @@ export function uncompactOffchainAttestationPackage(
       message: {
         version,
         schema: compacted[8],
-        recipient: compacted[9] === '0' ? ethers.constants.AddressZero : compacted[9],
-        time: compacted[10],
-        expirationTime: compacted[11],
-        refUID: compacted[12] === '0' ? ethers.constants.HashZero : compacted[12],
+        recipient: compacted[9] === '0' ? ZeroAddress : compacted[9],
+        time: BigInt(compacted[10]),
+        expirationTime: BigInt(compacted[11]),
+        refUID: compacted[12] === '0' ? ZeroHash : compacted[12],
         revocable: compacted[13],
         data: compacted[14],
-        nonce: compacted[15]
+        nonce: BigInt(compacted[15])
       }
     },
     signer: compacted[6]
   };
-}
+};
 
-export function isSignedOffchainAttestationV1(
+export const isSignedOffchainAttestationV1 = (
   attestation: SignedOffchainAttestation | SignedOffchainAttestationV1
-): attestation is SignedOffchainAttestationV1 {
+): attestation is SignedOffchainAttestationV1 => {
   return 'v' in attestation && 'r' in attestation && 's' in attestation;
-}
+};
 
 function convertV1AttestationToV2(attestation: SignedOffchainAttestationV1): SignedOffchainAttestation {
   const { v, r, s, ...rest } = attestation;

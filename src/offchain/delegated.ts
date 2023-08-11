@@ -1,3 +1,4 @@
+import { Signer } from 'ethers';
 import {
   EIP712MessageTypes,
   EIP712Params,
@@ -6,8 +7,6 @@ import {
   TypedData,
   TypedDataHandler
 } from './typed-data-handler';
-import { TypedDataSigner } from '@ethersproject/abstract-signer';
-import { BigNumberish } from 'ethers';
 
 export {
   EIP712MessageTypes,
@@ -41,7 +40,7 @@ export const REVOKE_TYPE: TypedData[] = [
 export type EIP712AttestationParams = EIP712Params & {
   schema: string;
   recipient: string;
-  expirationTime: BigNumberish;
+  expirationTime: bigint;
   revocable: boolean;
   refUID: string;
   data: string;
@@ -59,7 +58,7 @@ export class Delegated extends TypedDataHandler {
 
   public signDelegatedAttestation(
     params: EIP712AttestationParams,
-    signer: TypedDataSigner
+    signer: Signer
   ): Promise<EIP712Response<EIP712MessageTypes, EIP712AttestationParams>> {
     return this.signTypedDataRequest<EIP712MessageTypes, EIP712AttestationParams>(
       params,
@@ -84,7 +83,7 @@ export class Delegated extends TypedDataHandler {
 
   public signDelegatedRevocation(
     params: EIP712RevocationParams,
-    signer: TypedDataSigner
+    signer: Signer
   ): Promise<EIP712Response<EIP712MessageTypes, EIP712RevocationParams>> {
     return this.signTypedDataRequest<EIP712MessageTypes, EIP712RevocationParams>(
       params,

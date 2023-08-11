@@ -1,9 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TypedDataHandler = exports.EIP712_DOMAIN = void 0;
-const utils_1 = require("../utils");
 const ethers_1 = require("ethers");
-const { getAddress, verifyTypedData, hexlify, joinSignature, splitSignature, keccak256, toUtf8Bytes, defaultAbiCoder } = ethers_1.utils;
+const utils_1 = require("../utils");
 exports.EIP712_DOMAIN = 'EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)';
 class TypedDataHandler {
     config;
@@ -11,10 +10,10 @@ class TypedDataHandler {
         this.config = config;
     }
     getDomainSeparator() {
-        return keccak256(defaultAbiCoder.encode(['bytes32', 'bytes32', 'bytes32', 'uint256', 'address'], [
-            keccak256(toUtf8Bytes(exports.EIP712_DOMAIN)),
-            keccak256(toUtf8Bytes(this.config.name)),
-            keccak256(toUtf8Bytes(this.config.version)),
+        return (0, ethers_1.keccak256)(ethers_1.AbiCoder.defaultAbiCoder().encode(['bytes32', 'bytes32', 'bytes32', 'uint256', 'address'], [
+            (0, ethers_1.keccak256)((0, ethers_1.toUtf8Bytes)(exports.EIP712_DOMAIN)),
+            (0, ethers_1.keccak256)((0, ethers_1.toUtf8Bytes)(this.config.name)),
+            (0, ethers_1.keccak256)((0, ethers_1.toUtf8Bytes)(this.config.version)),
             this.config.chainId,
             this.config.address
         ]));
@@ -28,8 +27,8 @@ class TypedDataHandler {
         };
     }
     async signTypedDataRequest(params, types, signer) {
-        const rawSignature = await signer._signTypedData(types.domain, types.types, params);
-        const signature = splitSignature(rawSignature);
+        const rawSignature = await signer.signTypedData(types.domain, types.types, params);
+        const signature = ethers_1.Signature.from(rawSignature);
         return { ...types, signature: { v: signature.v, r: signature.r, s: signature.s } };
     }
     verifyTypedDataRequestSignature(attester, request) {
@@ -37,9 +36,9 @@ class TypedDataHandler {
             throw new Error('Invalid address');
         }
         const { signature } = request;
-        const sig = joinSignature({ v: signature.v, r: hexlify(signature.r), s: hexlify(signature.s) });
-        const recoveredAddress = verifyTypedData(request.domain, request.types, request.message, sig);
-        return getAddress(attester) === getAddress(recoveredAddress);
+        const sig = ethers_1.Signature.from({ v: signature.v, r: (0, ethers_1.hexlify)(signature.r), s: (0, ethers_1.hexlify)(signature.s) }).serialized;
+        const recoveredAddress = (0, ethers_1.verifyTypedData)(request.domain, request.types, request.message, sig);
+        return (0, ethers_1.getAddress)(attester) === (0, ethers_1.getAddress)(recoveredAddress);
     }
 }
 exports.TypedDataHandler = TypedDataHandler;

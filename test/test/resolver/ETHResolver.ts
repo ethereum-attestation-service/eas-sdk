@@ -1,25 +1,20 @@
-import { EAS } from '../../../src/eas';
-import { SchemaRegistry } from '../../../src/schema-registry';
-import Contracts from '../../components/Contracts';
-import { ETHResolver } from '../../typechain-types';
-import { createWallet } from '../helpers/wallet';
 import {
   EAS as EASContract,
   SchemaRegistry as SchemaRegistryContract
 } from '@ethereum-attestation-service/eas-contracts';
-import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { expect } from 'chai';
-import { Wallet } from 'ethers';
+import { Signer } from 'ethers';
 import { ethers } from 'hardhat';
-
-const {
-  provider: { getBalance }
-} = ethers;
+import { EAS } from '../../../src/eas';
+import { SchemaRegistry } from '../../../src/schema-registry';
+import Contracts from '../../components/Contracts';
+import { ETHResolver } from '../../typechain-types';
+import { createWallet, getBalance } from '../helpers/wallet';
 
 describe('ETHResolver', () => {
-  let accounts: SignerWithAddress[];
-  let recipient: SignerWithAddress;
-  let sender: Wallet;
+  let accounts: Signer[];
+  let recipient: Signer;
+  let sender: Signer;
 
   let registry: SchemaRegistryContract;
   let easContract: EASContract;
@@ -32,7 +27,7 @@ describe('ETHResolver', () => {
   let schemaId: string;
   const data = '0x1234';
 
-  const incentive = 12345;
+  const incentive = 12345n;
 
   before(async () => {
     accounts = await ethers.getSigners();
@@ -44,52 +39,55 @@ describe('ETHResolver', () => {
     sender = await createWallet();
 
     registry = await Contracts.SchemaRegistry.deploy();
-    easContract = await Contracts.EAS.deploy(registry.address);
+    easContract = await Contracts.EAS.deploy(await registry.getAddress());
 
-    resolver = await Contracts.ETHResolver.deploy(easContract.address, incentive);
+    resolver = await Contracts.ETHResolver.deploy(await easContract.getAddress(), incentive);
     expect(await resolver.isPayable()).to.be.true;
 
-    eas = new EAS(easContract.address);
+    eas = new EAS(await easContract.getAddress());
     eas.connect(sender);
 
-    await sender.sendTransaction({ to: resolver.address, value: incentive * 2 });
+    await sender.sendTransaction({ to: await resolver.getAddress(), value: incentive * 2n });
 
-    schemaRegistry = new SchemaRegistry(registry.address);
+    schemaRegistry = new SchemaRegistry(await registry.getAddress());
     schemaRegistry.connect(sender);
 
-    const tx = await schemaRegistry.register({ schema, resolverAddress: resolver.address });
+    const tx = await schemaRegistry.register({ schema, resolverAddress: await resolver.getAddress() });
     schemaId = await tx.wait();
   });
 
   it('should allow sending ETH during attestations', async () => {
-    const prevResolverBalance = await getBalance(resolver.address);
+    const prevResolverBalance = await getBalance(await resolver.getAddress());
 
-    const tip = 999;
-    const tx = await eas.attest({ schema: schemaId, data: { recipient: recipient.address, data, value: tip } });
+    const tip = 999n;
+    const tx = await eas.attest({
+      schema: schemaId,
+      data: { recipient: await recipient.getAddress(), data, value: tip }
+    });
     const uid = await tx.wait();
     expect(await eas.isAttestationValid(uid)).to.be.true;
 
-    expect(await getBalance(resolver.address)).to.equal(prevResolverBalance.sub(incentive).add(tip));
+    expect(await getBalance(await resolver.getAddress())).to.equal(prevResolverBalance - incentive + tip);
   });
 
   context('with an attestation', () => {
     let uid: string;
 
     beforeEach(async () => {
-      const tx = await eas.attest({ schema: schemaId, data: { recipient: recipient.address, data } });
+      const tx = await eas.attest({ schema: schemaId, data: { recipient: await recipient.getAddress(), data } });
       uid = await tx.wait();
       expect(await eas.isAttestationValid(uid)).to.be.true;
     });
 
     it('should allow sending ETH during revocation', async () => {
-      const prevResolverBalance = await getBalance(resolver.address);
+      const prevResolverBalance = await getBalance(await resolver.getAddress());
 
       const value = incentive;
       await eas.revoke({ schema: schemaId, data: { uid, value } });
 
       expect(await eas.isAttestationRevoked(uid)).to.be.true;
 
-      expect(await getBalance(resolver.address)).to.equal(prevResolverBalance.add(incentive));
+      expect(await getBalance(await resolver.getAddress())).to.equal(prevResolverBalance + incentive);
     });
   });
 });

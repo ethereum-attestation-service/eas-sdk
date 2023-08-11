@@ -1,3 +1,5 @@
+import { expect } from 'chai';
+import { Signer } from 'ethers';
 import {
   AttestationRequestData,
   EAS,
@@ -23,9 +25,6 @@ import { Transaction } from '../../../src/transaction';
 import { getOffchainUID } from '../../../src/utils';
 import { ZERO_BYTES, ZERO_BYTES32 } from '../../utils/Constants';
 import { latest } from './time';
-import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
-import { expect } from 'chai';
-import { BigNumberish, Wallet } from 'ethers';
 
 export enum SignatureType {
   Direct = 'direct',
@@ -36,11 +35,11 @@ export enum SignatureType {
 
 interface RequestOptions {
   signatureType?: SignatureType;
-  deadline?: number;
-  from: Wallet | SignerWithAddress;
-  value?: BigNumberish;
-  maxPriorityFeePerGas?: BigNumberish | Promise<BigNumberish>;
-  maxFeePerGas?: BigNumberish | Promise<BigNumberish>;
+  deadline?: bigint;
+  from: Signer;
+  value?: bigint;
+  maxPriorityFeePerGas?: bigint | Promise<bigint>;
+  maxFeePerGas?: bigint | Promise<bigint>;
 }
 
 export interface AttestationOptions extends RequestOptions {
@@ -62,7 +61,7 @@ export const expectAttestation = async (
     revocable = true,
     refUID = ZERO_BYTES32,
     data = ZERO_BYTES,
-    value = 0
+    value = 0n
   } = request;
   const {
     from: txSender,
@@ -74,7 +73,10 @@ export const expectAttestation = async (
 
   let uid;
 
-  const overrides = maxPriorityFeePerGas && maxFeePerGas ? { maxPriorityFeePerGas, maxFeePerGas } : undefined;
+  const overrides =
+    maxPriorityFeePerGas && maxFeePerGas
+      ? { maxPriorityFeePerGas: maxPriorityFeePerGas?.toString(), maxFeePerGas: maxFeePerGas?.toString() }
+      : undefined;
   let tx: Transaction<string> | undefined;
 
   switch (signatureType) {
@@ -98,19 +100,19 @@ export const expectAttestation = async (
           revocable,
           refUID,
           data,
-          nonce: await eas.getNonce(txSender.address)
+          nonce: await eas.getNonce(await txSender.getAddress())
         },
         txSender
       );
 
-      expect(await delegated.verifyDelegatedAttestationSignature(txSender.address, response)).to.be.true;
+      expect(await delegated.verifyDelegatedAttestationSignature(await txSender.getAddress(), response)).to.be.true;
 
       tx = await eas.connect(txSender).attestByDelegation(
         {
           schema,
           data: { recipient, expirationTime, revocable, refUID, data, value },
           signature: response.signature,
-          attester: txSender.address
+          attester: await txSender.getAddress()
         },
         overrides
       );
@@ -139,14 +141,15 @@ export const expectAttestation = async (
         txSender
       );
 
-      expect(await delegated.verifyDelegatedProxyAttestationSignature(txSender.address, response)).to.be.true;
+      expect(await delegated.verifyDelegatedProxyAttestationSignature(await txSender.getAddress(), response)).to.be
+        .true;
 
       tx = await eas.connect(txSender).attestByDelegationProxy(
         {
           schema,
           data: { recipient, expirationTime, revocable, refUID, data, value },
           signature: response.signature,
-          attester: txSender.address,
+          attester: await txSender.getAddress(),
           deadline
         },
         overrides
@@ -154,7 +157,7 @@ export const expectAttestation = async (
 
       uid = await tx.wait();
 
-      expect(await eas.getEIP712Proxy()?.getAttester(uid)).to.equal(txSender.address);
+      expect(await eas.getEIP712Proxy()?.getAttester(uid)).to.equal(await txSender.getAddress());
 
       break;
     }
@@ -186,8 +189,9 @@ export const expectAttestation = async (
         },
         txSender
       );
+
       expect(response.uid).to.equal(uid);
-      expect(await offchain.verifyOffchainAttestationSignature(txSender.address, response)).to.be.true;
+      expect(await offchain.verifyOffchainAttestationSignature(await txSender.getAddress(), response)).to.be.true;
 
       return uid;
     }
@@ -212,12 +216,15 @@ export const expectMultiAttestations = async (
     from: txSender,
     signatureType = SignatureType.Direct,
     deadline = NO_EXPIRATION,
-
     maxPriorityFeePerGas,
     maxFeePerGas
   } = options;
 
-  const overrides = maxPriorityFeePerGas && maxFeePerGas ? { maxPriorityFeePerGas, maxFeePerGas } : undefined;
+  const overrides =
+    maxPriorityFeePerGas && maxFeePerGas
+      ? { maxPriorityFeePerGas: maxPriorityFeePerGas?.toString(), maxFeePerGas: maxFeePerGas?.toString() }
+      : undefined;
+
   let tx: Transaction<string[]> | undefined;
   let uids: string[] = [];
 
@@ -232,7 +239,7 @@ export const expectMultiAttestations = async (
     case SignatureType.Delegated: {
       const multiDelegatedAttestationRequests: MultiDelegatedAttestationRequest[] = [];
 
-      let nonce = await eas.getNonce(txSender.address);
+      let nonce = await eas.getNonce(await txSender.getAddress());
 
       for (const { schema, data } of requests) {
         const responses: EIP712Response<EIP712MessageTypes, EIP712AttestationParams>[] = [];
@@ -252,18 +259,18 @@ export const expectMultiAttestations = async (
             txSender
           );
 
-          expect(await delegated.verifyDelegatedAttestationSignature(txSender.address, response)).to.be.true;
+          expect(await delegated.verifyDelegatedAttestationSignature(await txSender.getAddress(), response)).to.be.true;
 
           responses.push(response);
 
-          nonce = nonce.add(1);
+          nonce++;
         }
 
         multiDelegatedAttestationRequests.push({
           schema,
           data,
           signatures: responses.map((r) => r.signature),
-          attester: txSender.address
+          attester: await txSender.getAddress()
         });
       }
 
@@ -299,7 +306,8 @@ export const expectMultiAttestations = async (
             txSender
           );
 
-          expect(await delegated.verifyDelegatedProxyAttestationSignature(txSender.address, response)).to.be.true;
+          expect(await delegated.verifyDelegatedProxyAttestationSignature(await txSender.getAddress(), response)).to.be
+            .true;
 
           responses.push(response);
         }
@@ -308,7 +316,7 @@ export const expectMultiAttestations = async (
           schema,
           data,
           signatures: responses.map((r) => r.signature),
-          attester: txSender.address,
+          attester: await txSender.getAddress(),
           deadline
         });
       }
@@ -317,7 +325,7 @@ export const expectMultiAttestations = async (
       uids = await tx.wait();
 
       for (const uid of uids) {
-        expect(await eas.getEIP712Proxy()?.getAttester(uid)).to.equal(txSender.address);
+        expect(await eas.getEIP712Proxy()?.getAttester(uid)).to.equal(await txSender.getAddress());
       }
 
       break;
@@ -344,7 +352,7 @@ export const expectRevocation = async (
   request: RevocationRequestData,
   options: RevocationOptions
 ) => {
-  const { uid, value = 0 } = request;
+  const { uid, value = 0n } = request;
   const {
     from: txSender,
     signatureType = SignatureType.Direct,
@@ -354,7 +362,10 @@ export const expectRevocation = async (
     maxFeePerGas
   } = options;
 
-  const overrides = maxPriorityFeePerGas && maxFeePerGas ? { maxPriorityFeePerGas, maxFeePerGas } : undefined;
+  const overrides =
+    maxPriorityFeePerGas && maxFeePerGas
+      ? { maxPriorityFeePerGas: maxPriorityFeePerGas?.toString(), maxFeePerGas: maxFeePerGas?.toString() }
+      : undefined;
   let tx: Transaction<void> | undefined;
 
   switch (signatureType) {
@@ -367,18 +378,18 @@ export const expectRevocation = async (
     case SignatureType.Delegated: {
       const delegated = await eas.getDelegated();
       const response = await delegated.signDelegatedRevocation(
-        { schema, uid, nonce: await eas.getNonce(txSender.address) },
+        { schema, uid, nonce: await eas.getNonce(await txSender.getAddress()) },
         txSender
       );
 
-      expect(await delegated.verifyDelegatedRevocationSignature(txSender.address, response)).to.be.true;
+      expect(await delegated.verifyDelegatedRevocationSignature(await txSender.getAddress(), response)).to.be.true;
 
       tx = await eas.connect(txSender).revokeByDelegation(
         {
           schema,
           data: { uid, value },
           signature: response.signature,
-          revoker: txSender.address
+          revoker: await txSender.getAddress()
         },
         overrides
       );
@@ -395,14 +406,14 @@ export const expectRevocation = async (
 
       const response = await delegated.signDelegatedProxyRevocation({ schema, uid, deadline }, txSender);
 
-      expect(await delegated.verifyDelegatedProxyRevocationSignature(txSender.address, response)).to.be.true;
+      expect(await delegated.verifyDelegatedProxyRevocationSignature(await txSender.getAddress(), response)).to.be.true;
 
       tx = await eas.connect(txSender).revokeByDelegationProxy(
         {
           schema,
           data: { uid, value },
           signature: response.signature,
-          revoker: txSender.address,
+          revoker: await txSender.getAddress(),
           deadline
         },
         overrides
@@ -434,7 +445,10 @@ export const expectMultiRevocations = async (
     maxFeePerGas
   } = options;
 
-  const overrides = maxPriorityFeePerGas && maxFeePerGas ? { maxPriorityFeePerGas, maxFeePerGas } : undefined;
+  const overrides =
+    maxPriorityFeePerGas && maxFeePerGas
+      ? { maxPriorityFeePerGas: maxPriorityFeePerGas?.toString(), maxFeePerGas: maxFeePerGas?.toString() }
+      : undefined;
   let tx: Transaction<void> | undefined;
 
   switch (signatureType) {
@@ -447,7 +461,7 @@ export const expectMultiRevocations = async (
     case SignatureType.Delegated: {
       const multiDelegatedRevocationRequests: MultiDelegatedRevocationRequest[] = [];
 
-      let nonce = await eas.getNonce(txSender.address);
+      let nonce = await eas.getNonce(await txSender.getAddress());
 
       for (const { schema, data } of requests) {
         const responses: EIP712Response<EIP712MessageTypes, EIP712RevocationParams>[] = [];
@@ -456,18 +470,18 @@ export const expectMultiRevocations = async (
           const delegated = await eas.getDelegated();
           const response = await delegated.signDelegatedRevocation({ schema, uid: request.uid, nonce }, txSender);
 
-          expect(await delegated.verifyDelegatedRevocationSignature(txSender.address, response)).to.be.true;
+          expect(await delegated.verifyDelegatedRevocationSignature(await txSender.getAddress(), response)).to.be.true;
 
           responses.push(response);
 
-          nonce = nonce.add(1);
+          nonce++;
         }
 
         multiDelegatedRevocationRequests.push({
           schema,
           data,
           signatures: responses.map((r) => r.signature),
-          revoker: txSender.address
+          revoker: await txSender.getAddress()
         });
       }
 
@@ -494,7 +508,8 @@ export const expectMultiRevocations = async (
             txSender
           );
 
-          expect(await delegated.verifyDelegatedProxyRevocationSignature(txSender.address, response)).to.be.true;
+          expect(await delegated.verifyDelegatedProxyRevocationSignature(await txSender.getAddress(), response)).to.be
+            .true;
 
           responses.push(response);
         }
@@ -503,7 +518,7 @@ export const expectMultiRevocations = async (
           schema,
           data,
           signatures: responses.map((r) => r.signature),
-          revoker: txSender.address,
+          revoker: await txSender.getAddress(),
           deadline
         });
       }

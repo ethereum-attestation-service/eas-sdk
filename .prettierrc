@@ -1,4 +1,5 @@
 {
+  "plugins": ["@ianvs/prettier-plugin-sort-imports", "prettier-package-json"],
   "printWidth": 120,
   "tabWidth": 2,
   "useTabs": false,
@@ -7,6 +8,5 @@
   "trailingComma": "none",
   "arrowParens": "always",
   "bracketSpacing": true,
-  "importOrderSortSpecifiers": true,
-  "importOrderCaseInsensitive": true
+  "importOrderTypeScriptVersion": "5.0.0"
 }

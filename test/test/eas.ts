@@ -14,28 +14,24 @@ import {
   SignatureType
 } from './helpers/eas';
 import { duration, latest } from './helpers/time';
-import { createWallet, Wallet } from './helpers/wallet';
+import { createWallet } from './helpers/wallet';
 import {
   EAS as EASContract,
   EIP712Proxy as EIP712ProxyContract,
   SchemaRegistry as SchemaRegistryContract
 } from '@ethereum-attestation-service/eas-contracts';
-import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
-import { ethers, waffle } from 'hardhat';
+import { ethers } from 'hardhat';
+import { Signer, encodeBytes32String } from 'ethers';
 
 const { expect } = chai;
-
-const {
-  utils: { formatBytes32String, hexlify }
-} = ethers;
 
 const EIP712_PROXY_NAME = 'EAS-Proxy';
 
 describe('EAS API', () => {
-  let accounts: SignerWithAddress[];
-  let sender: Wallet;
-  let recipient: SignerWithAddress;
-  let recipient2: SignerWithAddress;
+  let accounts: Signer[];
+  let sender: Signer;
+  let recipient: Signer;
+  let recipient2: Signer;
 
   let registry: SchemaRegistryContract;
   let easContract: EASContract;
@@ -55,23 +51,22 @@ describe('EAS API', () => {
     sender = await createWallet();
 
     registry = await Contracts.SchemaRegistry.deploy();
-    easContract = await Contracts.EAS.deploy(registry.address);
-    proxyContract = await Contracts.EIP712Proxy.deploy(easContract.address, EIP712_PROXY_NAME);
+    easContract = await Contracts.EAS.deploy(await registry.getAddress());
+    proxyContract = await Contracts.EIP712Proxy.deploy(await easContract.getAddress(), EIP712_PROXY_NAME);
   });
 
   context('with a provider', () => {
-    beforeEach(() => {
-      eas = new EAS(easContract.address, { signerOrProvider: waffle.provider });
+    beforeEach(async () => {
+      eas = new EAS(await easContract.getAddress(), { signerOrProvider: ethers.provider });
 
-      schemaRegistry = new SchemaRegistry(registry.address, { signerOrProvider: waffle.provider });
+      schemaRegistry = new SchemaRegistry(await registry.getAddress(), { signerOrProvider: ethers.provider });
     });
 
     describe('construction', () => {
       it('should properly create an EAS API', async () => {
-        expect(eas.contract.signer).to.be.null;
-        expect(eas.contract.provider).not.to.be.null;
+        expect(eas.contract.runner?.provider).not.to.be.null;
 
-        expect(await eas.getVersion()).to.equal(await easContract.VERSION());
+        expect(await eas.getVersion()).to.equal(await easContract.version());
       });
     });
 
@@ -100,7 +95,7 @@ describe('EAS API', () => {
           const res = await easContract.attest({
             schema: schemaId,
             data: {
-              recipient: recipient.address,
+              recipient: await recipient.getAddress(),
               expirationTime: NO_EXPIRATION,
               revocable: true,
               refUID: ZERO_BYTES32,
@@ -124,18 +119,18 @@ describe('EAS API', () => {
   });
 
   context('with a signer', () => {
-    beforeEach(() => {
-      proxy = new EIP712Proxy(proxyContract.address, { signerOrProvider: sender });
-      eas = new EAS(easContract.address, { signerOrProvider: sender, proxy });
-      schemaRegistry = new SchemaRegistry(registry.address, { signerOrProvider: sender });
+    beforeEach(async () => {
+      proxy = new EIP712Proxy(await proxyContract.getAddress(), { signerOrProvider: sender });
+      eas = new EAS(await easContract.getAddress(), { signerOrProvider: sender, proxy });
+      schemaRegistry = new SchemaRegistry(await registry.getAddress(), { signerOrProvider: sender });
     });
 
     describe('attesting', () => {
-      let expirationTime: number;
+      let expirationTime: bigint;
       const data = '0x1234';
 
       beforeEach(async () => {
-        expirationTime = (await latest()) + duration.days(30);
+        expirationTime = (await latest()) + duration.days(30n);
       });
 
       for (const signatureType of [
@@ -148,7 +143,7 @@ describe('EAS API', () => {
           for (const revocable of [true, false]) {
             for (const [maxPriorityFeePerGas, maxFeePerGas] of [
               [undefined, undefined],
-              [1000000000, 200000000000]
+              [1000000000n, 200000000000n]
             ]) {
               context(
                 maxPriorityFeePerGas && maxFeePerGas
@@ -195,7 +190,7 @@ describe('EAS API', () => {
                       await expectAttestation(
                         eas,
                         schema1Id,
-                        { recipient: sender.address, expirationTime, revocable, data },
+                        { recipient: await sender.getAddress(), expirationTime, revocable, data },
                         { signatureType, from: sender, maxFeePerGas, maxPriorityFeePerGas }
                       );
                     });
@@ -204,14 +199,24 @@ describe('EAS API', () => {
                       await expectAttestation(
                         eas,
                         schema1Id,
-                        { recipient: recipient.address, expirationTime, revocable, data: hexlify(0) },
+                        {
+                          recipient: await recipient.getAddress(),
+                          expirationTime,
+                          revocable,
+                          data: encodeBytes32String('0')
+                        },
                         { signatureType, from: sender, maxFeePerGas, maxPriorityFeePerGas }
                       );
 
                       await expectAttestation(
                         eas,
                         schema1Id,
-                        { recipient: recipient2.address, expirationTime, revocable, data: hexlify(1) },
+                        {
+                          recipient: await recipient2.getAddress(),
+                          expirationTime,
+                          revocable,
+                          data: encodeBytes32String('1')
+                        },
                         { signatureType, from: sender, maxFeePerGas, maxPriorityFeePerGas }
                       );
                     });
@@ -224,15 +229,35 @@ describe('EAS API', () => {
                             {
                               schema: schema1Id,
                               data: [
-                                { recipient: recipient.address, expirationTime, revocable, data: hexlify(0) },
-                                { recipient: recipient2.address, expirationTime, revocable, data: hexlify(1) }
+                                {
+                                  recipient: await recipient.getAddress(),
+                                  expirationTime,
+                                  revocable,
+                                  data: encodeBytes32String('0')
+                                },
+                                {
+                                  recipient: await recipient2.getAddress(),
+                                  expirationTime,
+                                  revocable,
+                                  data: encodeBytes32String('1')
+                                }
                               ]
                             },
                             {
                               schema: schema2Id,
                               data: [
-                                { recipient: recipient.address, expirationTime, revocable, data: hexlify(2) },
-                                { recipient: recipient2.address, expirationTime, revocable, data: hexlify(3) }
+                                {
+                                  recipient: await recipient.getAddress(),
+                                  expirationTime,
+                                  revocable,
+                                  data: encodeBytes32String('2')
+                                },
+                                {
+                                  recipient: await recipient2.getAddress(),
+                                  expirationTime,
+                                  revocable,
+                                  data: encodeBytes32String('3')
+                                }
                               ]
                             }
                           ],
@@ -245,7 +270,7 @@ describe('EAS API', () => {
                       await expectAttestation(
                         eas,
                         schema1Id,
-                        { recipient: recipient.address, expirationTime: NO_EXPIRATION, revocable, data },
+                        { recipient: await recipient.getAddress(), expirationTime: NO_EXPIRATION, revocable, data },
                         { signatureType, from: sender, maxFeePerGas, maxPriorityFeePerGas }
                       );
                     });
@@ -254,7 +279,7 @@ describe('EAS API', () => {
                       await expectAttestation(
                         eas,
                         schema1Id,
-                        { recipient: recipient.address, expirationTime, revocable, data: ZERO_BYTES },
+                        { recipient: await recipient.getAddress(), expirationTime, revocable, data: ZERO_BYTES },
                         { signatureType, from: sender, maxFeePerGas, maxPriorityFeePerGas }
                       );
                     });
@@ -263,14 +288,14 @@ describe('EAS API', () => {
                       const uid = await (
                         await eas.attest({
                           schema: schema1Id,
-                          data: { recipient: recipient.address, expirationTime, revocable, data }
+                          data: { recipient: await recipient.getAddress(), expirationTime, revocable, data }
                         })
                       ).wait();
 
                       await expectAttestation(
                         eas,
                         schema1Id,
-                        { recipient: recipient.address, expirationTime, revocable, refUID: uid, data },
+                        { recipient: await recipient.getAddress(), expirationTime, revocable, refUID: uid, data },
                         { signatureType, from: sender, maxFeePerGas, maxPriorityFeePerGas }
                       );
                     });
@@ -303,7 +328,7 @@ describe('EAS API', () => {
       for (const signatureType of [SignatureType.Direct, SignatureType.Delegated, SignatureType.DelegatedProxy]) {
         for (const [maxPriorityFeePerGas, maxFeePerGas] of [
           [undefined, undefined],
-          [1000000000, 200000000000]
+          [1000000000n, 200000000000n]
         ]) {
           context(
             maxPriorityFeePerGas && maxFeePerGas
@@ -318,7 +343,11 @@ describe('EAS API', () => {
                     const uid = await expectAttestation(
                       eas,
                       schema1Id,
-                      { recipient: recipient.address, expirationTime: NO_EXPIRATION, data: hexlify(i + 1) },
+                      {
+                        recipient: await recipient.getAddress(),
+                        expirationTime: NO_EXPIRATION,
+                        data: encodeBytes32String((i + 1).toString())
+                      },
                       { signatureType, from: sender, maxPriorityFeePerGas, maxFeePerGas }
                     );
 
@@ -331,7 +360,11 @@ describe('EAS API', () => {
                     const uid = await expectAttestation(
                       eas,
                       schema2Id,
-                      { recipient: recipient.address, expirationTime: NO_EXPIRATION, data: hexlify(i + 1) },
+                      {
+                        recipient: await recipient.getAddress(),
+                        expirationTime: NO_EXPIRATION,
+                        data: encodeBytes32String((i + 1).toString())
+                      },
                       { signatureType, from: sender, maxPriorityFeePerGas, maxFeePerGas }
                     );
 
@@ -383,9 +416,9 @@ describe('EAS API', () => {
     });
 
     describe('timestamping', () => {
-      const data1 = formatBytes32String('0x1234');
-      const data2 = formatBytes32String('0x4567');
-      const data3 = formatBytes32String('0x6666');
+      const data1 = encodeBytes32String('0x1234');
+      const data2 = encodeBytes32String('0x4567');
+      const data3 = encodeBytes32String('0x6666');
 
       for (const [maxPriorityFeePerGas, maxFeePerGas] of [
         [undefined, undefined],
@@ -465,7 +498,7 @@ describe('EAS API', () => {
             {
               version: 0,
               schema: schemaId,
-              recipient: recipient.address,
+              recipient: await recipient.getAddress(),
               time: await latest(),
               expirationTime: NO_EXPIRATION,
               revocable: false,
@@ -474,7 +507,7 @@ describe('EAS API', () => {
             },
             sender
           );
-          expect(await offchain.verifyOffchainAttestationSignature(sender.address, response)).to.be.true;
+          expect(await offchain.verifyOffchainAttestationSignature(await sender.getAddress(), response)).to.be.true;
         });
 
         it('should support version 1', async () => {
@@ -482,7 +515,7 @@ describe('EAS API', () => {
             {
               version: 1,
               schema: schemaId,
-              recipient: recipient.address,
+              recipient: await recipient.getAddress(),
               time: await latest(),
               expirationTime: NO_EXPIRATION,
               revocable: false,
@@ -491,14 +524,14 @@ describe('EAS API', () => {
             },
             sender
           );
-          expect(await offchain.verifyOffchainAttestationSignature(sender.address, response)).to.be.true;
+          expect(await offchain.verifyOffchainAttestationSignature(await sender.getAddress(), response)).to.be.true;
         });
       });
 
       describe('revocation', () => {
-        const data1 = formatBytes32String('0x1234');
-        const data2 = formatBytes32String('0x4567');
-        const data3 = formatBytes32String('0x6666');
+        const data1 = encodeBytes32String('0x1234');
+        const data2 = encodeBytes32String('0x4567');
+        const data3 = encodeBytes32String('0x6666');
 
         for (const [maxPriorityFeePerGas, maxFeePerGas] of [
           [undefined, undefined],
@@ -517,7 +550,7 @@ describe('EAS API', () => {
                 const timestamp = await tx.wait();
                 expect(timestamp).to.equal(await latest());
 
-                expect(await eas.getRevocationOffchain(sender.address, data1)).to.equal(timestamp);
+                expect(await eas.getRevocationOffchain(await sender.getAddress(), data1)).to.equal(timestamp);
 
                 if (maxPriorityFeePerGas && maxFeePerGas) {
                   expect(tx.tx.maxPriorityFeePerGas).to.equal(maxPriorityFeePerGas);
@@ -528,7 +561,7 @@ describe('EAS API', () => {
                 const timestamp2 = await tx2.wait();
                 expect(timestamp2).to.equal(await latest());
 
-                expect(await eas.getRevocationOffchain(sender.address, data2)).to.equal(timestamp2);
+                expect(await eas.getRevocationOffchain(await sender.getAddress(), data2)).to.equal(timestamp2);
 
                 if (maxPriorityFeePerGas && maxFeePerGas) {
                   expect(tx2.tx.maxPriorityFeePerGas).to.equal(maxPriorityFeePerGas);
@@ -547,7 +580,7 @@ describe('EAS API', () => {
                   const timestamp = timestamps[i];
                   expect(timestamp).to.equal(currentTime);
 
-                  expect(await eas.getRevocationOffchain(sender.address, d)).to.equal(timestamp);
+                  expect(await eas.getRevocationOffchain(await sender.getAddress(), d)).to.equal(timestamp);
                 }
 
                 if (maxPriorityFeePerGas && maxFeePerGas) {
@@ -560,7 +593,7 @@ describe('EAS API', () => {
         }
 
         it("should return 0 for any data that wasn't revoked multiple data", async () => {
-          expect(await eas.getRevocationOffchain(sender.address, data3)).to.equal(0);
+          expect(await eas.getRevocationOffchain(await sender.getAddress(), data3)).to.equal(0);
         });
       });
     });

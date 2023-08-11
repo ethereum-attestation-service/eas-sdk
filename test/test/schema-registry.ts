@@ -4,14 +4,14 @@ import Contracts from '../components/Contracts';
 import { ZERO_ADDRESS, ZERO_BYTES } from '../utils/Constants';
 import chai from './helpers/chai';
 import { SchemaRegistry as SchemaRegistryContract } from '@ethereum-attestation-service/eas-contracts';
-import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { ethers } from 'hardhat';
+import { Signer } from 'ethers';
 
 const { expect } = chai;
 
 describe('SchemaRegistry API', () => {
-  let accounts: SignerWithAddress[];
-  let sender: SignerWithAddress;
+  let accounts: Signer[];
+  let sender: Signer;
 
   let schemaRegistryContract: SchemaRegistryContract;
   let schemaRegistry: SchemaRegistry;
@@ -25,19 +25,19 @@ describe('SchemaRegistry API', () => {
   beforeEach(async () => {
     schemaRegistryContract = await Contracts.SchemaRegistry.deploy();
 
-    schemaRegistry = new SchemaRegistry(schemaRegistryContract.address);
+    schemaRegistry = new SchemaRegistry(await schemaRegistryContract.getAddress());
     schemaRegistry.connect(sender);
   });
 
   describe('construction', () => {
     it('should properly create an EAS API', async () => {
-      expect(await schemaRegistry.getVersion()).to.equal(await schemaRegistryContract.VERSION());
+      expect(await schemaRegistry.getVersion()).to.equal(await schemaRegistryContract.version());
     });
   });
 
   describe('registration', () => {
-    const testRegister = async (schema: string, resolver: string | SignerWithAddress, revocable: boolean) => {
-      const resolverAddress = typeof resolver === 'string' ? resolver : resolver.address;
+    const testRegister = async (schema: string, resolver: string | Signer, revocable: boolean) => {
+      const resolverAddress = typeof resolver === 'string' ? resolver : await resolver.getAddress();
 
       const uid = getSchemaUID(schema, resolverAddress, revocable);
       expect(schemaRegistry.getSchema({ uid })).to.be.rejectedWith(new Error('Schema not found'));

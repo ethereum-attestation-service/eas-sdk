@@ -1,14 +1,19 @@
+import {
+  AbiCoder,
+  getAddress,
+  hexlify,
+  keccak256,
+  Signature as Sig,
+  Signer,
+  toUtf8Bytes,
+  verifyTypedData
+} from 'ethers';
 import { ZERO_ADDRESS } from '../utils';
-import { TypedDataSigner } from '@ethersproject/abstract-signer';
-import { BigNumberish, utils } from 'ethers';
-
-const { getAddress, verifyTypedData, hexlify, joinSignature, splitSignature, keccak256, toUtf8Bytes, defaultAbiCoder } =
-  utils;
 
 export interface PartialTypedDataConfig {
   address: string;
   version: string;
-  chainId: number;
+  chainId: bigint;
 }
 
 export interface TypedDataConfig extends PartialTypedDataConfig {
@@ -16,7 +21,7 @@ export interface TypedDataConfig extends PartialTypedDataConfig {
 }
 
 export interface DomainTypedData {
-  chainId: number;
+  chainId: bigint;
   name: string;
   verifyingContract: string;
   version: string;
@@ -44,7 +49,7 @@ export interface TypedData {
 }
 
 export interface EIP712DomainTypedData {
-  chainId: number;
+  chainId: bigint;
   name: string;
   verifyingContract: string;
   version: string;
@@ -55,7 +60,7 @@ export interface EIP712MessageTypes {
 }
 
 export type EIP712Params = {
-  nonce?: BigNumberish;
+  nonce?: bigint;
 };
 
 export interface EIP712TypedData<T extends EIP712MessageTypes, P extends EIP712Params> {
@@ -88,7 +93,7 @@ export abstract class TypedDataHandler {
 
   public getDomainSeparator() {
     return keccak256(
-      defaultAbiCoder.encode(
+      AbiCoder.defaultAbiCoder().encode(
         ['bytes32', 'bytes32', 'bytes32', 'uint256', 'address'],
         [
           keccak256(toUtf8Bytes(EIP712_DOMAIN)),
@@ -113,10 +118,10 @@ export abstract class TypedDataHandler {
   public async signTypedDataRequest<T extends EIP712MessageTypes, P extends EIP712Params>(
     params: P,
     types: EIP712TypedData<T, P>,
-    signer: TypedDataSigner
+    signer: Signer
   ): Promise<EIP712Response<T, P>> {
-    const rawSignature = await signer._signTypedData(types.domain, types.types, params);
-    const signature = splitSignature(rawSignature);
+    const rawSignature = await signer.signTypedData(types.domain, types.types, params);
+    const signature = Sig.from(rawSignature);
 
     return { ...types, signature: { v: signature.v, r: signature.r, s: signature.s } };
   }
@@ -130,7 +135,7 @@ export abstract class TypedDataHandler {
     }
 
     const { signature } = request;
-    const sig = joinSignature({ v: signature.v, r: hexlify(signature.r), s: hexlify(signature.s) });
+    const sig = Sig.from({ v: signature.v, r: hexlify(signature.r), s: hexlify(signature.s) }).serialized;
     const recoveredAddress = verifyTypedData(request.domain, request.types, request.message, sig);
 
     return getAddress(attester) === getAddress(recoveredAddress);

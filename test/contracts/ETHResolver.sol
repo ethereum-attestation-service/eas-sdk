@@ -7,9 +7,8 @@ import { Address } from "@openzeppelin/contracts/utils/Address.sol";
 import { SchemaResolver } from "@ethereum-attestation-service/eas-contracts/contracts/resolver/SchemaResolver.sol";
 import { IEAS, Attestation } from "@ethereum-attestation-service/eas-contracts/contracts/IEAS.sol";
 
-/**
- * @title A sample schema resolver that pays attesters (and expects the payment to be returned during revocations)
- */
+/// @title ETHResolver
+/// @notice A sample schema resolver that pays attesters (and expects the payment to be returned during revocations)
 contract ETHResolver is SchemaResolver {
     using Address for address payable;
 

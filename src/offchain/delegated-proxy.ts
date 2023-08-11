@@ -1,7 +1,6 @@
+import { Signer } from 'ethers';
 import { EIP712AttestationParams, EIP712RevocationParams } from './delegated';
 import { EIP712MessageTypes, EIP712Response, TypedData, TypedDataConfig, TypedDataHandler } from './typed-data-handler';
-import { TypedDataSigner } from '@ethersproject/abstract-signer';
-import { BigNumberish } from 'ethers';
 
 export {
   EIP712MessageTypes,
@@ -32,11 +31,11 @@ export const REVOKE_PROXY_TYPE: TypedData[] = [
 ];
 
 export type EIP712AttestationProxyParams = EIP712AttestationParams & {
-  deadline: BigNumberish;
+  deadline: bigint;
 };
 
 export type EIP712RevocationProxyParams = EIP712RevocationParams & {
-  deadline: BigNumberish;
+  deadline: bigint;
 };
 
 export class DelegatedProxy extends TypedDataHandler {
@@ -46,7 +45,7 @@ export class DelegatedProxy extends TypedDataHandler {
 
   public signDelegatedProxyAttestation(
     params: EIP712AttestationProxyParams,
-    signer: TypedDataSigner
+    signer: Signer
   ): Promise<EIP712Response<EIP712MessageTypes, EIP712AttestationProxyParams>> {
     return this.signTypedDataRequest<EIP712MessageTypes, EIP712AttestationProxyParams>(
       params,
@@ -71,7 +70,7 @@ export class DelegatedProxy extends TypedDataHandler {
 
   public signDelegatedProxyRevocation(
     params: EIP712RevocationProxyParams,
-    signer: TypedDataSigner
+    signer: Signer
   ): Promise<EIP712Response<EIP712MessageTypes, EIP712RevocationProxyParams>> {
     return this.signTypedDataRequest<EIP712MessageTypes, EIP712RevocationProxyParams>(
       params,
