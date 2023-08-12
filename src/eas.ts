@@ -1,4 +1,7 @@
+import { EAS__factory, EAS as EASContract } from '@ethereum-attestation-service/eas-contracts';
+import { Overrides, TransactionReceipt } from 'ethers';
 import { EIP712Proxy } from './eip712-proxy';
+import { legacyVersion } from './legacy/version';
 import { Delegated, Offchain, OFFCHAIN_ATTESTATION_VERSION } from './offchain';
 import {
   AttestationRequest,
@@ -17,14 +20,11 @@ import {
 } from './request';
 import { Base, SignerOrProvider, Transaction } from './transaction';
 import {
-  getTimestampFromOffchainRevocationEvents,
-  getTimestampFromTimestampEvents,
-  getUIDsFromAttestEvents,
+  getTimestampFromOffchainRevocationReceipt,
+  getTimestampFromTimestampReceipt,
+  getUIDsFromAttestReceipt,
   ZERO_BYTES32
 } from './utils';
-import { EAS__factory, EAS as EASContract } from '@ethereum-attestation-service/eas-contracts';
-import { legacyVersion } from './legacy/version';
-import { Overrides, TransactionReceipt } from 'ethers';
 
 export { Overrides } from 'ethers';
 export * from './request';
@@ -143,7 +143,8 @@ export class EAS extends Base<EASContract> {
       { value, ...overrides }
     );
 
-    return new Transaction(tx, async (receipt: TransactionReceipt) => (await getUIDsFromAttestEvents(receipt.logs))[0]);
+    // eslint-disable-next-line require-await
+    return new Transaction(tx, async (receipt: TransactionReceipt) => getUIDsFromAttestReceipt(receipt)[0]);
   }
 
   // Attests to a specific schema via an EIP712 delegation request
@@ -173,7 +174,8 @@ export class EAS extends Base<EASContract> {
       { value, ...overrides }
     );
 
-    return new Transaction(tx, async (receipt: TransactionReceipt) => (await getUIDsFromAttestEvents(receipt.logs))[0]);
+    // eslint-disable-next-line require-await
+    return new Transaction(tx, async (receipt: TransactionReceipt) => getUIDsFromAttestReceipt(receipt)[0]);
   }
 
   // Multi-attests to multiple schemas
@@ -201,7 +203,7 @@ export class EAS extends Base<EASContract> {
     });
 
     // eslint-disable-next-line require-await
-    return new Transaction(tx, async (receipt: TransactionReceipt) => getUIDsFromAttestEvents(receipt.logs));
+    return new Transaction(tx, async (receipt: TransactionReceipt) => getUIDsFromAttestReceipt(receipt));
   }
 
   // Multi-attests to multiple schemas via an EIP712 delegation requests
@@ -234,7 +236,7 @@ export class EAS extends Base<EASContract> {
     });
 
     // eslint-disable-next-line require-await
-    return new Transaction(tx, async (receipt: TransactionReceipt) => getUIDsFromAttestEvents(receipt.logs));
+    return new Transaction(tx, async (receipt: TransactionReceipt) => getUIDsFromAttestReceipt(receipt));
   }
 
   // Revokes an existing attestation
@@ -371,10 +373,8 @@ export class EAS extends Base<EASContract> {
   public async timestamp(data: string, overrides?: Overrides): Promise<Transaction<bigint>> {
     const tx = await this.contract.timestamp(data, overrides ?? {});
 
-    return new Transaction(
-      tx,
-      async (receipt: TransactionReceipt) => (await getTimestampFromTimestampEvents(receipt.logs))[0]
-    );
+    // eslint-disable-next-line require-await
+    return new Transaction(tx, async (receipt: TransactionReceipt) => getTimestampFromTimestampReceipt(receipt)[0]);
   }
 
   // Timestamps the specified multiple bytes32 data
@@ -382,7 +382,7 @@ export class EAS extends Base<EASContract> {
     const tx = await this.contract.multiTimestamp(data, overrides ?? {});
 
     // eslint-disable-next-line require-await
-    return new Transaction(tx, async (receipt: TransactionReceipt) => getTimestampFromTimestampEvents(receipt.logs));
+    return new Transaction(tx, async (receipt: TransactionReceipt) => getTimestampFromTimestampReceipt(receipt));
   }
 
   // Revokes the specified offchain attestation UID
@@ -391,7 +391,8 @@ export class EAS extends Base<EASContract> {
 
     return new Transaction(
       tx,
-      async (receipt: TransactionReceipt) => (await getTimestampFromOffchainRevocationEvents(receipt.logs))[0]
+      // eslint-disable-next-line require-await
+      async (receipt: TransactionReceipt) => getTimestampFromOffchainRevocationReceipt(receipt)[0]
     );
   }
 
@@ -401,7 +402,7 @@ export class EAS extends Base<EASContract> {
 
     // eslint-disable-next-line require-await
     return new Transaction(tx, async (receipt: TransactionReceipt) =>
-      getTimestampFromOffchainRevocationEvents(receipt.logs)
+      getTimestampFromOffchainRevocationReceipt(receipt)
     );
   }
 
