@@ -12,6 +12,11 @@ var Event;
     Event["Timestamped"] = "Timestamped";
     Event["RevokedOffchain"] = "RevokedOffchain";
 })(Event || (Event = {}));
+const TOPICS = {
+    [Event.Attested]: (0, ethers_1.keccak256)((0, ethers_1.toUtf8Bytes)('Attested(address,address,bytes32,bytes32)')),
+    [Event.Timestamped]: (0, ethers_1.keccak256)((0, ethers_1.toUtf8Bytes)('Timestamped(bytes32,uint64)')),
+    [Event.RevokedOffchain]: (0, ethers_1.keccak256)((0, ethers_1.toUtf8Bytes)('RevokedOffchain(address,bytes32,uint64)'))
+};
 const getSchemaUID = (schema, resolverAddress, revocable) => (0, ethers_1.solidityPackedKeccak256)(['string', 'address', 'bool'], [schema, resolverAddress, revocable]);
 exports.getSchemaUID = getSchemaUID;
 const getUID = (schema, recipient, attester, time, expirationTime, revocable, refUID, data, bump) => (0, ethers_1.solidityPackedKeccak256)(['bytes', 'address', 'address', 'uint64', 'uint64', 'bool', 'bytes32', 'bytes', 'uint32'], [(0, ethers_1.hexlify)((0, ethers_1.toUtf8Bytes)(schema)), recipient, attester, time, expirationTime, revocable, refUID, data, bump]);
@@ -41,7 +46,7 @@ exports.getOffchainUID = getOffchainUID;
 const getDataFromReceipt = (receipt, event, attribute) => {
     const eas = new ethers_1.Interface(eas_contracts_1.EAS__factory.abi);
     const logs = [];
-    for (const log of receipt.logs || []) {
+    for (const log of receipt.logs.filter((l) => l.topics[0] === TOPICS[event]) || []) {
         logs.push({
             ...log,
             log: event,
