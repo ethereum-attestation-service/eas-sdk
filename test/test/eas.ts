@@ -1,3 +1,10 @@
+import {
+  EAS as EASContract,
+  EIP712Proxy as EIP712ProxyContract,
+  SchemaRegistry as SchemaRegistryContract
+} from '@ethereum-attestation-service/eas-contracts';
+import { encodeBytes32String, Signer } from 'ethers';
+import { ethers } from 'hardhat';
 import { EAS, NO_EXPIRATION } from '../../src/eas';
 import { EIP712Proxy } from '../../src/eip712-proxy';
 import { Offchain } from '../../src/offchain';
@@ -15,13 +22,6 @@ import {
 } from './helpers/eas';
 import { duration, latest } from './helpers/time';
 import { createWallet } from './helpers/wallet';
-import {
-  EAS as EASContract,
-  EIP712Proxy as EIP712ProxyContract,
-  SchemaRegistry as SchemaRegistryContract
-} from '@ethereum-attestation-service/eas-contracts';
-import { ethers } from 'hardhat';
-import { Signer, encodeBytes32String } from 'ethers';
 
 const { expect } = chai;
 

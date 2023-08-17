@@ -1,17 +1,30 @@
 import { EAS__factory } from '@ethereum-attestation-service/eas-contracts';
 import {
   hexlify,
+  Interface,
+  keccak256,
+  solidityPackedKeccak256,
   toUtf8Bytes,
   TransactionReceipt,
-  ZeroAddress,
   TransactionResponse,
-  Interface,
-  solidityPackedKeccak256
+  ZeroAddress
 } from 'ethers';
 
 export const ZERO_ADDRESS = ZeroAddress;
 export const ZERO_BYTES = '0x';
 export const ZERO_BYTES32 = '0x0000000000000000000000000000000000000000000000000000000000000000';
+
+enum Event {
+  Attested = 'Attested',
+  Timestamped = 'Timestamped',
+  RevokedOffchain = 'RevokedOffchain'
+}
+
+const TOPICS = {
+  [Event.Attested]: keccak256(toUtf8Bytes('Attested(address,address,bytes32,bytes32)')),
+  [Event.Timestamped]: keccak256(toUtf8Bytes('Timestamped(bytes32,uint64)')),
+  [Event.RevokedOffchain]: keccak256(toUtf8Bytes('RevokedOffchain(address,bytes32,uint64)'))
+};
 
 export const getSchemaUID = (schema: string, resolverAddress: string, revocable: boolean) =>
   solidityPackedKeccak256(['string', 'address', 'bool'], [schema, resolverAddress, revocable]);
@@ -71,6 +84,45 @@ export const getOffchainUID = (
   }
 };
 
+const getDataFromReceipt = (receipt: TransactionReceipt, event: Event, attribute: string): string[] => {
+  const eas = new Interface(EAS__factory.abi);
+  const logs = [];
+
+  for (const log of receipt.logs.filter((l) => l.topics[0] === TOPICS[event]) || []) {
+    logs.push({
+      ...log,
+      log: event,
+      fragment: {
+        name: event
+      },
+      args: eas.decodeEventLog(event, log.data, log.topics)
+    });
+  }
+
+  if (!logs) {
+    return [];
+  }
+
+  const filteredLogs = logs.filter((l) => l.fragment?.name === event);
+  if (filteredLogs.length === 0) {
+    throw new Error(`Unable to process ${event} events`);
+  }
+
+  return filteredLogs.map(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (log: any) => eas.decodeEventLog(event, log.data, log.topics)[attribute]
+  );
+};
+
+export const getUIDsFromAttestReceipt = (receipt: TransactionReceipt): string[] =>
+  getDataFromReceipt(receipt, Event.Attested, 'uid');
+
+export const getTimestampFromTimestampReceipt = (receipt: TransactionReceipt): bigint[] =>
+  getDataFromReceipt(receipt, Event.Timestamped, 'timestamp').map((s) => BigInt(s));
+
+export const getTimestampFromOffchainRevocationReceipt = (receipt: TransactionReceipt): bigint[] =>
+  getDataFromReceipt(receipt, Event.RevokedOffchain, 'timestamp').map((s) => BigInt(s));
+
 export const getUIDsFromMultiAttestTx = async (
   res: Promise<TransactionResponse> | TransactionResponse
 ): Promise<string[]> => {
@@ -80,7 +132,7 @@ export const getUIDsFromMultiAttestTx = async (
     throw new Error(`Unable to confirm: ${tx}`);
   }
 
-  return getUIDsFromAttestEvents(receipt.logs);
+  return getUIDsFromAttestReceipt(receipt);
 };
 
 export const getUIDFromAttestTx = async (res: Promise<TransactionResponse> | TransactionResponse): Promise<string> => {
@@ -107,21 +159,7 @@ export const getUIDFromMultiDelegatedProxyAttestReceipt = async (
     throw new Error(`Unable to confirm: ${res}`);
   }
 
-  // eslint-disable-next-line camelcase
-  const eas = new Interface(EAS__factory.abi);
-  const logs = [];
-
-  for (const log of receipt.logs || []) {
-    logs.push({
-      log: 'Attested',
-      fragment: {
-        name: 'Attested'
-      },
-      args: eas.decodeEventLog('Attested', log.data, log.topics)
-    });
-  }
-
-  return getUIDsFromAttestEvents(logs);
+  return getUIDsFromAttestReceipt(receipt);
 };
 
 export const getUIDFromDelegatedProxyAttestTx = async (
@@ -134,56 +172,4 @@ export const getUIDFromDelegatedProxyAttestReceipt = async (
   res: Promise<TransactionReceipt> | TransactionReceipt
 ): Promise<string> => {
   return (await getUIDFromMultiDelegatedProxyAttestReceipt(res))[0];
-};
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const getUIDsFromAttestEvents = (logs?: ReadonlyArray<any>): string[] => {
-  if (!logs) {
-    return [];
-  }
-
-  const attestedLogs = logs.filter((l) => l.fragment?.name === 'Attested');
-  if (attestedLogs.length === 0) {
-    throw new Error('Unable to process attestation events');
-  }
-
-  // eslint-disable-next-line camelcase
-  const eas = new Interface(EAS__factory.abi);
-  return attestedLogs.map((log) => log.args.uid ?? eas.decodeEventLog('Attested', log.data, log.topics).uid);
-};
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const getTimestampFromTimestampEvents = (logs?: ReadonlyArray<any>): bigint[] => {
-  if (!logs) {
-    return [];
-  }
-
-  const timestampedEvents = logs.filter((l) => l.fragment?.name === 'Timestamped');
-  if (timestampedEvents.length === 0) {
-    throw new Error('Unable to process attestation events');
-  }
-
-  // eslint-disable-next-line camelcase
-  const eas = new Interface(EAS__factory.abi);
-  return timestampedEvents.map(
-    (log) => log.args.uid ?? eas.decodeEventLog('Timestamped', log.data, log.topics).timestamp
-  );
-};
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const getTimestampFromOffchainRevocationEvents = (logs?: ReadonlyArray<any>): bigint[] => {
-  if (!logs) {
-    return [];
-  }
-
-  const revocationEvents = logs.filter((l) => l.fragment?.name === 'RevokedOffchain');
-  if (revocationEvents.length === 0) {
-    throw new Error('Unable to process offchain revocation events');
-  }
-
-  // eslint-disable-next-line camelcase
-  const eas = new Interface(EAS__factory.abi);
-  return revocationEvents.map(
-    (log) => log.args.uid ?? eas.decodeEventLog('RevokedOffchain', log.data, log.topics).timestamp
-  );
 };

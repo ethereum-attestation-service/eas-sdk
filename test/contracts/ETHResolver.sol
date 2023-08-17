@@ -14,6 +14,9 @@ contract ETHResolver is SchemaResolver {
 
     error InvalidValue();
 
+    event Paid(address indexed attester, uint256 value);
+    event Refunded(address indexed revoker, uint256 value);
+
     uint256 private immutable _incentive;
 
     constructor(IEAS eas, uint256 incentive) SchemaResolver(eas) {
@@ -27,6 +30,8 @@ contract ETHResolver is SchemaResolver {
     function onAttest(Attestation calldata attestation, uint256 /*value*/) internal virtual override returns (bool) {
         payable(attestation.attester).transfer(_incentive);
 
+        emit Paid({ attester: attestation.attester, value: _incentive });
+
         return true;
     }
 
@@ -38,6 +43,8 @@ contract ETHResolver is SchemaResolver {
         if (value > _incentive) {
             payable(address(attestation.attester)).sendValue(value - _incentive);
         }
+
+        emit Refunded({ revoker: attestation.attester, value: _incentive });
 
         return true;
     }

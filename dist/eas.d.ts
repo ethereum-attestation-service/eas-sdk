@@ -1,9 +1,9 @@
+import { EAS as EASContract } from '@ethereum-attestation-service/eas-contracts';
+import { Overrides } from 'ethers';
 import { EIP712Proxy } from './eip712-proxy';
 import { Delegated, Offchain } from './offchain';
 import { AttestationRequest, DelegatedAttestationRequest, DelegatedProxyAttestationRequest, DelegatedProxyRevocationRequest, DelegatedRevocationRequest, MultiAttestationRequest, MultiDelegatedAttestationRequest, MultiDelegatedProxyAttestationRequest, MultiDelegatedProxyRevocationRequest, MultiDelegatedRevocationRequest, MultiRevocationRequest, RevocationRequest } from './request';
 import { Base, SignerOrProvider, Transaction } from './transaction';
-import { EAS as EASContract } from '@ethereum-attestation-service/eas-contracts';
-import { Overrides } from 'ethers';
 export { Overrides } from 'ethers';
 export * from './request';
 export interface Attestation {
