@@ -71,7 +71,7 @@ export class Offchain extends TypedDataHandler {
   public readonly version: number;
   private readonly type: OffchainAttestationType;
 
-  public constructor(config: PartialTypedDataConfig, version: number) {
+  constructor(config: PartialTypedDataConfig, version: number) {
     if (version > OFFCHAIN_ATTESTATION_VERSION) {
       throw new Error('Unsupported version');
     }
