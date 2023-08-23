@@ -1,11 +1,11 @@
-import { Base, SignerOrProvider, Transaction } from './transaction';
-import { getSchemaUID, ZERO_ADDRESS, ZERO_BYTES32 } from './utils';
 import {
   SchemaRegistry__factory,
   SchemaRegistry as SchemaRegistryContract
 } from '@ethereum-attestation-service/eas-contracts';
+import { Overrides, TransactionReceipt } from 'ethers';
 import { legacyVersion } from './legacy/version';
-import { TransactionReceipt } from 'ethers';
+import { Base, SignerOrProvider, Transaction } from './transaction';
+import { getSchemaUID, ZERO_ADDRESS, ZERO_BYTES32 } from './utils';
 
 export declare type SchemaRecord = {
   uid: string;
@@ -41,12 +41,11 @@ export class SchemaRegistry extends Base<SchemaRegistryContract> {
   }
 
   // Registers a new schema and returns its UID
-  public async register({
-    schema,
-    resolverAddress = ZERO_ADDRESS,
-    revocable = true
-  }: RegisterSchemaParams): Promise<Transaction<string>> {
-    const tx = await this.contract.register(schema, resolverAddress, revocable);
+  public async register(
+    { schema, resolverAddress = ZERO_ADDRESS, revocable = true }: RegisterSchemaParams,
+    overrides?: Overrides
+  ): Promise<Transaction<string>> {
+    const tx = await this.contract.register(schema, resolverAddress, revocable, overrides ?? {});
 
     // eslint-disable-next-line require-await
     return new Transaction(tx, async (_receipt: TransactionReceipt) =>

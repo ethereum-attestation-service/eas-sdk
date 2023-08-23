@@ -289,7 +289,7 @@ class EAS extends transaction_1.Base {
             address: await this.contract.getAddress(),
             version: await this.getVersion(),
             chainId: await this.getChainId()
-        }, offchain_1.OFFCHAIN_ATTESTATION_VERSION);
+        }, offchain_1.OFFCHAIN_ATTESTATION_VERSION, this);
         return this.offchain;
     }
 }

@@ -36,16 +36,21 @@ exports.OFFCHAIN_ATTESTATION_TYPES = {
         ]
     }
 };
+const DEFAULT_OFFCHAIN_ATTESTATION_OPTIONS = {
+    verifyOnchain: false
+};
 class Offchain extends typed_data_handler_1.TypedDataHandler {
     version;
     type;
-    constructor(config, version) {
+    eas;
+    constructor(config, version, eas) {
         if (version > exports.OFFCHAIN_ATTESTATION_VERSION) {
             throw new Error('Unsupported version');
         }
         super({ ...config, name: delegated_1.EIP712_NAME });
         this.version = version;
         this.type = exports.OFFCHAIN_ATTESTATION_TYPES[this.version];
+        this.eas = eas;
     }
     getDomainSeparator() {
         return (0, ethers_1.keccak256)(ethers_1.AbiCoder.defaultAbiCoder().encode(['bytes32', 'bytes32', 'uint256', 'address'], [
@@ -63,7 +68,7 @@ class Offchain extends typed_data_handler_1.TypedDataHandler {
             verifyingContract: this.config.address
         };
     }
-    async signOffchainAttestation(params, signer) {
+    async signOffchainAttestation(params, signer, options) {
         const uid = Offchain.getOffchainUID(params);
         const signedRequest = await this.signTypedDataRequest(params, {
             domain: this.getDomainTypedData(),
@@ -73,6 +78,18 @@ class Offchain extends typed_data_handler_1.TypedDataHandler {
                 Attest: this.type.types
             }
         }, signer);
+        const { verifyOnchain } = { ...DEFAULT_OFFCHAIN_ATTESTATION_OPTIONS, ...options };
+        if (verifyOnchain) {
+            try {
+                const { schema, recipient, expirationTime, revocable, data } = params;
+                // Verify the offchain attestation onchain by simulating a contract call to attest. Since onchain verification
+                // makes sure that any referenced attestations exist, we will set refUID to ZERO_BYTES32.
+                await this.eas.contract.attest.staticCall({ schema, data: { recipient, expirationTime, revocable, refUID: utils_1.ZERO_BYTES32, data, value: 0 } }, { from: signer });
+            }
+            catch (e) {
+                throw new Error(`Unable to verify offchain attestation with: ${e}`);
+            }
+        }
         return {
             ...signedRequest,
             uid
