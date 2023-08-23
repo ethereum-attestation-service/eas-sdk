@@ -39,7 +39,7 @@ export type EIP712RevocationProxyParams = EIP712RevocationParams & {
 };
 
 export class DelegatedProxy extends TypedDataHandler {
-  public constructor(config: TypedDataConfig) {
+  constructor(config: TypedDataConfig) {
     super(config);
   }
 

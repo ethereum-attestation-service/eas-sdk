@@ -87,7 +87,7 @@ export const EIP712_DOMAIN = 'EIP712Domain(string name,string version,uint256 ch
 export abstract class TypedDataHandler {
   protected config: TypedDataConfig;
 
-  public constructor(config: TypedDataConfig) {
+  constructor(config: TypedDataConfig) {
     this.config = config;
   }
 

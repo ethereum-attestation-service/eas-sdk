@@ -1,11 +1,11 @@
+import { SchemaRegistry as SchemaRegistryContract } from '@ethereum-attestation-service/eas-contracts';
+import { Signer } from 'ethers';
+import { ethers } from 'hardhat';
 import { SchemaRegistry } from '../../src/schema-registry';
 import { getSchemaUID } from '../../src/utils';
 import Contracts from '../components/Contracts';
 import { ZERO_ADDRESS, ZERO_BYTES } from '../utils/Constants';
 import chai from './helpers/chai';
-import { SchemaRegistry as SchemaRegistryContract } from '@ethereum-attestation-service/eas-contracts';
-import { ethers } from 'hardhat';
-import { Signer } from 'ethers';
 
 const { expect } = chai;
 
@@ -40,7 +40,7 @@ describe('SchemaRegistry API', () => {
       const resolverAddress = typeof resolver === 'string' ? resolver : await resolver.getAddress();
 
       const uid = getSchemaUID(schema, resolverAddress, revocable);
-      expect(schemaRegistry.getSchema({ uid })).to.be.rejectedWith(new Error('Schema not found'));
+      await expect(schemaRegistry.getSchema({ uid })).to.be.rejectedWith('Schema not found');
 
       const tx = await schemaRegistry.register({ schema, resolverAddress, revocable });
       const uid2 = await tx.wait();

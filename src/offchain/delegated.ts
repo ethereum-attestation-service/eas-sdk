@@ -52,7 +52,7 @@ export type EIP712RevocationParams = EIP712Params & {
 };
 
 export class Delegated extends TypedDataHandler {
-  public constructor(config: PartialTypedDataConfig) {
+  constructor(config: PartialTypedDataConfig) {
     super({ ...config, name: EIP712_NAME });
   }
 
