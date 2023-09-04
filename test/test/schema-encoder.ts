@@ -1,7 +1,7 @@
+import { AbiCoder } from 'ethers';
 import { SchemaEncoder } from '../../src/schema-encoder';
 import { ZERO_ADDRESS } from '../utils/Constants';
 import chai from './helpers/chai';
-import { AbiCoder } from 'ethers';
 
 const { expect } = chai;
 
@@ -177,7 +177,11 @@ describe('SchemaEncoder', () => {
         inputs: [
           {
             in: [
-              { type: 'address[]', name: 'contractAddresses', value: ['0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266', '0x70997970C51812dc3A010C7d01b50e0d17dc79C8'] },
+              {
+                type: 'address[]',
+                name: 'contractAddresses',
+                value: ['0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266', '0x70997970C51812dc3A010C7d01b50e0d17dc79C8']
+              },
               { type: 'string[]', name: 'names', value: ['abc', 'def'] }
             ]
           }

@@ -19,6 +19,7 @@ export interface AttestationRequest {
 export interface DelegatedAttestationRequest extends AttestationRequest {
   signature: Signature;
   attester: string;
+  deadline?: bigint;
 }
 
 export interface MultiAttestationRequest {
@@ -29,6 +30,7 @@ export interface MultiAttestationRequest {
 export interface MultiDelegatedAttestationRequest extends MultiAttestationRequest {
   signatures: Signature[];
   attester: string;
+  deadline?: bigint;
 }
 
 export interface RevocationRequestData {
@@ -44,6 +46,7 @@ export interface RevocationRequest {
 export interface DelegatedRevocationRequest extends RevocationRequest {
   signature: Signature;
   revoker: string;
+  deadline?: bigint;
 }
 
 export interface MultiRevocationRequest {
@@ -54,20 +57,10 @@ export interface MultiRevocationRequest {
 export interface MultiDelegatedRevocationRequest extends MultiRevocationRequest {
   signatures: Signature[];
   revoker: string;
+  deadline?: bigint;
 }
 
-export interface DelegatedProxyAttestationRequest extends DelegatedAttestationRequest {
-  deadline: bigint;
-}
-
-export interface MultiDelegatedProxyAttestationRequest extends MultiDelegatedAttestationRequest {
-  deadline: bigint;
-}
-
-export interface DelegatedProxyRevocationRequest extends DelegatedRevocationRequest {
-  deadline: bigint;
-}
-
-export interface MultiDelegatedProxyRevocationRequest extends MultiDelegatedRevocationRequest {
-  deadline: bigint;
-}
+export interface DelegatedProxyAttestationRequest extends DelegatedAttestationRequest {}
+export interface MultiDelegatedProxyAttestationRequest extends MultiDelegatedAttestationRequest {}
+export interface DelegatedProxyRevocationRequest extends DelegatedRevocationRequest {}
+export interface MultiDelegatedProxyRevocationRequest extends MultiDelegatedRevocationRequest {}

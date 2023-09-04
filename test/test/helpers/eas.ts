@@ -19,7 +19,7 @@ import {
   EIP712Response,
   EIP712RevocationParams,
   EIP712RevocationProxyParams,
-  OFFCHAIN_ATTESTATION_VERSION
+  OffChainAttestationVersion
 } from '../../../src/offchain';
 import { Transaction } from '../../../src/transaction';
 import { getOffchainUID } from '../../../src/utils';
@@ -100,7 +100,9 @@ export const expectAttestation = async (
           revocable,
           refUID,
           data,
-          nonce: await eas.getNonce(await txSender.getAddress())
+          value,
+          nonce: await eas.getNonce(await txSender.getAddress()),
+          deadline
         },
         txSender
       );
@@ -112,7 +114,8 @@ export const expectAttestation = async (
           schema,
           data: { recipient, expirationTime, revocable, refUID, data, value },
           signature: response.signature,
-          attester: await txSender.getAddress()
+          attester: await txSender.getAddress(),
+          deadline
         },
         overrides
       );
@@ -136,6 +139,7 @@ export const expectAttestation = async (
           revocable,
           refUID,
           data,
+          value,
           deadline
         },
         txSender
@@ -167,7 +171,7 @@ export const expectAttestation = async (
 
       const now = await latest();
       const uid = getOffchainUID(
-        OFFCHAIN_ATTESTATION_VERSION,
+        OffChainAttestationVersion.Version1,
         schema,
         recipient,
         now,
@@ -178,7 +182,7 @@ export const expectAttestation = async (
       );
       const response = await offchain.signOffchainAttestation(
         {
-          version: OFFCHAIN_ATTESTATION_VERSION,
+          version: OffChainAttestationVersion.Version1,
           schema,
           recipient,
           time: now,
@@ -254,7 +258,9 @@ export const expectMultiAttestations = async (
               revocable: request.revocable ?? true,
               refUID: request.refUID ?? ZERO_BYTES32,
               data: request.data,
-              nonce
+              value: request.value ?? 0n,
+              nonce,
+              deadline
             },
             txSender
           );
@@ -270,7 +276,8 @@ export const expectMultiAttestations = async (
           schema,
           data,
           signatures: responses.map((r) => r.signature),
-          attester: await txSender.getAddress()
+          attester: await txSender.getAddress(),
+          deadline
         });
       }
 
@@ -300,6 +307,7 @@ export const expectMultiAttestations = async (
               expirationTime: request.expirationTime ?? NO_EXPIRATION,
               revocable: request.revocable ?? true,
               refUID: request.refUID ?? ZERO_BYTES32,
+              value: request.value ?? 0n,
               data: request.data,
               deadline
             },
@@ -357,7 +365,6 @@ export const expectRevocation = async (
     from: txSender,
     signatureType = SignatureType.Direct,
     deadline = NO_EXPIRATION,
-
     maxPriorityFeePerGas,
     maxFeePerGas
   } = options;
@@ -378,7 +385,7 @@ export const expectRevocation = async (
     case SignatureType.Delegated: {
       const delegated = await eas.getDelegated();
       const response = await delegated.signDelegatedRevocation(
-        { schema, uid, nonce: await eas.getNonce(await txSender.getAddress()) },
+        { schema, uid, value, deadline, nonce: await eas.getNonce(await txSender.getAddress()) },
         txSender
       );
 
@@ -389,7 +396,8 @@ export const expectRevocation = async (
           schema,
           data: { uid, value },
           signature: response.signature,
-          revoker: await txSender.getAddress()
+          revoker: await txSender.getAddress(),
+          deadline
         },
         overrides
       );
@@ -404,7 +412,7 @@ export const expectRevocation = async (
       }
       const delegated = await proxy?.getDelegated();
 
-      const response = await delegated.signDelegatedProxyRevocation({ schema, uid, deadline }, txSender);
+      const response = await delegated.signDelegatedProxyRevocation({ schema, uid, value, deadline }, txSender);
 
       expect(await delegated.verifyDelegatedProxyRevocationSignature(await txSender.getAddress(), response)).to.be.true;
 
@@ -440,7 +448,6 @@ export const expectMultiRevocations = async (
     from: txSender,
     signatureType = SignatureType.Direct,
     deadline = NO_EXPIRATION,
-
     maxPriorityFeePerGas,
     maxFeePerGas
   } = options;
@@ -468,7 +475,10 @@ export const expectMultiRevocations = async (
 
         for (const request of data) {
           const delegated = await eas.getDelegated();
-          const response = await delegated.signDelegatedRevocation({ schema, uid: request.uid, nonce }, txSender);
+          const response = await delegated.signDelegatedRevocation(
+            { schema, uid: request.uid, value: request.value ?? 0n, nonce, deadline },
+            txSender
+          );
 
           expect(await delegated.verifyDelegatedRevocationSignature(await txSender.getAddress(), response)).to.be.true;
 
@@ -481,7 +491,8 @@ export const expectMultiRevocations = async (
           schema,
           data,
           signatures: responses.map((r) => r.signature),
-          revoker: await txSender.getAddress()
+          revoker: await txSender.getAddress(),
+          deadline
         });
       }
 
@@ -504,7 +515,7 @@ export const expectMultiRevocations = async (
 
         for (const request of data) {
           const response = await delegated.signDelegatedProxyRevocation(
-            { schema, uid: request.uid, deadline },
+            { schema, uid: request.uid, value: request.value ?? 0n, deadline },
             txSender
           );
 

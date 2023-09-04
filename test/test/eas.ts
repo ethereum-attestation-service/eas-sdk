@@ -193,7 +193,13 @@ describe('EAS API', () => {
                           revocable,
                           data
                         },
-                        { signatureType, from: sender, maxFeePerGas, maxPriorityFeePerGas }
+                        {
+                          signatureType,
+                          from: sender,
+                          maxFeePerGas,
+                          maxPriorityFeePerGas,
+                          deadline: (await latest()) + duration.days(1n)
+                        }
                       );
                     });
 
@@ -202,7 +208,13 @@ describe('EAS API', () => {
                         eas,
                         schema1Id,
                         { recipient: await sender.getAddress(), expirationTime, revocable, data },
-                        { signatureType, from: sender, maxFeePerGas, maxPriorityFeePerGas }
+                        {
+                          signatureType,
+                          from: sender,
+                          maxFeePerGas,
+                          maxPriorityFeePerGas,
+                          deadline: (await latest()) + duration.days(1n)
+                        }
                       );
                     });
 
@@ -216,7 +228,13 @@ describe('EAS API', () => {
                           revocable,
                           data: encodeBytes32String('0')
                         },
-                        { signatureType, from: sender, maxFeePerGas, maxPriorityFeePerGas }
+                        {
+                          signatureType,
+                          from: sender,
+                          maxFeePerGas,
+                          maxPriorityFeePerGas,
+                          deadline: (await latest()) + duration.days(1n)
+                        }
                       );
 
                       await expectAttestation(
@@ -228,7 +246,13 @@ describe('EAS API', () => {
                           revocable,
                           data: encodeBytes32String('1')
                         },
-                        { signatureType, from: sender, maxFeePerGas, maxPriorityFeePerGas }
+                        {
+                          signatureType,
+                          from: sender,
+                          maxFeePerGas,
+                          maxPriorityFeePerGas,
+                          deadline: (await latest()) + duration.days(1n)
+                        }
                       );
                     });
 
@@ -272,7 +296,13 @@ describe('EAS API', () => {
                               ]
                             }
                           ],
-                          { signatureType, from: sender, maxFeePerGas, maxPriorityFeePerGas }
+                          {
+                            signatureType,
+                            from: sender,
+                            maxFeePerGas,
+                            maxPriorityFeePerGas,
+                            deadline: (await latest()) + duration.days(1n)
+                          }
                         );
                       });
                     }
@@ -282,7 +312,13 @@ describe('EAS API', () => {
                         eas,
                         schema1Id,
                         { recipient: await recipient.getAddress(), expirationTime: NO_EXPIRATION, revocable, data },
-                        { signatureType, from: sender, maxFeePerGas, maxPriorityFeePerGas }
+                        {
+                          signatureType,
+                          from: sender,
+                          maxFeePerGas,
+                          maxPriorityFeePerGas,
+                          deadline: (await latest()) + duration.days(1n)
+                        }
                       );
                     });
 
@@ -291,7 +327,13 @@ describe('EAS API', () => {
                         eas,
                         schema1Id,
                         { recipient: await recipient.getAddress(), expirationTime, revocable, data: ZERO_BYTES },
-                        { signatureType, from: sender, maxFeePerGas, maxPriorityFeePerGas }
+                        {
+                          signatureType,
+                          from: sender,
+                          maxFeePerGas,
+                          maxPriorityFeePerGas,
+                          deadline: (await latest()) + duration.days(1n)
+                        }
                       );
                     });
 
@@ -307,7 +349,13 @@ describe('EAS API', () => {
                         eas,
                         schema1Id,
                         { recipient: await recipient.getAddress(), expirationTime, revocable, refUID: uid, data },
-                        { signatureType, from: sender, maxFeePerGas, maxPriorityFeePerGas }
+                        {
+                          signatureType,
+                          from: sender,
+                          maxFeePerGas,
+                          maxPriorityFeePerGas,
+                          deadline: (await latest()) + duration.days(1n)
+                        }
                       );
                     });
                   });
@@ -359,7 +407,13 @@ describe('EAS API', () => {
                         expirationTime: NO_EXPIRATION,
                         data: encodeBytes32String((i + 1).toString())
                       },
-                      { signatureType, from: sender, maxPriorityFeePerGas, maxFeePerGas }
+                      {
+                        signatureType,
+                        from: sender,
+                        maxFeePerGas,
+                        maxPriorityFeePerGas,
+                        deadline: (await latest()) + duration.days(1n)
+                      }
                     );
 
                     uids1.push(uid);
@@ -376,7 +430,13 @@ describe('EAS API', () => {
                         expirationTime: NO_EXPIRATION,
                         data: encodeBytes32String((i + 1).toString())
                       },
-                      { signatureType, from: sender, maxPriorityFeePerGas, maxFeePerGas }
+                      {
+                        signatureType,
+                        from: sender,
+                        maxFeePerGas,
+                        maxPriorityFeePerGas,
+                        deadline: (await latest()) + duration.days(1n)
+                      }
                     );
 
                     uids2.push(uid);
@@ -389,7 +449,13 @@ describe('EAS API', () => {
                       eas,
                       schema1Id,
                       { uid },
-                      { signatureType, from: sender, maxPriorityFeePerGas, maxFeePerGas }
+                      {
+                        signatureType,
+                        from: sender,
+                        maxFeePerGas,
+                        maxPriorityFeePerGas,
+                        deadline: (await latest()) + duration.days(1n)
+                      }
                     );
                   }
 
@@ -398,7 +464,13 @@ describe('EAS API', () => {
                       eas,
                       schema2Id,
                       { uid },
-                      { signatureType, from: sender, maxPriorityFeePerGas, maxFeePerGas }
+                      {
+                        signatureType,
+                        from: sender,
+                        maxFeePerGas,
+                        maxPriorityFeePerGas,
+                        deadline: (await latest()) + duration.days(1n)
+                      }
                     );
                   }
                 });
@@ -416,7 +488,13 @@ describe('EAS API', () => {
                         data: [{ uid: uids2[0] }, { uid: uids2[1] }]
                       }
                     ],
-                    { signatureType, from: sender, maxPriorityFeePerGas, maxFeePerGas }
+                    {
+                      signatureType,
+                      from: sender,
+                      maxFeePerGas,
+                      maxPriorityFeePerGas,
+                      deadline: (await latest()) + duration.days(1n)
+                    }
                   );
                 });
               });
@@ -440,7 +518,7 @@ describe('EAS API', () => {
             ? `with maxPriorityFeePerGas=${maxPriorityFeePerGas.toString()}, maxFeePerGas=${maxFeePerGas.toString()} overrides`
             : 'with default fees',
           () => {
-            const overrides = maxPriorityFeePerGas && maxFeePerGas ? { maxPriorityFeePerGas, maxFeePerGas } : undefined;
+            const overrides = maxPriorityFeePerGas && maxFeePerGas ? { maxFeePerGas, maxPriorityFeePerGas } : undefined;
 
             it('should timestamp a single data', async () => {
               const tx = await eas.timestamp(data1, overrides);
@@ -644,7 +722,7 @@ describe('EAS API', () => {
               : 'with default fees',
             () => {
               const overrides =
-                maxPriorityFeePerGas && maxFeePerGas ? { maxPriorityFeePerGas, maxFeePerGas } : undefined;
+                maxPriorityFeePerGas && maxFeePerGas ? { maxFeePerGas, maxPriorityFeePerGas } : undefined;
 
               it('should revoke a single data', async () => {
                 const tx = await eas.revokeOffchain(data1, overrides);
