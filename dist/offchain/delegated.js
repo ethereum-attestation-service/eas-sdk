@@ -118,7 +118,7 @@ class Delegated extends typed_data_handler_1.TypedDataHandler {
             primaryType: this.revokeType.primaryType,
             message: effectiveParams,
             types: {
-                Revoke: this.revokeType.types
+                [this.revokeType.primaryType]: this.revokeType.types
             }
         }, signer);
     }
