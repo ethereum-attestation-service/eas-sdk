@@ -100,7 +100,7 @@ Example output:
 }
 ```
 
-### Creating On-chain Attestations
+### Creating Onchain Attestations
 
 The `attest` function allows you to create an on-chain attestation for a specific schema. This function takes an object with the following properties:
 
@@ -188,7 +188,7 @@ Since the off-chain attestation protocol is being constantly evolved and improve
 
 Please note that using the `getOffchainUID` function for the previous legacy version, requires passing `{ version: 0 }` explicitly.
 
-### Revoking On-chain Attestations
+### Revoking Onchain Attestations
 
 ```javascript
 const transaction = await eas.revoke({
