@@ -1,11 +1,14 @@
-import chai from './helpers/chai';
 import {
   AttestationShareablePackageObject,
   createOffchainURL,
   decodeBase64ZippedBase64,
+  EAS,
   Offchain,
+  OffChainAttestationVersion,
   zipAndEncodeToBase64
 } from '../../src';
+import { ZERO_ADDRESS } from '../utils/Constants';
+import chai from './helpers/chai';
 
 const { expect } = chai;
 
@@ -89,7 +92,8 @@ describe('offchain utils', () => {
           version: testAttestation.sig.domain.version,
           chainId: testAttestation.sig.domain.chainId
         },
-        1
+        OffChainAttestationVersion.Version1,
+        new EAS(ZERO_ADDRESS)
       );
 
       const verified = offchain.verifyOffchainAttestationSignature(testAttestation.signer, decoded.sig);

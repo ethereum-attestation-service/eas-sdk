@@ -7,8 +7,11 @@ interface OffchainAttestationType {
     primaryType: string;
     types: TypedData[];
 }
-export declare const OFFCHAIN_ATTESTATION_VERSION = 1;
-export declare const OFFCHAIN_ATTESTATION_TYPES: Record<number, OffchainAttestationType>;
+export declare enum OffChainAttestationVersion {
+    Legacy = 0,
+    Version1 = 1
+}
+export declare const OFFCHAIN_ATTESTATION_TYPES: Record<OffChainAttestationVersion, OffchainAttestationType>;
 export type OffchainAttestationParams = {
     version: number;
     schema: string;
@@ -26,7 +29,7 @@ export interface SignedOffchainAttestation extends EIP712Response<EIP712MessageT
     uid: string;
 }
 export declare class Offchain extends TypedDataHandler {
-    readonly version: number;
+    readonly version: OffChainAttestationVersion;
     private readonly type;
     private readonly eas;
     constructor(config: PartialTypedDataConfig, version: number, eas: EAS);

@@ -20,11 +20,13 @@ interface OffchainAttestationType {
   types: TypedData[];
 }
 
-export const OFFCHAIN_ATTESTATION_VERSION = 1;
-const LEGACY_OFFCHAIN_ATTESTATION_VERSION = 0;
+export enum OffChainAttestationVersion {
+  Legacy = 0,
+  Version1 = 1
+}
 
-export const OFFCHAIN_ATTESTATION_TYPES: Record<number, OffchainAttestationType> = {
-  0: {
+export const OFFCHAIN_ATTESTATION_TYPES: Record<OffChainAttestationVersion, OffchainAttestationType> = {
+  [OffChainAttestationVersion.Legacy]: {
     domainName: 'EAS Attestation',
     primaryType: 'Attestation',
     types: [
@@ -37,7 +39,7 @@ export const OFFCHAIN_ATTESTATION_TYPES: Record<number, OffchainAttestationType>
       { name: 'data', type: 'bytes' }
     ]
   },
-  1: {
+  [OffChainAttestationVersion.Version1]: {
     domainName: 'EAS Attestation',
     primaryType: 'Attest',
     types: [
@@ -77,12 +79,12 @@ export interface SignedOffchainAttestation extends EIP712Response<EIP712MessageT
 }
 
 export class Offchain extends TypedDataHandler {
-  public readonly version: number;
+  public readonly version: OffChainAttestationVersion;
   private readonly type: OffchainAttestationType;
   private readonly eas: EAS;
 
   constructor(config: PartialTypedDataConfig, version: number, eas: EAS) {
-    if (version > OFFCHAIN_ATTESTATION_VERSION) {
+    if (version > OffChainAttestationVersion.Version1) {
       throw new Error('Unsupported version');
     }
 
@@ -130,7 +132,7 @@ export class Offchain extends TypedDataHandler {
         primaryType: this.type.primaryType,
         message: params,
         types: {
-          Attest: this.type.types
+          [this.type.primaryType]: this.type.types
         }
       },
       signer
@@ -167,7 +169,7 @@ export class Offchain extends TypedDataHandler {
 
   public static getOffchainUID(params: OffchainAttestationParams): string {
     return getOffchainUID(
-      params.version ?? LEGACY_OFFCHAIN_ATTESTATION_VERSION,
+      params.version ?? OffChainAttestationVersion.Legacy,
       params.schema,
       params.recipient,
       params.time,

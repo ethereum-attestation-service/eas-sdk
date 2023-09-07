@@ -1,8 +1,8 @@
+import { EIP712Proxy as EIP712ProxyContract } from '@ethereum-attestation-service/eas-contracts';
+import { Overrides } from 'ethers';
 import { DelegatedProxy } from './offchain';
 import { DelegatedProxyAttestationRequest, DelegatedProxyRevocationRequest, MultiDelegatedProxyAttestationRequest, MultiDelegatedProxyRevocationRequest } from './request';
 import { Base, SignerOrProvider, Transaction } from './transaction';
-import { EIP712Proxy as EIP712ProxyContract } from '@ethereum-attestation-service/eas-contracts';
-import { Overrides } from 'ethers';
 export interface EIP712ProxyOptions {
     signerOrProvider?: SignerOrProvider;
 }

@@ -1,36 +1,94 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.DelegatedProxy = exports.REVOKE_PROXY_TYPE = exports.ATTEST_PROXY_TYPE = exports.REVOKE_PROXY_PRIMARY_TYPE = exports.ATTEST_PROXY_PRIMARY_TYPE = exports.REVOKE_PROXY_TYPED_SIGNATURE = exports.ATTEST_PROXY_TYPED_SIGNATURE = void 0;
+exports.DelegatedProxy = exports.DelegatedProxyAttestationVersion = void 0;
+const tslib_1 = require("tslib");
+const lodash_1 = require("lodash");
+const semver_1 = tslib_1.__importDefault(require("semver"));
 const typed_data_handler_1 = require("./typed-data-handler");
-exports.ATTEST_PROXY_TYPED_SIGNATURE = 'Attest(bytes32 schema,address recipient,uint64 expirationTime,bool revocable,bytes32 refUID,bytes data,uint64 deadline)';
-exports.REVOKE_PROXY_TYPED_SIGNATURE = 'Revoke(bytes32 schema,bytes32 uid,uint64 deadline)';
-exports.ATTEST_PROXY_PRIMARY_TYPE = 'Attest';
-exports.REVOKE_PROXY_PRIMARY_TYPE = 'Revoke';
-exports.ATTEST_PROXY_TYPE = [
-    { name: 'schema', type: 'bytes32' },
-    { name: 'recipient', type: 'address' },
-    { name: 'expirationTime', type: 'uint64' },
-    { name: 'revocable', type: 'bool' },
-    { name: 'refUID', type: 'bytes32' },
-    { name: 'data', type: 'bytes' },
-    { name: 'deadline', type: 'uint64' }
-];
-exports.REVOKE_PROXY_TYPE = [
-    { name: 'schema', type: 'bytes32' },
-    { name: 'uid', type: 'bytes32' },
-    { name: 'deadline', type: 'uint64' }
-];
+var DelegatedProxyAttestationVersion;
+(function (DelegatedProxyAttestationVersion) {
+    DelegatedProxyAttestationVersion[DelegatedProxyAttestationVersion["Legacy"] = 0] = "Legacy";
+    DelegatedProxyAttestationVersion[DelegatedProxyAttestationVersion["Version1"] = 1] = "Version1";
+})(DelegatedProxyAttestationVersion || (exports.DelegatedProxyAttestationVersion = DelegatedProxyAttestationVersion = {}));
+const DELEGATED_PROXY_ATTESTATION_TYPES = {
+    [DelegatedProxyAttestationVersion.Legacy]: {
+        typedSignature: 'Attest(bytes32 schema,address recipient,uint64 expirationTime,bool revocable,bytes32 refUID,bytes data,uint64 deadline)',
+        primaryType: 'Attest',
+        types: [
+            { name: 'schema', type: 'bytes32' },
+            { name: 'recipient', type: 'address' },
+            { name: 'expirationTime', type: 'uint64' },
+            { name: 'revocable', type: 'bool' },
+            { name: 'refUID', type: 'bytes32' },
+            { name: 'data', type: 'bytes' },
+            { name: 'deadline', type: 'uint64' }
+        ]
+    },
+    [DelegatedProxyAttestationVersion.Version1]: {
+        typedSignature: 'Attest(bytes32 schema,address recipient,uint64 expirationTime,bool revocable,bytes32 refUID,bytes data,uint256 value,uint64 deadline)',
+        primaryType: 'Attest',
+        types: [
+            { name: 'schema', type: 'bytes32' },
+            { name: 'recipient', type: 'address' },
+            { name: 'expirationTime', type: 'uint64' },
+            { name: 'revocable', type: 'bool' },
+            { name: 'refUID', type: 'bytes32' },
+            { name: 'data', type: 'bytes' },
+            { name: 'value', type: 'uint256' },
+            { name: 'deadline', type: 'uint64' }
+        ]
+    }
+};
+const DELEGATED_PROXY_REVOCATION_TYPES = {
+    [DelegatedProxyAttestationVersion.Legacy]: {
+        typedSignature: 'Revoke(bytes32 schema,bytes32 uid,uint64 deadline)',
+        primaryType: 'Revoke',
+        types: [
+            { name: 'schema', type: 'bytes32' },
+            { name: 'uid', type: 'bytes32' },
+            { name: 'deadline', type: 'uint64' }
+        ]
+    },
+    [DelegatedProxyAttestationVersion.Version1]: {
+        typedSignature: 'Revoke(bytes32 schema,bytes32 uid,uint256 value,uint64 deadline)',
+        primaryType: 'Revoke',
+        types: [
+            { name: 'schema', type: 'bytes32' },
+            { name: 'uid', type: 'bytes32' },
+            { name: 'value', type: 'uint256' },
+            { name: 'deadline', type: 'uint64' }
+        ]
+    }
+};
 class DelegatedProxy extends typed_data_handler_1.TypedDataHandler {
+    version;
+    attestType;
+    revokeType;
     constructor(config) {
         super(config);
+        if (semver_1.default.lt(config.version, '1.2.0')) {
+            this.version = DelegatedProxyAttestationVersion.Legacy;
+        }
+        else {
+            this.version = DelegatedProxyAttestationVersion.Version1;
+        }
+        this.attestType = DELEGATED_PROXY_ATTESTATION_TYPES[this.version];
+        this.revokeType = DELEGATED_PROXY_REVOCATION_TYPES[this.version];
     }
     signDelegatedProxyAttestation(params, signer) {
-        return this.signTypedDataRequest(params, {
+        let effectiveParams = params;
+        if (this.version === DelegatedProxyAttestationVersion.Legacy) {
+            if (params.value !== 0n) {
+                throw new Error("Committing to a value isn't supported for legacy attestations. Please specify 0 instead");
+            }
+            effectiveParams = (0, lodash_1.omit)(params, ['value']);
+        }
+        return this.signTypedDataRequest(effectiveParams, {
             domain: this.getDomainTypedData(),
-            primaryType: exports.ATTEST_PROXY_PRIMARY_TYPE,
-            message: params,
+            primaryType: this.attestType.primaryType,
+            message: effectiveParams,
             types: {
-                Attest: exports.ATTEST_PROXY_TYPE
+                [this.attestType.primaryType]: this.attestType.types
             }
         }, signer);
     }
@@ -38,12 +96,19 @@ class DelegatedProxy extends typed_data_handler_1.TypedDataHandler {
         return this.verifyTypedDataRequestSignature(attester, response);
     }
     signDelegatedProxyRevocation(params, signer) {
-        return this.signTypedDataRequest(params, {
+        let effectiveParams = params;
+        if (this.version === DelegatedProxyAttestationVersion.Legacy) {
+            if (params.value !== 0n) {
+                throw new Error("Committing to a value isn't supported for legacy revocations. Please specify 0 instead");
+            }
+            effectiveParams = (0, lodash_1.omit)(params, ['value']);
+        }
+        return this.signTypedDataRequest(effectiveParams, {
             domain: this.getDomainTypedData(),
-            primaryType: exports.REVOKE_PROXY_PRIMARY_TYPE,
-            message: params,
+            primaryType: this.revokeType.primaryType,
+            message: effectiveParams,
             types: {
-                Revoke: exports.REVOKE_PROXY_TYPE
+                Revoke: this.revokeType.types
             }
         }, signer);
     }

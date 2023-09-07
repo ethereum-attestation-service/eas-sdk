@@ -2,7 +2,7 @@ import { EAS__factory, EAS as EASContract } from '@ethereum-attestation-service/
 import { Overrides, TransactionReceipt } from 'ethers';
 import { EIP712Proxy } from './eip712-proxy';
 import { legacyVersion } from './legacy/version';
-import { Delegated, Offchain, OFFCHAIN_ATTESTATION_VERSION } from './offchain';
+import { Delegated, Offchain, OffChainAttestationVersion } from './offchain';
 import {
   AttestationRequest,
   DelegatedAttestationRequest,
@@ -152,8 +152,9 @@ export class EAS extends Base<EASContract> {
     {
       schema,
       data: { recipient, data, expirationTime = NO_EXPIRATION, revocable = true, refUID = ZERO_BYTES32, value = 0n },
+      signature,
       attester,
-      signature
+      deadline = NO_EXPIRATION
     }: DelegatedAttestationRequest,
     overrides?: Overrides
   ): Promise<Transaction<string>> {
@@ -169,7 +170,8 @@ export class EAS extends Base<EASContract> {
           value
         },
         signature,
-        attester
+        attester,
+        deadline
       },
       { value, ...overrides }
     );
@@ -222,7 +224,8 @@ export class EAS extends Base<EASContract> {
         value: d.value ?? 0n
       })),
       signatures: r.signatures,
-      attester: r.attester
+      attester: r.attester,
+      deadline: r.deadline ?? NO_EXPIRATION
     }));
 
     const requestedValue = multiAttestationRequests.reduce((res, { data }) => {
@@ -251,7 +254,7 @@ export class EAS extends Base<EASContract> {
 
   // Revokes an existing attestation an EIP712 delegation request
   public async revokeByDelegation(
-    { schema, data: { uid, value = 0n }, signature, revoker }: DelegatedRevocationRequest,
+    { schema, data: { uid, value = 0n }, signature, revoker, deadline = NO_EXPIRATION }: DelegatedRevocationRequest,
     overrides?: Overrides
   ): Promise<Transaction<void>> {
     const tx = await this.contract.revokeByDelegation(
@@ -262,7 +265,8 @@ export class EAS extends Base<EASContract> {
           value
         },
         signature,
-        revoker
+        revoker,
+        deadline
       },
       { value, ...overrides }
     );
@@ -305,7 +309,8 @@ export class EAS extends Base<EASContract> {
         value: d.value ?? 0n
       })),
       signatures: r.signatures,
-      revoker: r.revoker
+      revoker: r.revoker,
+      deadline: r.deadline ?? NO_EXPIRATION
     }));
 
     const requestedValue = multiRevocationRequests.reduce((res, { data }) => {
@@ -445,7 +450,7 @@ export class EAS extends Base<EASContract> {
         version: await this.getVersion(),
         chainId: await this.getChainId()
       },
-      OFFCHAIN_ATTESTATION_VERSION,
+      OffChainAttestationVersion.Version1,
       this
     );
 

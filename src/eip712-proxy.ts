@@ -1,3 +1,6 @@
+import { EIP712Proxy__factory, EIP712Proxy as EIP712ProxyContract } from '@ethereum-attestation-service/eas-contracts';
+import { Overrides, TransactionReceipt } from 'ethers';
+import { legacyVersion } from './legacy/version';
 import { DelegatedProxy } from './offchain';
 import {
   DelegatedProxyAttestationRequest,
@@ -12,9 +15,6 @@ import {
   getUIDFromMultiDelegatedProxyAttestReceipt,
   ZERO_BYTES32
 } from './utils';
-import { EIP712Proxy__factory, EIP712Proxy as EIP712ProxyContract } from '@ethereum-attestation-service/eas-contracts';
-import { legacyVersion } from './legacy/version';
-import { TransactionReceipt, Overrides } from 'ethers';
 
 export interface EIP712ProxyOptions {
   signerOrProvider?: SignerOrProvider;
@@ -88,7 +88,7 @@ export class EIP712Proxy extends Base<EIP712ProxyContract> {
       data: { recipient, data, expirationTime = NO_EXPIRATION, revocable = true, refUID = ZERO_BYTES32, value = 0n },
       attester,
       signature,
-      deadline
+      deadline = NO_EXPIRATION
     }: DelegatedProxyAttestationRequest,
     overrides?: Overrides
   ): Promise<Transaction<string>> {
@@ -131,7 +131,7 @@ export class EIP712Proxy extends Base<EIP712ProxyContract> {
       })),
       signatures: r.signatures,
       attester: r.attester,
-      deadline: r.deadline
+      deadline: r.deadline ?? NO_EXPIRATION
     }));
 
     const requestedValue = multiAttestationRequests.reduce((res, { data }) => {
@@ -152,7 +152,13 @@ export class EIP712Proxy extends Base<EIP712ProxyContract> {
 
   // Revokes an existing attestation an EIP712 delegation request using an external EIP712 proxy
   public async revokeByDelegationProxy(
-    { schema, data: { uid, value = 0n }, signature, revoker, deadline }: DelegatedProxyRevocationRequest,
+    {
+      schema,
+      data: { uid, value = 0n },
+      signature,
+      revoker,
+      deadline = NO_EXPIRATION
+    }: DelegatedProxyRevocationRequest,
     overrides?: Overrides
   ): Promise<Transaction<void>> {
     const tx = await this.contract.revokeByDelegation(
@@ -185,7 +191,7 @@ export class EIP712Proxy extends Base<EIP712ProxyContract> {
       })),
       signatures: r.signatures,
       revoker: r.revoker,
-      deadline: r.deadline
+      deadline: r.deadline ?? NO_EXPIRATION
     }));
 
     const requestedValue = multiRevocationRequests.reduce((res, { data }) => {
