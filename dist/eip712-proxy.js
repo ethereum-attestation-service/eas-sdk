@@ -1,12 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EIP712Proxy = void 0;
+const eas_contracts_1 = require("@ethereum-attestation-service/eas-contracts");
+const version_1 = require("./legacy/version");
 const offchain_1 = require("./offchain");
 const request_1 = require("./request");
 const transaction_1 = require("./transaction");
 const utils_1 = require("./utils");
-const eas_contracts_1 = require("@ethereum-attestation-service/eas-contracts");
-const version_1 = require("./legacy/version");
 class EIP712Proxy extends transaction_1.Base {
     delegated;
     constructor(address, options) {
@@ -55,7 +55,7 @@ class EIP712Proxy extends transaction_1.Base {
         return this.setDelegated();
     }
     // Attests to a specific schema via an EIP712 delegation request using an external EIP712 proxy
-    async attestByDelegationProxy({ schema, data: { recipient, data, expirationTime = request_1.NO_EXPIRATION, revocable = true, refUID = utils_1.ZERO_BYTES32, value = 0n }, attester, signature, deadline }, overrides) {
+    async attestByDelegationProxy({ schema, data: { recipient, data, expirationTime = request_1.NO_EXPIRATION, revocable = true, refUID = utils_1.ZERO_BYTES32, value = 0n }, attester, signature, deadline = request_1.NO_EXPIRATION }, overrides) {
         const tx = await this.contract.attestByDelegation({
             schema,
             data: {
@@ -87,7 +87,7 @@ class EIP712Proxy extends transaction_1.Base {
             })),
             signatures: r.signatures,
             attester: r.attester,
-            deadline: r.deadline
+            deadline: r.deadline ?? request_1.NO_EXPIRATION
         }));
         const requestedValue = multiAttestationRequests.reduce((res, { data }) => {
             const total = data.reduce((res, r) => res + r.value, 0n);
@@ -101,7 +101,7 @@ class EIP712Proxy extends transaction_1.Base {
         return new transaction_1.Transaction(tx, async (receipt) => (0, utils_1.getUIDFromMultiDelegatedProxyAttestReceipt)(receipt));
     }
     // Revokes an existing attestation an EIP712 delegation request using an external EIP712 proxy
-    async revokeByDelegationProxy({ schema, data: { uid, value = 0n }, signature, revoker, deadline }, overrides) {
+    async revokeByDelegationProxy({ schema, data: { uid, value = 0n }, signature, revoker, deadline = request_1.NO_EXPIRATION }, overrides) {
         const tx = await this.contract.revokeByDelegation({
             schema,
             data: {
@@ -124,7 +124,7 @@ class EIP712Proxy extends transaction_1.Base {
             })),
             signatures: r.signatures,
             revoker: r.revoker,
-            deadline: r.deadline
+            deadline: r.deadline ?? request_1.NO_EXPIRATION
         }));
         const requestedValue = multiRevocationRequests.reduce((res, { data }) => {
             const total = data.reduce((res, r) => res + r.value, 0n);

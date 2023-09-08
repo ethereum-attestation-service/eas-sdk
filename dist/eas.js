@@ -80,7 +80,7 @@ class EAS extends transaction_1.Base {
         return new transaction_1.Transaction(tx, async (receipt) => (0, utils_1.getUIDsFromAttestReceipt)(receipt)[0]);
     }
     // Attests to a specific schema via an EIP712 delegation request
-    async attestByDelegation({ schema, data: { recipient, data, expirationTime = request_1.NO_EXPIRATION, revocable = true, refUID = utils_1.ZERO_BYTES32, value = 0n }, attester, signature }, overrides) {
+    async attestByDelegation({ schema, data: { recipient, data, expirationTime = request_1.NO_EXPIRATION, revocable = true, refUID = utils_1.ZERO_BYTES32, value = 0n }, signature, attester, deadline = request_1.NO_EXPIRATION }, overrides) {
         const tx = await this.contract.attestByDelegation({
             schema,
             data: {
@@ -92,7 +92,8 @@ class EAS extends transaction_1.Base {
                 value
             },
             signature,
-            attester
+            attester,
+            deadline
         }, { value, ...overrides });
         // eslint-disable-next-line require-await
         return new transaction_1.Transaction(tx, async (receipt) => (0, utils_1.getUIDsFromAttestReceipt)(receipt)[0]);
@@ -134,7 +135,8 @@ class EAS extends transaction_1.Base {
                 value: d.value ?? 0n
             })),
             signatures: r.signatures,
-            attester: r.attester
+            attester: r.attester,
+            deadline: r.deadline ?? request_1.NO_EXPIRATION
         }));
         const requestedValue = multiAttestationRequests.reduce((res, { data }) => {
             const total = data.reduce((res, r) => res + r.value, 0n);
@@ -153,7 +155,7 @@ class EAS extends transaction_1.Base {
         return new transaction_1.Transaction(tx, async () => { });
     }
     // Revokes an existing attestation an EIP712 delegation request
-    async revokeByDelegation({ schema, data: { uid, value = 0n }, signature, revoker }, overrides) {
+    async revokeByDelegation({ schema, data: { uid, value = 0n }, signature, revoker, deadline = request_1.NO_EXPIRATION }, overrides) {
         const tx = await this.contract.revokeByDelegation({
             schema,
             data: {
@@ -161,7 +163,8 @@ class EAS extends transaction_1.Base {
                 value
             },
             signature,
-            revoker
+            revoker,
+            deadline
         }, { value, ...overrides });
         return new transaction_1.Transaction(tx, async () => { });
     }
@@ -193,7 +196,8 @@ class EAS extends transaction_1.Base {
                 value: d.value ?? 0n
             })),
             signatures: r.signatures,
-            revoker: r.revoker
+            revoker: r.revoker,
+            deadline: r.deadline ?? request_1.NO_EXPIRATION
         }));
         const requestedValue = multiRevocationRequests.reduce((res, { data }) => {
             const total = data.reduce((res, r) => res + r.value, 0n);
@@ -289,7 +293,7 @@ class EAS extends transaction_1.Base {
             address: await this.contract.getAddress(),
             version: await this.getVersion(),
             chainId: await this.getChainId()
-        }, offchain_1.OFFCHAIN_ATTESTATION_VERSION);
+        }, offchain_1.OffChainAttestationVersion.Version1, this);
         return this.offchain;
     }
 }

@@ -1,5 +1,6 @@
 import { AbiCoder, keccak256, Signer, toUtf8Bytes } from 'ethers';
-import { getOffchainUID } from '../utils';
+import { EAS } from '../eas';
+import { getOffchainUID, ZERO_BYTES32 } from '../utils';
 import { EIP712_NAME } from './delegated';
 import {
   DomainTypedData,
@@ -19,11 +20,13 @@ interface OffchainAttestationType {
   types: TypedData[];
 }
 
-export const OFFCHAIN_ATTESTATION_VERSION = 1;
-const LEGACY_OFFCHAIN_ATTESTATION_VERSION = 0;
+export enum OffChainAttestationVersion {
+  Legacy = 0,
+  Version1 = 1
+}
 
-export const OFFCHAIN_ATTESTATION_TYPES: Record<number, OffchainAttestationType> = {
-  0: {
+export const OFFCHAIN_ATTESTATION_TYPES: Record<OffChainAttestationVersion, OffchainAttestationType> = {
+  [OffChainAttestationVersion.Legacy]: {
     domainName: 'EAS Attestation',
     primaryType: 'Attestation',
     types: [
@@ -36,7 +39,7 @@ export const OFFCHAIN_ATTESTATION_TYPES: Record<number, OffchainAttestationType>
       { name: 'data', type: 'bytes' }
     ]
   },
-  1: {
+  [OffChainAttestationVersion.Version1]: {
     domainName: 'EAS Attestation',
     primaryType: 'Attest',
     types: [
@@ -63,16 +66,25 @@ export type OffchainAttestationParams = {
   data: string;
 } & Partial<EIP712Params>;
 
+export type OffchainAttestationOptions = {
+  verifyOnchain: boolean;
+};
+
+const DEFAULT_OFFCHAIN_ATTESTATION_OPTIONS: OffchainAttestationOptions = {
+  verifyOnchain: false
+};
+
 export interface SignedOffchainAttestation extends EIP712Response<EIP712MessageTypes, OffchainAttestationParams> {
   uid: string;
 }
 
 export class Offchain extends TypedDataHandler {
-  public readonly version: number;
+  public readonly version: OffChainAttestationVersion;
   private readonly type: OffchainAttestationType;
+  private readonly eas: EAS;
 
-  public constructor(config: PartialTypedDataConfig, version: number) {
-    if (version > OFFCHAIN_ATTESTATION_VERSION) {
+  constructor(config: PartialTypedDataConfig, version: number, eas: EAS) {
+    if (version > OffChainAttestationVersion.Version1) {
       throw new Error('Unsupported version');
     }
 
@@ -80,6 +92,7 @@ export class Offchain extends TypedDataHandler {
 
     this.version = version;
     this.type = OFFCHAIN_ATTESTATION_TYPES[this.version];
+    this.eas = eas;
   }
 
   public getDomainSeparator() {
@@ -107,7 +120,8 @@ export class Offchain extends TypedDataHandler {
 
   public async signOffchainAttestation(
     params: OffchainAttestationParams,
-    signer: Signer
+    signer: Signer,
+    options?: OffchainAttestationOptions
   ): Promise<SignedOffchainAttestation> {
     const uid = Offchain.getOffchainUID(params);
 
@@ -118,11 +132,27 @@ export class Offchain extends TypedDataHandler {
         primaryType: this.type.primaryType,
         message: params,
         types: {
-          Attest: this.type.types
+          [this.type.primaryType]: this.type.types
         }
       },
       signer
     );
+
+    const { verifyOnchain } = { ...DEFAULT_OFFCHAIN_ATTESTATION_OPTIONS, ...options };
+    if (verifyOnchain) {
+      try {
+        const { schema, recipient, expirationTime, revocable, data } = params;
+
+        // Verify the offchain attestation onchain by simulating a contract call to attest. Since onchain verification
+        // makes sure that any referenced attestations exist, we will set refUID to ZERO_BYTES32.
+        await this.eas.contract.attest.staticCall(
+          { schema, data: { recipient, expirationTime, revocable, refUID: ZERO_BYTES32, data, value: 0 } },
+          { from: signer }
+        );
+      } catch (e: unknown) {
+        throw new Error(`Unable to verify offchain attestation with: ${e}`);
+      }
+    }
 
     return {
       ...signedRequest,
@@ -139,7 +169,7 @@ export class Offchain extends TypedDataHandler {
 
   public static getOffchainUID(params: OffchainAttestationParams): string {
     return getOffchainUID(
-      params.version ?? LEGACY_OFFCHAIN_ATTESTATION_VERSION,
+      params.version ?? OffChainAttestationVersion.Legacy,
       params.schema,
       params.recipient,
       params.time,

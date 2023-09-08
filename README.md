@@ -100,7 +100,7 @@ Example output:
 }
 ```
 
-### Creating On-chain Attestations
+### Creating Onchain Attestations
 
 The `attest` function allows you to create an on-chain attestation for a specific schema. This function takes an object with the following properties:
 
@@ -146,9 +146,9 @@ const newAttestationUID = await tx.wait();
 console.log("New attestation UID:", newAttestationUID);
 ```
 
-### Creating Off-chain Attestations
+### Creating Offchain Attestations
 
-To create an off-chain attestation, you can use the `signOffchainAttestation` function provided by the Offchain class in the EAS SDK. Here's an example:
+To create an offchain attestation, you can use the `signOffchainAttestation` function provided by the Offchain class in the EAS SDK. Here's an example:
 
 ```javascript
 import { SchemaEncoder } from "@ethereum-attestation-service/eas-sdk";
@@ -180,15 +180,15 @@ const offchainAttestation = await offchain.signOffchainAttestation({
 }, signer);
 ```
 
-This function will return a signed off-chain attestation object containing the UID, signature, and attestation data. You can then share this object with the intended recipient or store it for future use.
+This function will return a signed offchain attestation object containing the UID, signature, and attestation data. You can then share this object with the intended recipient or store it for future use.
 
 #### Versioning
 
-Since the off-chain attestation protocol is being constantly evolved and improved, we've recently added versioning to help the applications to support both older and newer types of attestation. Starting from version `1`, we have added a `version` field to its typed data, which is seamlessly supported by both `signOffchainAttestation` and `verifyOffchainAttestationSignature` function.
+Since the offchain attestation protocol is being constantly evolved and improved, we've recently added versioning to help the applications to support both older and newer types of attestation. Starting from version `1`, we have added a `version` field to its typed data, which is seamlessly supported by both `signOffchainAttestation` and `verifyOffchainAttestationSignature` function.
 
 Please note that using the `getOffchainUID` function for the previous legacy version, requires passing `{ version: 0 }` explicitly.
 
-### Revoking On-chain Attestations
+### Revoking Onchain Attestations
 
 ```javascript
 const transaction = await eas.revoke({
@@ -234,9 +234,9 @@ const transaction = await eas.multiTimestamp([data1, data2]);
 await transaction.wait();
 ```
 
-### Revoking Off-chain Attestations
+### Revoking Offchain Attestations
 
-To revoke an off-chain attestation, you can use the `revokeOffchain` function provided by the EAS SDK. Here's an example:
+To revoke an offchain attestation, you can use the `revokeOffchain` function provided by the EAS SDK. Here's an example:
 
 ```javascript
 import { EAS } from "@ethereum-attestation-service/eas-sdk";
@@ -252,7 +252,7 @@ const transaction = await eas.revokeOffchain(data);
 await transaction.wait();
 ```
 
-To revoke multiple off-chain attestations, you can use the `multiRevokeOffchain` function:
+To revoke multiple offchain attestations, you can use the `multiRevokeOffchain` function:
 
 ```javascript
 import { EAS } from "@ethereum-attestation-service/eas-sdk";
@@ -269,9 +269,9 @@ const transaction = await eas.multiRevokeOffchain([data1, data2]);
 await transaction.wait();
 ```
 
-### Verify an Off-chain Attestation
+### Verify an Offchain Attestation
 
-To verify an off-chain attestation, you can use the `verifyOffchainAttestationSignature` function provided by the EAS SDK. Here's an example:
+To verify an offchain attestation, you can use the `verifyOffchainAttestationSignature` function provided by the EAS SDK. Here's an example:
 
 ```javascript
 import { OFFCHAIN_ATTESTATION_VERSION, Offchain, PartialTypedDataConfig } from "@ethereum-attestation-service/eas-sdk";

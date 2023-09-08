@@ -38,11 +38,11 @@ export declare class EAS extends Base<EASContract> {
     getDelegated(): Promise<Delegated> | Delegated;
     getOffchain(): Promise<Offchain> | Offchain;
     attest({ schema, data: { recipient, data, expirationTime, revocable, refUID, value } }: AttestationRequest, overrides?: Overrides): Promise<Transaction<string>>;
-    attestByDelegation({ schema, data: { recipient, data, expirationTime, revocable, refUID, value }, attester, signature }: DelegatedAttestationRequest, overrides?: Overrides): Promise<Transaction<string>>;
+    attestByDelegation({ schema, data: { recipient, data, expirationTime, revocable, refUID, value }, signature, attester, deadline }: DelegatedAttestationRequest, overrides?: Overrides): Promise<Transaction<string>>;
     multiAttest(requests: MultiAttestationRequest[], overrides?: Overrides): Promise<Transaction<string[]>>;
     multiAttestByDelegation(requests: MultiDelegatedAttestationRequest[], overrides?: Overrides): Promise<Transaction<string[]>>;
     revoke({ schema, data: { uid, value } }: RevocationRequest, overrides?: Overrides): Promise<Transaction<void>>;
-    revokeByDelegation({ schema, data: { uid, value }, signature, revoker }: DelegatedRevocationRequest, overrides?: Overrides): Promise<Transaction<void>>;
+    revokeByDelegation({ schema, data: { uid, value }, signature, revoker, deadline }: DelegatedRevocationRequest, overrides?: Overrides): Promise<Transaction<void>>;
     multiRevoke(requests: MultiRevocationRequest[], overrides?: Overrides): Promise<Transaction<void>>;
     multiRevokeByDelegation(requests: MultiDelegatedRevocationRequest[], overrides?: Overrides): Promise<Transaction<void>>;
     attestByDelegationProxy(request: DelegatedProxyAttestationRequest, overrides?: Overrides): Promise<Transaction<string>>;

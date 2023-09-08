@@ -82,9 +82,24 @@ describe('EAS API', () => {
         expect((await schemaRegistry.getSchema({ uid: schemaId })).uid).to.equal(schemaId);
       });
 
-      it('should not be able to register new schema', () => {
-        expect(schemaRegistry.register({ schema, resolverAddress: ZERO_ADDRESS })).to.be.rejectedWith(
-          'Error: sending a transaction requires a signer'
+      it('should not be able to make new attestations', async () => {
+        await expect(
+          eas.attest({
+            schema: schemaId,
+            data: {
+              recipient: await recipient.getAddress(),
+              expirationTime: NO_EXPIRATION,
+              revocable: true,
+              refUID: ZERO_BYTES32,
+              data: ZERO_BYTES
+            }
+          })
+        ).to.be.rejectedWith('contract runner does not support sending transactions');
+      });
+
+      it('should not be able to register a new schema', async () => {
+        await expect(schemaRegistry.register({ schema, resolverAddress: ZERO_ADDRESS })).to.be.rejectedWith(
+          'contract runner does not support sending transactions'
         );
       });
 
@@ -109,10 +124,6 @@ describe('EAS API', () => {
 
         it('should be able to query the EAS', async () => {
           expect((await eas.getAttestation(uid)).uid).to.equal(uid);
-        });
-
-        it('should not be able to make new attestations new schema', () => {
-          expect(eas.getAttestation(uid)).to.be.rejectedWith('Error: sending a transaction requires a signer');
         });
       });
     });
@@ -182,7 +193,13 @@ describe('EAS API', () => {
                           revocable,
                           data
                         },
-                        { signatureType, from: sender, maxFeePerGas, maxPriorityFeePerGas }
+                        {
+                          signatureType,
+                          from: sender,
+                          maxFeePerGas,
+                          maxPriorityFeePerGas,
+                          deadline: (await latest()) + duration.days(1n)
+                        }
                       );
                     });
 
@@ -191,7 +208,13 @@ describe('EAS API', () => {
                         eas,
                         schema1Id,
                         { recipient: await sender.getAddress(), expirationTime, revocable, data },
-                        { signatureType, from: sender, maxFeePerGas, maxPriorityFeePerGas }
+                        {
+                          signatureType,
+                          from: sender,
+                          maxFeePerGas,
+                          maxPriorityFeePerGas,
+                          deadline: (await latest()) + duration.days(1n)
+                        }
                       );
                     });
 
@@ -205,7 +228,13 @@ describe('EAS API', () => {
                           revocable,
                           data: encodeBytes32String('0')
                         },
-                        { signatureType, from: sender, maxFeePerGas, maxPriorityFeePerGas }
+                        {
+                          signatureType,
+                          from: sender,
+                          maxFeePerGas,
+                          maxPriorityFeePerGas,
+                          deadline: (await latest()) + duration.days(1n)
+                        }
                       );
 
                       await expectAttestation(
@@ -217,7 +246,13 @@ describe('EAS API', () => {
                           revocable,
                           data: encodeBytes32String('1')
                         },
-                        { signatureType, from: sender, maxFeePerGas, maxPriorityFeePerGas }
+                        {
+                          signatureType,
+                          from: sender,
+                          maxFeePerGas,
+                          maxPriorityFeePerGas,
+                          deadline: (await latest()) + duration.days(1n)
+                        }
                       );
                     });
 
@@ -261,7 +296,13 @@ describe('EAS API', () => {
                               ]
                             }
                           ],
-                          { signatureType, from: sender, maxFeePerGas, maxPriorityFeePerGas }
+                          {
+                            signatureType,
+                            from: sender,
+                            maxFeePerGas,
+                            maxPriorityFeePerGas,
+                            deadline: (await latest()) + duration.days(1n)
+                          }
                         );
                       });
                     }
@@ -271,7 +312,13 @@ describe('EAS API', () => {
                         eas,
                         schema1Id,
                         { recipient: await recipient.getAddress(), expirationTime: NO_EXPIRATION, revocable, data },
-                        { signatureType, from: sender, maxFeePerGas, maxPriorityFeePerGas }
+                        {
+                          signatureType,
+                          from: sender,
+                          maxFeePerGas,
+                          maxPriorityFeePerGas,
+                          deadline: (await latest()) + duration.days(1n)
+                        }
                       );
                     });
 
@@ -280,7 +327,13 @@ describe('EAS API', () => {
                         eas,
                         schema1Id,
                         { recipient: await recipient.getAddress(), expirationTime, revocable, data: ZERO_BYTES },
-                        { signatureType, from: sender, maxFeePerGas, maxPriorityFeePerGas }
+                        {
+                          signatureType,
+                          from: sender,
+                          maxFeePerGas,
+                          maxPriorityFeePerGas,
+                          deadline: (await latest()) + duration.days(1n)
+                        }
                       );
                     });
 
@@ -296,7 +349,13 @@ describe('EAS API', () => {
                         eas,
                         schema1Id,
                         { recipient: await recipient.getAddress(), expirationTime, revocable, refUID: uid, data },
-                        { signatureType, from: sender, maxFeePerGas, maxPriorityFeePerGas }
+                        {
+                          signatureType,
+                          from: sender,
+                          maxFeePerGas,
+                          maxPriorityFeePerGas,
+                          deadline: (await latest()) + duration.days(1n)
+                        }
                       );
                     });
                   });
@@ -348,7 +407,13 @@ describe('EAS API', () => {
                         expirationTime: NO_EXPIRATION,
                         data: encodeBytes32String((i + 1).toString())
                       },
-                      { signatureType, from: sender, maxPriorityFeePerGas, maxFeePerGas }
+                      {
+                        signatureType,
+                        from: sender,
+                        maxFeePerGas,
+                        maxPriorityFeePerGas,
+                        deadline: (await latest()) + duration.days(1n)
+                      }
                     );
 
                     uids1.push(uid);
@@ -365,7 +430,13 @@ describe('EAS API', () => {
                         expirationTime: NO_EXPIRATION,
                         data: encodeBytes32String((i + 1).toString())
                       },
-                      { signatureType, from: sender, maxPriorityFeePerGas, maxFeePerGas }
+                      {
+                        signatureType,
+                        from: sender,
+                        maxFeePerGas,
+                        maxPriorityFeePerGas,
+                        deadline: (await latest()) + duration.days(1n)
+                      }
                     );
 
                     uids2.push(uid);
@@ -378,7 +449,13 @@ describe('EAS API', () => {
                       eas,
                       schema1Id,
                       { uid },
-                      { signatureType, from: sender, maxPriorityFeePerGas, maxFeePerGas }
+                      {
+                        signatureType,
+                        from: sender,
+                        maxFeePerGas,
+                        maxPriorityFeePerGas,
+                        deadline: (await latest()) + duration.days(1n)
+                      }
                     );
                   }
 
@@ -387,7 +464,13 @@ describe('EAS API', () => {
                       eas,
                       schema2Id,
                       { uid },
-                      { signatureType, from: sender, maxPriorityFeePerGas, maxFeePerGas }
+                      {
+                        signatureType,
+                        from: sender,
+                        maxFeePerGas,
+                        maxPriorityFeePerGas,
+                        deadline: (await latest()) + duration.days(1n)
+                      }
                     );
                   }
                 });
@@ -405,7 +488,13 @@ describe('EAS API', () => {
                         data: [{ uid: uids2[0] }, { uid: uids2[1] }]
                       }
                     ],
-                    { signatureType, from: sender, maxPriorityFeePerGas, maxFeePerGas }
+                    {
+                      signatureType,
+                      from: sender,
+                      maxFeePerGas,
+                      maxPriorityFeePerGas,
+                      deadline: (await latest()) + duration.days(1n)
+                    }
                   );
                 });
               });
@@ -429,7 +518,7 @@ describe('EAS API', () => {
             ? `with maxPriorityFeePerGas=${maxPriorityFeePerGas.toString()}, maxFeePerGas=${maxFeePerGas.toString()} overrides`
             : 'with default fees',
           () => {
-            const overrides = maxPriorityFeePerGas && maxFeePerGas ? { maxPriorityFeePerGas, maxFeePerGas } : undefined;
+            const overrides = maxPriorityFeePerGas && maxFeePerGas ? { maxFeePerGas, maxPriorityFeePerGas } : undefined;
 
             it('should timestamp a single data', async () => {
               const tx = await eas.timestamp(data1, overrides);
@@ -485,8 +574,13 @@ describe('EAS API', () => {
 
     describe('offchain attestations', () => {
       let offchain: Offchain;
+
       const schema = 'bool like';
       const schemaId = getSchemaUID(schema, ZERO_ADDRESS, true);
+
+      beforeEach(async () => {
+        await registry.register(schema, ZERO_ADDRESS, false);
+      });
 
       beforeEach(async () => {
         offchain = await eas.getOffchain();
@@ -528,6 +622,91 @@ describe('EAS API', () => {
         });
       });
 
+      describe('verification', () => {
+        beforeEach(async () => {
+          await registry.register(schema, ZERO_ADDRESS, true);
+        });
+
+        it('should verify the offchain attestation onchain', async () => {
+          const response = await offchain.signOffchainAttestation(
+            {
+              version: 1,
+              schema: schemaId,
+              recipient: await recipient.getAddress(),
+              time: await latest(),
+              expirationTime: NO_EXPIRATION,
+              revocable: false,
+              refUID: ZERO_BYTES32,
+              data: ZERO_BYTES
+            },
+            sender,
+            { verifyOnchain: true }
+          );
+          expect(await offchain.verifyOffchainAttestationSignature(await sender.getAddress(), response)).to.be.true;
+        });
+
+        it('should throw on verification of invalid offchain attestations', async () => {
+          const params = {
+            version: 1,
+            schema: schemaId,
+            recipient: await recipient.getAddress(),
+            time: await latest(),
+            expirationTime: NO_EXPIRATION,
+            revocable: false,
+            refUID: ZERO_BYTES32,
+            data: ZERO_BYTES
+          };
+
+          // Invalid schema
+          await expect(
+            offchain.signOffchainAttestation({ ...params, schema: ZERO_BYTES32 }, sender, { verifyOnchain: true })
+          ).to.be.rejectedWith(
+            "Error: VM Exception while processing transaction: reverted with custom error 'InvalidSchema()'"
+          );
+
+          // Invalid expiration time
+          await expect(
+            offchain.signOffchainAttestation(
+              { ...params, expirationTime: (await latest()) - duration.days(1n) },
+              sender,
+              { verifyOnchain: true }
+            )
+          ).to.be.rejectedWith(
+            "Error: VM Exception while processing transaction: reverted with custom error 'InvalidExpirationTime()"
+          );
+        });
+
+        context('with an irrevocable schema', () => {
+          const schema2 = 'bytes32 eventId,uint8 ticketType,uint32 ticketNum';
+          const schema2Id = getSchemaUID(schema2, ZERO_ADDRESS, false);
+
+          beforeEach(async () => {
+            await registry.register(schema2, ZERO_ADDRESS, false);
+          });
+
+          it('should throw on verification of invalid offchain attestations', async () => {
+            await expect(
+              offchain.signOffchainAttestation(
+                {
+                  version: 1,
+                  schema: schema2Id,
+                  recipient: await recipient.getAddress(),
+                  time: await latest(),
+                  expirationTime: NO_EXPIRATION,
+                  revocable: true,
+                  refUID: ZERO_BYTES32,
+                  data: ZERO_BYTES
+                },
+                sender,
+                { verifyOnchain: true }
+              )
+            ).to.be.rejectedWith(
+              "Error: VM Exception while processing transaction: reverted with custom error 'Irrevocable()'"
+            );
+          });
+        });
+      });
+
       describe('revocation', () => {
         const data1 = encodeBytes32String('0x1234');
         const data2 = encodeBytes32String('0x4567');
@@ -543,7 +722,7 @@ describe('EAS API', () => {
               : 'with default fees',
             () => {
               const overrides =
-                maxPriorityFeePerGas && maxFeePerGas ? { maxPriorityFeePerGas, maxFeePerGas } : undefined;
+                maxPriorityFeePerGas && maxFeePerGas ? { maxFeePerGas, maxPriorityFeePerGas } : undefined;
 
               it('should revoke a single data', async () => {
                 const tx = await eas.revokeOffchain(data1, overrides);

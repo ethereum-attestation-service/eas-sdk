@@ -78,7 +78,7 @@ class SchemaEncoder {
             let value = values[i];
             const input = fragment.inputs[0];
             const components = input.components ?? input.arrayChildren?.components ?? [];
-            if (value.length > 0 && typeof value !== 'string' && components) {
+            if (value.length > 0 && typeof value !== 'string' && components?.length > 0) {
                 if (Array.isArray(value[0])) {
                     const namedValues = [];
                     for (const val of value) {

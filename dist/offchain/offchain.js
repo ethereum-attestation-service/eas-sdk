@@ -1,14 +1,17 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Offchain = exports.OFFCHAIN_ATTESTATION_TYPES = exports.OFFCHAIN_ATTESTATION_VERSION = void 0;
+exports.Offchain = exports.OFFCHAIN_ATTESTATION_TYPES = exports.OffChainAttestationVersion = void 0;
 const ethers_1 = require("ethers");
 const utils_1 = require("../utils");
 const delegated_1 = require("./delegated");
 const typed_data_handler_1 = require("./typed-data-handler");
-exports.OFFCHAIN_ATTESTATION_VERSION = 1;
-const LEGACY_OFFCHAIN_ATTESTATION_VERSION = 0;
+var OffChainAttestationVersion;
+(function (OffChainAttestationVersion) {
+    OffChainAttestationVersion[OffChainAttestationVersion["Legacy"] = 0] = "Legacy";
+    OffChainAttestationVersion[OffChainAttestationVersion["Version1"] = 1] = "Version1";
+})(OffChainAttestationVersion || (exports.OffChainAttestationVersion = OffChainAttestationVersion = {}));
 exports.OFFCHAIN_ATTESTATION_TYPES = {
-    0: {
+    [OffChainAttestationVersion.Legacy]: {
         domainName: 'EAS Attestation',
         primaryType: 'Attestation',
         types: [
@@ -21,7 +24,7 @@ exports.OFFCHAIN_ATTESTATION_TYPES = {
             { name: 'data', type: 'bytes' }
         ]
     },
-    1: {
+    [OffChainAttestationVersion.Version1]: {
         domainName: 'EAS Attestation',
         primaryType: 'Attest',
         types: [
@@ -36,16 +39,21 @@ exports.OFFCHAIN_ATTESTATION_TYPES = {
         ]
     }
 };
+const DEFAULT_OFFCHAIN_ATTESTATION_OPTIONS = {
+    verifyOnchain: false
+};
 class Offchain extends typed_data_handler_1.TypedDataHandler {
     version;
     type;
-    constructor(config, version) {
-        if (version > exports.OFFCHAIN_ATTESTATION_VERSION) {
+    eas;
+    constructor(config, version, eas) {
+        if (version > OffChainAttestationVersion.Version1) {
             throw new Error('Unsupported version');
         }
         super({ ...config, name: delegated_1.EIP712_NAME });
         this.version = version;
         this.type = exports.OFFCHAIN_ATTESTATION_TYPES[this.version];
+        this.eas = eas;
     }
     getDomainSeparator() {
         return (0, ethers_1.keccak256)(ethers_1.AbiCoder.defaultAbiCoder().encode(['bytes32', 'bytes32', 'uint256', 'address'], [
@@ -63,16 +71,28 @@ class Offchain extends typed_data_handler_1.TypedDataHandler {
             verifyingContract: this.config.address
         };
     }
-    async signOffchainAttestation(params, signer) {
+    async signOffchainAttestation(params, signer, options) {
         const uid = Offchain.getOffchainUID(params);
         const signedRequest = await this.signTypedDataRequest(params, {
             domain: this.getDomainTypedData(),
             primaryType: this.type.primaryType,
             message: params,
             types: {
-                Attest: this.type.types
+                [this.type.primaryType]: this.type.types
             }
         }, signer);
+        const { verifyOnchain } = { ...DEFAULT_OFFCHAIN_ATTESTATION_OPTIONS, ...options };
+        if (verifyOnchain) {
+            try {
+                const { schema, recipient, expirationTime, revocable, data } = params;
+                // Verify the offchain attestation onchain by simulating a contract call to attest. Since onchain verification
+                // makes sure that any referenced attestations exist, we will set refUID to ZERO_BYTES32.
+                await this.eas.contract.attest.staticCall({ schema, data: { recipient, expirationTime, revocable, refUID: utils_1.ZERO_BYTES32, data, value: 0 } }, { from: signer });
+            }
+            catch (e) {
+                throw new Error(`Unable to verify offchain attestation with: ${e}`);
+            }
+        }
         return {
             ...signedRequest,
             uid
@@ -83,7 +103,7 @@ class Offchain extends typed_data_handler_1.TypedDataHandler {
             this.verifyTypedDataRequestSignature(attester, request));
     }
     static getOffchainUID(params) {
-        return (0, utils_1.getOffchainUID)(params.version ?? LEGACY_OFFCHAIN_ATTESTATION_VERSION, params.schema, params.recipient, params.time, params.expirationTime, params.revocable, params.refUID, params.data);
+        return (0, utils_1.getOffchainUID)(params.version ?? OffChainAttestationVersion.Legacy, params.schema, params.recipient, params.time, params.expirationTime, params.revocable, params.refUID, params.data);
     }
 }
 exports.Offchain = Offchain;
