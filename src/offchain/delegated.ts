@@ -1,5 +1,5 @@
 import { Signer } from 'ethers';
-import { omit } from 'lodash';
+import omit from 'lodash/omit';
 import semver from 'semver';
 import { NO_EXPIRATION } from '../request';
 import {

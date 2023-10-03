@@ -1,5 +1,5 @@
 import { Signer } from 'ethers';
-import { omit } from 'lodash';
+import omit from 'lodash/omit';
 import semver from 'semver';
 import { EIP712AttestationParams, EIP712RevocationParams } from './delegated';
 import { EIP712MessageTypes, EIP712Response, TypedData, TypedDataConfig, TypedDataHandler } from './typed-data-handler';

@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Delegated = exports.DelegatedAttestationVersion = exports.EIP712_NAME = void 0;
 const tslib_1 = require("tslib");
-const lodash_1 = require("lodash");
+const omit_1 = tslib_1.__importDefault(require("lodash/omit"));
 const semver_1 = tslib_1.__importDefault(require("semver"));
 const request_1 = require("../request");
 const typed_data_handler_1 = require("./typed-data-handler");
@@ -88,7 +88,7 @@ class Delegated extends typed_data_handler_1.TypedDataHandler {
             if (params.deadline !== request_1.NO_EXPIRATION) {
                 throw new Error(`Committing to a deadline isn't supported for legacy attestations. Please specify ${request_1.NO_EXPIRATION} instead`);
             }
-            effectiveParams = (0, lodash_1.omit)(params, ['value', 'deadline']);
+            effectiveParams = (0, omit_1.default)(params, ['value', 'deadline']);
         }
         return this.signTypedDataRequest(effectiveParams, {
             domain: this.getDomainTypedData(),
@@ -111,7 +111,7 @@ class Delegated extends typed_data_handler_1.TypedDataHandler {
             if (params.deadline !== request_1.NO_EXPIRATION) {
                 throw new Error(`Committing to a deadline isn't supported for legacy revocations. Please specify ${request_1.NO_EXPIRATION} instead`);
             }
-            effectiveParams = (0, lodash_1.omit)(params, ['value', 'deadline']);
+            effectiveParams = (0, omit_1.default)(params, ['value', 'deadline']);
         }
         return this.signTypedDataRequest(effectiveParams, {
             domain: this.getDomainTypedData(),
