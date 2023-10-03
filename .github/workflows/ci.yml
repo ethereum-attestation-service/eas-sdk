@@ -17,18 +17,18 @@ jobs:
       - name: Check out the repository
         uses: actions/checkout@v3
 
-      - name: Install Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16
-          cache: 'pnpm'
-
       - name: Install PNPM
         uses: pnpm/action-setup@v2
         id: pnpm-install
         with:
           version: 8
           run_install: false
+
+      - name: Install Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          cache: 'pnpm'
 
       - name: Install SDK dependencies
         run: pnpm install
