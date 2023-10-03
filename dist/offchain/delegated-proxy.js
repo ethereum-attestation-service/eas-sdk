@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DelegatedProxy = exports.DelegatedProxyAttestationVersion = void 0;
 const tslib_1 = require("tslib");
-const lodash_1 = require("lodash");
+const omit_1 = tslib_1.__importDefault(require("lodash/omit"));
 const semver_1 = tslib_1.__importDefault(require("semver"));
 const typed_data_handler_1 = require("./typed-data-handler");
 var DelegatedProxyAttestationVersion;
@@ -81,7 +81,7 @@ class DelegatedProxy extends typed_data_handler_1.TypedDataHandler {
             if (params.value !== 0n) {
                 throw new Error("Committing to a value isn't supported for legacy attestations. Please specify 0 instead");
             }
-            effectiveParams = (0, lodash_1.omit)(params, ['value']);
+            effectiveParams = (0, omit_1.default)(params, ['value']);
         }
         return this.signTypedDataRequest(effectiveParams, {
             domain: this.getDomainTypedData(),
@@ -101,7 +101,7 @@ class DelegatedProxy extends typed_data_handler_1.TypedDataHandler {
             if (params.value !== 0n) {
                 throw new Error("Committing to a value isn't supported for legacy revocations. Please specify 0 instead");
             }
-            effectiveParams = (0, lodash_1.omit)(params, ['value']);
+            effectiveParams = (0, omit_1.default)(params, ['value']);
         }
         return this.signTypedDataRequest(effectiveParams, {
             domain: this.getDomainTypedData(),
