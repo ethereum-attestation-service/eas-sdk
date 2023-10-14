@@ -141,7 +141,7 @@ export const uncompactOffchainAttestationPackage = (
       domain: {
         name: 'EAS Attestation',
         version: compacted[0],
-        chainId: compacted[1],
+        chainId: BigInt(compacted[1]),
         verifyingContract: compacted[2]
       },
       primaryType: version === 0 ? 'Attestation' : 'Attest',
