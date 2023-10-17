@@ -1,11 +1,9 @@
 import { Signer } from 'ethers';
 import { EAS } from '../eas';
-import { DomainTypedData, EIP712MessageTypes, EIP712Params, EIP712Response, PartialTypedDataConfig, TypedData, TypedDataHandler } from './typed-data-handler';
+import { DomainTypedData, EIP712MessageTypes, EIP712Params, EIP712Response, EIP712Types, PartialTypedDataConfig, TypedDataHandler } from './typed-data-handler';
 export { EIP712Request, PartialTypedDataConfig, EIP712MessageTypes } from './typed-data-handler';
-interface OffchainAttestationType {
-    domainName: string;
-    primaryType: string;
-    types: TypedData[];
+interface OffchainAttestationType extends EIP712Types<EIP712MessageTypes> {
+    domain: string;
 }
 export declare enum OffChainAttestationVersion {
     Legacy = 0,
