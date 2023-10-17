@@ -88,9 +88,9 @@ describe('offchain utils', () => {
 
       const offchain = new Offchain(
         {
+          chainId: testAttestation.sig.domain.chainId,
           address: testAttestation.sig.domain.verifyingContract,
-          version: testAttestation.sig.domain.version,
-          chainId: testAttestation.sig.domain.chainId
+          version: testAttestation.sig.domain.version
         },
         OffChainAttestationVersion.Version1,
         new EAS(ZERO_ADDRESS)

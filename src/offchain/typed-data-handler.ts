@@ -8,6 +8,7 @@ import {
   toUtf8Bytes,
   verifyTypedData
 } from 'ethers';
+import isEqual from 'lodash/isEqual';
 import { ZERO_ADDRESS } from '../utils';
 
 export interface PartialTypedDataConfig {
@@ -63,10 +64,13 @@ export type EIP712Params = {
   nonce?: bigint;
 };
 
-export interface EIP712TypedData<T extends EIP712MessageTypes, P extends EIP712Params> {
-  domain: EIP712DomainTypedData;
-  primaryType: keyof T;
+export interface EIP712Types<T extends EIP712MessageTypes> {
+  primaryType: string;
   types: T;
+}
+
+export interface EIP712TypedData<T extends EIP712MessageTypes, P extends EIP712Params> extends EIP712Types<T> {
+  domain: EIP712DomainTypedData;
   message: P;
 }
 
@@ -128,15 +132,28 @@ export abstract class TypedDataHandler {
 
   public verifyTypedDataRequestSignature<T extends EIP712MessageTypes, P extends EIP712Params>(
     attester: string,
-    request: EIP712Response<T, P>
+    response: EIP712Response<T, P>,
+    types: EIP712Types<T>
   ): boolean {
+    if (!isEqual(response.domain, this.getDomainTypedData())) {
+      throw new Error('Invalid domain');
+    }
+
+    if (response.primaryType !== types.primaryType) {
+      throw new Error('Invalid primary type');
+    }
+
+    if (!isEqual(response.types, types.types)) {
+      throw new Error('Invalid types');
+    }
+
     if (attester === ZERO_ADDRESS) {
       throw new Error('Invalid address');
     }
 
-    const { signature } = request;
+    const { signature } = response;
     const sig = Sig.from({ v: signature.v, r: hexlify(signature.r), s: hexlify(signature.s) }).serialized;
-    const recoveredAddress = verifyTypedData(request.domain, request.types, request.message, sig);
+    const recoveredAddress = verifyTypedData(response.domain, response.types, response.message, sig);
 
     return getAddress(attester) === getAddress(recoveredAddress);
   }
