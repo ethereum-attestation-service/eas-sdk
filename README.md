@@ -8,7 +8,7 @@ This repository contains the Ethereum Attestation Service SDK, used to interact 
 
 ## Installing the EAS SDK
 
-To install the EAS contracts, run the following command within your project directory:
+To install the EAS SDK, run the following command within your project directory:
 
 ```sh
 yarn add @ethereum-attestation-service/eas-sdk

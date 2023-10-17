@@ -17,11 +17,6 @@ jobs:
       - name: Check out the repository
         uses: actions/checkout@v3
 
-      - name: Install Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16
-
       - name: Install PNPM
         uses: pnpm/action-setup@v2
         id: pnpm-install
@@ -29,19 +24,11 @@ jobs:
           version: 8
           run_install: false
 
-      - name: Get PNPM store directory
-        id: pnpm-cache
-        shell: bash
-        run: |
-          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
-
-      - uses: actions/cache@v3
-        name: Setup PNPM cache
+      - name: Install Node.js
+        uses: actions/setup-node@v3
         with:
-          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
+          node-version: 16
+          cache: 'pnpm'
 
       - name: Install SDK dependencies
         run: pnpm install

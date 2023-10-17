@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Delegated = exports.DelegatedAttestationVersion = exports.EIP712_NAME = void 0;
 const tslib_1 = require("tslib");
-const lodash_1 = require("lodash");
+const omit_1 = tslib_1.__importDefault(require("lodash/omit"));
 const semver_1 = tslib_1.__importDefault(require("semver"));
 const request_1 = require("../request");
 const typed_data_handler_1 = require("./typed-data-handler");
@@ -16,52 +16,60 @@ const DELEGATED_ATTESTATION_TYPES = {
     [DelegatedAttestationVersion.Legacy]: {
         typedSignature: 'Attest(bytes32 schema,address recipient,uint64 expirationTime,bool revocable,bytes32 refUID,bytes data,uint256 nonce)',
         primaryType: 'Attest',
-        types: [
-            { name: 'schema', type: 'bytes32' },
-            { name: 'recipient', type: 'address' },
-            { name: 'expirationTime', type: 'uint64' },
-            { name: 'revocable', type: 'bool' },
-            { name: 'refUID', type: 'bytes32' },
-            { name: 'data', type: 'bytes' },
-            { name: 'nonce', type: 'uint256' }
-        ]
+        types: {
+            Attest: [
+                { name: 'schema', type: 'bytes32' },
+                { name: 'recipient', type: 'address' },
+                { name: 'expirationTime', type: 'uint64' },
+                { name: 'revocable', type: 'bool' },
+                { name: 'refUID', type: 'bytes32' },
+                { name: 'data', type: 'bytes' },
+                { name: 'nonce', type: 'uint256' }
+            ]
+        }
     },
     [DelegatedAttestationVersion.Version1]: {
         typedSignature: 'Attest(bytes32 schema,address recipient,uint64 expirationTime,bool revocable,bytes32 refUID,bytes data,uint256 value,uint256 nonce,uint64 deadline)',
         primaryType: 'Attest',
-        types: [
-            { name: 'schema', type: 'bytes32' },
-            { name: 'recipient', type: 'address' },
-            { name: 'expirationTime', type: 'uint64' },
-            { name: 'revocable', type: 'bool' },
-            { name: 'refUID', type: 'bytes32' },
-            { name: 'data', type: 'bytes' },
-            { name: 'value', type: 'uint256' },
-            { name: 'nonce', type: 'uint256' },
-            { name: 'deadline', type: 'uint64' }
-        ]
+        types: {
+            Attest: [
+                { name: 'schema', type: 'bytes32' },
+                { name: 'recipient', type: 'address' },
+                { name: 'expirationTime', type: 'uint64' },
+                { name: 'revocable', type: 'bool' },
+                { name: 'refUID', type: 'bytes32' },
+                { name: 'data', type: 'bytes' },
+                { name: 'value', type: 'uint256' },
+                { name: 'nonce', type: 'uint256' },
+                { name: 'deadline', type: 'uint64' }
+            ]
+        }
     }
 };
 const DELEGATED_REVOCATION_TYPES = {
     [DelegatedAttestationVersion.Legacy]: {
         typedSignature: 'Revoke(bytes32 schema,bytes32 uid,uint256 nonce)',
         primaryType: 'Revoke',
-        types: [
-            { name: 'schema', type: 'bytes32' },
-            { name: 'uid', type: 'bytes32' },
-            { name: 'nonce', type: 'uint256' }
-        ]
+        types: {
+            Revoke: [
+                { name: 'schema', type: 'bytes32' },
+                { name: 'uid', type: 'bytes32' },
+                { name: 'nonce', type: 'uint256' }
+            ]
+        }
     },
     [DelegatedAttestationVersion.Version1]: {
         typedSignature: 'Revoke(bytes32 schema,bytes32 uid,uint256 value,uint256 nonce,uint64 deadline)',
         primaryType: 'Revoke',
-        types: [
-            { name: 'schema', type: 'bytes32' },
-            { name: 'uid', type: 'bytes32' },
-            { name: 'value', type: 'uint256' },
-            { name: 'nonce', type: 'uint256' },
-            { name: 'deadline', type: 'uint64' }
-        ]
+        types: {
+            Revoke: [
+                { name: 'schema', type: 'bytes32' },
+                { name: 'uid', type: 'bytes32' },
+                { name: 'value', type: 'uint256' },
+                { name: 'nonce', type: 'uint256' },
+                { name: 'deadline', type: 'uint64' }
+            ]
+        }
     }
 };
 class Delegated extends typed_data_handler_1.TypedDataHandler {
@@ -88,19 +96,20 @@ class Delegated extends typed_data_handler_1.TypedDataHandler {
             if (params.deadline !== request_1.NO_EXPIRATION) {
                 throw new Error(`Committing to a deadline isn't supported for legacy attestations. Please specify ${request_1.NO_EXPIRATION} instead`);
             }
-            effectiveParams = (0, lodash_1.omit)(params, ['value', 'deadline']);
+            effectiveParams = (0, omit_1.default)(params, ['value', 'deadline']);
         }
         return this.signTypedDataRequest(effectiveParams, {
             domain: this.getDomainTypedData(),
             primaryType: this.attestType.primaryType,
             message: effectiveParams,
-            types: {
-                [this.attestType.primaryType]: this.attestType.types
-            }
+            types: this.attestType.types
         }, signer);
     }
     verifyDelegatedAttestationSignature(attester, response) {
-        return this.verifyTypedDataRequestSignature(attester, response);
+        return this.verifyTypedDataRequestSignature(attester, response, {
+            primaryType: this.attestType.primaryType,
+            types: this.attestType.types
+        });
     }
     signDelegatedRevocation(params, signer) {
         let effectiveParams = params;
@@ -111,19 +120,20 @@ class Delegated extends typed_data_handler_1.TypedDataHandler {
             if (params.deadline !== request_1.NO_EXPIRATION) {
                 throw new Error(`Committing to a deadline isn't supported for legacy revocations. Please specify ${request_1.NO_EXPIRATION} instead`);
             }
-            effectiveParams = (0, lodash_1.omit)(params, ['value', 'deadline']);
+            effectiveParams = (0, omit_1.default)(params, ['value', 'deadline']);
         }
         return this.signTypedDataRequest(effectiveParams, {
             domain: this.getDomainTypedData(),
             primaryType: this.revokeType.primaryType,
             message: effectiveParams,
-            types: {
-                [this.revokeType.primaryType]: this.revokeType.types
-            }
+            types: this.revokeType.types
         }, signer);
     }
     verifyDelegatedRevocationSignature(attester, response) {
-        return this.verifyTypedDataRequestSignature(attester, response);
+        return this.verifyTypedDataRequestSignature(attester, response, {
+            primaryType: this.revokeType.primaryType,
+            types: this.revokeType.types
+        });
     }
 }
 exports.Delegated = Delegated;

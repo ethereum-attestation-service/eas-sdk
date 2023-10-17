@@ -1,8 +1,14 @@
 import { Signer } from 'ethers';
-import { omit } from 'lodash';
+import omit from 'lodash/omit';
 import semver from 'semver';
 import { EIP712AttestationParams, EIP712RevocationParams } from './delegated';
-import { EIP712MessageTypes, EIP712Response, TypedData, TypedDataConfig, TypedDataHandler } from './typed-data-handler';
+import {
+  EIP712MessageTypes,
+  EIP712Response,
+  EIP712Types,
+  TypedDataConfig,
+  TypedDataHandler
+} from './typed-data-handler';
 
 export {
   EIP712MessageTypes,
@@ -17,10 +23,8 @@ export enum DelegatedProxyAttestationVersion {
   Version1 = 1
 }
 
-interface DelegatedProxyAttestationType {
+interface DelegatedProxyAttestationType extends EIP712Types<EIP712MessageTypes> {
   typedSignature: string;
-  primaryType: string;
-  types: TypedData[];
 }
 
 const DELEGATED_PROXY_ATTESTATION_TYPES: Record<DelegatedProxyAttestationVersion, DelegatedProxyAttestationType> = {
@@ -28,30 +32,34 @@ const DELEGATED_PROXY_ATTESTATION_TYPES: Record<DelegatedProxyAttestationVersion
     typedSignature:
       'Attest(bytes32 schema,address recipient,uint64 expirationTime,bool revocable,bytes32 refUID,bytes data,uint64 deadline)',
     primaryType: 'Attest',
-    types: [
-      { name: 'schema', type: 'bytes32' },
-      { name: 'recipient', type: 'address' },
-      { name: 'expirationTime', type: 'uint64' },
-      { name: 'revocable', type: 'bool' },
-      { name: 'refUID', type: 'bytes32' },
-      { name: 'data', type: 'bytes' },
-      { name: 'deadline', type: 'uint64' }
-    ]
+    types: {
+      Attest: [
+        { name: 'schema', type: 'bytes32' },
+        { name: 'recipient', type: 'address' },
+        { name: 'expirationTime', type: 'uint64' },
+        { name: 'revocable', type: 'bool' },
+        { name: 'refUID', type: 'bytes32' },
+        { name: 'data', type: 'bytes' },
+        { name: 'deadline', type: 'uint64' }
+      ]
+    }
   },
   [DelegatedProxyAttestationVersion.Version1]: {
     typedSignature:
       'Attest(bytes32 schema,address recipient,uint64 expirationTime,bool revocable,bytes32 refUID,bytes data,uint256 value,uint64 deadline)',
     primaryType: 'Attest',
-    types: [
-      { name: 'schema', type: 'bytes32' },
-      { name: 'recipient', type: 'address' },
-      { name: 'expirationTime', type: 'uint64' },
-      { name: 'revocable', type: 'bool' },
-      { name: 'refUID', type: 'bytes32' },
-      { name: 'data', type: 'bytes' },
-      { name: 'value', type: 'uint256' },
-      { name: 'deadline', type: 'uint64' }
-    ]
+    types: {
+      Attest: [
+        { name: 'schema', type: 'bytes32' },
+        { name: 'recipient', type: 'address' },
+        { name: 'expirationTime', type: 'uint64' },
+        { name: 'revocable', type: 'bool' },
+        { name: 'refUID', type: 'bytes32' },
+        { name: 'data', type: 'bytes' },
+        { name: 'value', type: 'uint256' },
+        { name: 'deadline', type: 'uint64' }
+      ]
+    }
   }
 };
 
@@ -59,21 +67,25 @@ const DELEGATED_PROXY_REVOCATION_TYPES: Record<DelegatedProxyAttestationVersion,
   [DelegatedProxyAttestationVersion.Legacy]: {
     typedSignature: 'Revoke(bytes32 schema,bytes32 uid,uint64 deadline)',
     primaryType: 'Revoke',
-    types: [
-      { name: 'schema', type: 'bytes32' },
-      { name: 'uid', type: 'bytes32' },
-      { name: 'deadline', type: 'uint64' }
-    ]
+    types: {
+      Revoke: [
+        { name: 'schema', type: 'bytes32' },
+        { name: 'uid', type: 'bytes32' },
+        { name: 'deadline', type: 'uint64' }
+      ]
+    }
   },
   [DelegatedProxyAttestationVersion.Version1]: {
     typedSignature: 'Revoke(bytes32 schema,bytes32 uid,uint256 value,uint64 deadline)',
     primaryType: 'Revoke',
-    types: [
-      { name: 'schema', type: 'bytes32' },
-      { name: 'uid', type: 'bytes32' },
-      { name: 'value', type: 'uint256' },
-      { name: 'deadline', type: 'uint64' }
-    ]
+    types: {
+      Revoke: [
+        { name: 'schema', type: 'bytes32' },
+        { name: 'uid', type: 'bytes32' },
+        { name: 'value', type: 'uint256' },
+        { name: 'deadline', type: 'uint64' }
+      ]
+    }
   }
 };
 
@@ -123,9 +135,7 @@ export class DelegatedProxy extends TypedDataHandler {
         domain: this.getDomainTypedData(),
         primaryType: this.attestType.primaryType,
         message: effectiveParams,
-        types: {
-          [this.attestType.primaryType]: this.attestType.types
-        }
+        types: this.attestType.types
       },
       signer
     );
@@ -135,7 +145,10 @@ export class DelegatedProxy extends TypedDataHandler {
     attester: string,
     response: EIP712Response<EIP712MessageTypes, EIP712AttestationProxyParams>
   ): boolean {
-    return this.verifyTypedDataRequestSignature(attester, response);
+    return this.verifyTypedDataRequestSignature(attester, response, {
+      primaryType: this.attestType.primaryType,
+      types: this.attestType.types
+    });
   }
 
   public signDelegatedProxyRevocation(
@@ -158,9 +171,7 @@ export class DelegatedProxy extends TypedDataHandler {
         domain: this.getDomainTypedData(),
         primaryType: this.revokeType.primaryType,
         message: effectiveParams,
-        types: {
-          Revoke: this.revokeType.types
-        }
+        types: this.revokeType.types
       },
       signer
     );
@@ -170,6 +181,9 @@ export class DelegatedProxy extends TypedDataHandler {
     attester: string,
     response: EIP712Response<EIP712MessageTypes, EIP712RevocationProxyParams>
   ): boolean {
-    return this.verifyTypedDataRequestSignature(attester, response);
+    return this.verifyTypedDataRequestSignature(attester, response, {
+      primaryType: this.revokeType.primaryType,
+      types: this.revokeType.types
+    });
   }
 }
