@@ -71,7 +71,7 @@ class EIP712Proxy extends transaction_1.Base {
             deadline
         }, { value, ...overrides });
         // eslint-disable-next-line require-await
-        return new transaction_1.Transaction(tx, async (receipt) => (0, utils_1.getUIDFromDelegatedProxyAttestReceipt)(receipt));
+        return new transaction_1.Transaction(tx, async (receipt) => (0, utils_1.getUIDsFromAttestReceipt)(receipt)[0]);
     }
     // Multi-attests to multiple schemas via an EIP712 delegation requests using an external EIP712 proxy
     async multiAttestByDelegationProxy(requests, overrides) {
@@ -98,7 +98,7 @@ class EIP712Proxy extends transaction_1.Base {
             ...overrides
         });
         // eslint-disable-next-line require-await
-        return new transaction_1.Transaction(tx, async (receipt) => (0, utils_1.getUIDFromMultiDelegatedProxyAttestReceipt)(receipt));
+        return new transaction_1.Transaction(tx, async (receipt) => (0, utils_1.getUIDsFromAttestReceipt)(receipt));
     }
     // Revokes an existing attestation an EIP712 delegation request using an external EIP712 proxy
     async revokeByDelegationProxy({ schema, data: { uid, value = 0n }, signature, revoker, deadline = request_1.NO_EXPIRATION }, overrides) {

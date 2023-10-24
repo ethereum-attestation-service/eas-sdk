@@ -10,11 +10,7 @@ import {
   NO_EXPIRATION
 } from './request';
 import { Base, SignerOrProvider, Transaction } from './transaction';
-import {
-  getUIDFromDelegatedProxyAttestReceipt,
-  getUIDFromMultiDelegatedProxyAttestReceipt,
-  ZERO_BYTES32
-} from './utils';
+import { getUIDsFromAttestReceipt, ZERO_BYTES32 } from './utils';
 
 export interface EIP712ProxyOptions {
   signerOrProvider?: SignerOrProvider;
@@ -111,7 +107,7 @@ export class EIP712Proxy extends Base<EIP712ProxyContract> {
     );
 
     // eslint-disable-next-line require-await
-    return new Transaction(tx, async (receipt: TransactionReceipt) => getUIDFromDelegatedProxyAttestReceipt(receipt));
+    return new Transaction(tx, async (receipt: TransactionReceipt) => getUIDsFromAttestReceipt(receipt)[0]);
   }
 
   // Multi-attests to multiple schemas via an EIP712 delegation requests using an external EIP712 proxy
@@ -145,9 +141,7 @@ export class EIP712Proxy extends Base<EIP712ProxyContract> {
     });
 
     // eslint-disable-next-line require-await
-    return new Transaction(tx, async (receipt: TransactionReceipt) =>
-      getUIDFromMultiDelegatedProxyAttestReceipt(receipt)
-    );
+    return new Transaction(tx, async (receipt: TransactionReceipt) => getUIDsFromAttestReceipt(receipt));
   }
 
   // Revokes an existing attestation an EIP712 delegation request using an external EIP712 proxy
