@@ -1,9 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SchemaEncoder = void 0;
-const utils_1 = require("./utils");
 const ethers_1 = require("ethers");
 const multiformats_1 = require("multiformats");
+const utils_1 = require("./utils");
 const TUPLE_TYPE = 'tuple';
 const TUPLE_ARRAY_TYPE = 'tuple[]';
 class SchemaEncoder {

@@ -11,6 +11,7 @@ var DelegatedAttestationVersion;
 (function (DelegatedAttestationVersion) {
     DelegatedAttestationVersion[DelegatedAttestationVersion["Legacy"] = 0] = "Legacy";
     DelegatedAttestationVersion[DelegatedAttestationVersion["Version1"] = 1] = "Version1";
+    DelegatedAttestationVersion[DelegatedAttestationVersion["Version2"] = 2] = "Version2";
 })(DelegatedAttestationVersion || (exports.DelegatedAttestationVersion = DelegatedAttestationVersion = {}));
 const DELEGATED_ATTESTATION_TYPES = {
     [DelegatedAttestationVersion.Legacy]: {
@@ -33,6 +34,24 @@ const DELEGATED_ATTESTATION_TYPES = {
         primaryType: 'Attest',
         types: {
             Attest: [
+                { name: 'schema', type: 'bytes32' },
+                { name: 'recipient', type: 'address' },
+                { name: 'expirationTime', type: 'uint64' },
+                { name: 'revocable', type: 'bool' },
+                { name: 'refUID', type: 'bytes32' },
+                { name: 'data', type: 'bytes' },
+                { name: 'value', type: 'uint256' },
+                { name: 'nonce', type: 'uint256' },
+                { name: 'deadline', type: 'uint64' }
+            ]
+        }
+    },
+    [DelegatedAttestationVersion.Version2]: {
+        typedSignature: 'Attest(address attester,bytes32 schema,address recipient,uint64 expirationTime,bool revocable,bytes32 refUID,bytes data,uint256 value,uint256 nonce,uint64 deadline)',
+        primaryType: 'Attest',
+        types: {
+            Attest: [
+                { name: 'attester', type: 'address' },
                 { name: 'schema', type: 'bytes32' },
                 { name: 'recipient', type: 'address' },
                 { name: 'expirationTime', type: 'uint64' },
@@ -70,6 +89,20 @@ const DELEGATED_REVOCATION_TYPES = {
                 { name: 'deadline', type: 'uint64' }
             ]
         }
+    },
+    [DelegatedAttestationVersion.Version2]: {
+        typedSignature: 'Revoke(address revoker,bytes32 schema,bytes32 uid,uint256 value,uint256 nonce,uint64 deadline)',
+        primaryType: 'Revoke',
+        types: {
+            Revoke: [
+                { name: 'revoker', type: 'address' },
+                { name: 'schema', type: 'bytes32' },
+                { name: 'uid', type: 'bytes32' },
+                { name: 'value', type: 'uint256' },
+                { name: 'nonce', type: 'uint256' },
+                { name: 'deadline', type: 'uint64' }
+            ]
+        }
     }
 };
 class Delegated extends typed_data_handler_1.TypedDataHandler {
@@ -81,14 +114,20 @@ class Delegated extends typed_data_handler_1.TypedDataHandler {
         if (semver_1.default.lt(config.version, '1.2.0')) {
             this.version = DelegatedAttestationVersion.Legacy;
         }
+        else if (semver_1.default.lte(config.version, '1.3.0')) {
+            this.version = DelegatedAttestationVersion.Version2;
+        }
         else {
             this.version = DelegatedAttestationVersion.Version1;
         }
         this.attestType = DELEGATED_ATTESTATION_TYPES[this.version];
         this.revokeType = DELEGATED_REVOCATION_TYPES[this.version];
     }
-    signDelegatedAttestation(params, signer) {
-        let effectiveParams = params;
+    async signDelegatedAttestation(params, signer) {
+        let effectiveParams = {
+            attester: await signer.getAddress(),
+            ...params
+        };
         if (this.version === DelegatedAttestationVersion.Legacy) {
             if (params.value !== 0n) {
                 throw new Error("Committing to a value isn't supported for legacy attestations. Please specify 0 instead");
@@ -106,13 +145,16 @@ class Delegated extends typed_data_handler_1.TypedDataHandler {
         }, signer);
     }
     verifyDelegatedAttestationSignature(attester, response) {
-        return this.verifyTypedDataRequestSignature(attester, response, {
+        return this.verifyTypedDataRequestSignature(attester, { ...response, message: { attester, ...response.message } }, {
             primaryType: this.attestType.primaryType,
             types: this.attestType.types
         });
     }
-    signDelegatedRevocation(params, signer) {
-        let effectiveParams = params;
+    async signDelegatedRevocation(params, signer) {
+        let effectiveParams = {
+            revoker: await signer.getAddress(),
+            ...params
+        };
         if (this.version === DelegatedAttestationVersion.Legacy) {
             if (params.value !== 0n) {
                 throw new Error("Committing to a value isn't supported for legacy revocations. Please specify 0 instead");
@@ -129,8 +171,8 @@ class Delegated extends typed_data_handler_1.TypedDataHandler {
             types: this.revokeType.types
         }, signer);
     }
-    verifyDelegatedRevocationSignature(attester, response) {
-        return this.verifyTypedDataRequestSignature(attester, response, {
+    verifyDelegatedRevocationSignature(revoker, response) {
+        return this.verifyTypedDataRequestSignature(revoker, { ...response, message: { revoker, ...response.message } }, {
             primaryType: this.revokeType.primaryType,
             types: this.revokeType.types
         });

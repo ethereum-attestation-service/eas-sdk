@@ -4,7 +4,8 @@ export { EIP712MessageTypes, EIP712TypedData, EIP712Request, EIP712Response, Par
 export declare const EIP712_NAME = "EAS";
 export declare enum DelegatedAttestationVersion {
     Legacy = 0,
-    Version1 = 1
+    Version1 = 1,
+    Version2 = 2
 }
 export type EIP712AttestationParams = EIP712Params & {
     schema: string;
@@ -30,5 +31,5 @@ export declare class Delegated extends TypedDataHandler {
     signDelegatedAttestation(params: EIP712AttestationParams, signer: Signer): Promise<EIP712Response<EIP712MessageTypes, EIP712AttestationParams>>;
     verifyDelegatedAttestationSignature(attester: string, response: EIP712Response<EIP712MessageTypes, EIP712AttestationParams>): boolean;
     signDelegatedRevocation(params: EIP712RevocationParams, signer: Signer): Promise<EIP712Response<EIP712MessageTypes, EIP712RevocationParams>>;
-    verifyDelegatedRevocationSignature(attester: string, response: EIP712Response<EIP712MessageTypes, EIP712RevocationParams>): boolean;
+    verifyDelegatedRevocationSignature(revoker: string, response: EIP712Response<EIP712MessageTypes, EIP712RevocationParams>): boolean;
 }

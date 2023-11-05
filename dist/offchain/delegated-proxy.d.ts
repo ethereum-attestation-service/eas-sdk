@@ -4,7 +4,8 @@ import { EIP712MessageTypes, EIP712Response, TypedDataConfig, TypedDataHandler }
 export { EIP712MessageTypes, EIP712TypedData, EIP712Request, EIP712Response, TypedDataConfig } from './typed-data-handler';
 export declare enum DelegatedProxyAttestationVersion {
     Legacy = 0,
-    Version1 = 1
+    Version1 = 1,
+    Version2 = 2
 }
 export type EIP712AttestationProxyParams = EIP712AttestationParams & {
     deadline: bigint;
@@ -20,5 +21,5 @@ export declare class DelegatedProxy extends TypedDataHandler {
     signDelegatedProxyAttestation(params: EIP712AttestationProxyParams, signer: Signer): Promise<EIP712Response<EIP712MessageTypes, EIP712AttestationProxyParams>>;
     verifyDelegatedProxyAttestationSignature(attester: string, response: EIP712Response<EIP712MessageTypes, EIP712AttestationProxyParams>): boolean;
     signDelegatedProxyRevocation(params: EIP712RevocationProxyParams, signer: Signer): Promise<EIP712Response<EIP712MessageTypes, EIP712RevocationProxyParams>>;
-    verifyDelegatedProxyRevocationSignature(attester: string, response: EIP712Response<EIP712MessageTypes, EIP712RevocationProxyParams>): boolean;
+    verifyDelegatedProxyRevocationSignature(revoker: string, response: EIP712Response<EIP712MessageTypes, EIP712RevocationProxyParams>): boolean;
 }
