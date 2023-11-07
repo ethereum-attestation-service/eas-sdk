@@ -1,7 +1,7 @@
+import { hexlify, solidityPackedKeccak256, toUtf8Bytes } from 'ethers';
 import { getSchemaUID, getUID } from '../../src/utils';
 import { ZERO_ADDRESS, ZERO_BYTES32 } from '../utils/Constants';
 import chai from './helpers/chai';
-import { toUtf8Bytes, hexlify, solidityPackedKeccak256 } from 'ethers';
 
 const { expect } = chai;
 
