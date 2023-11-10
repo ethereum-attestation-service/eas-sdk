@@ -38,7 +38,7 @@ class TypedDataHandler {
         const domain = { ...response.domain, chainId: BigInt(response.domain.chainId) };
         let expectedDomain = this.getDomainTypedData();
         if (!strict) {
-            expectedDomain = { ...expectedDomain, name: domain.name, version: domain.version };
+            expectedDomain = { ...expectedDomain, version: domain.version };
         }
         if (!(0, isEqual_1.default)(domain, expectedDomain)) {
             throw new Error('Invalid domain');

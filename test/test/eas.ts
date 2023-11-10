@@ -712,13 +712,12 @@ describe('EAS API', () => {
             })
           ).to.throw('Invalid domain');
 
-          // Invalid domain verification won't throw, due to the check not being strict, but will fail on signature
-          await expect(
+          await expect(() =>
             offchain.verifyOffchainAttestationSignature(senderAddress, {
               ...response,
               ...{ domain: { ...domain, name: `BAD${domain.name}BAD` } }
             })
-          ).to.be.false;
+          ).to.throw('Invalid domain');
 
           // Invalid version verification won't throw, due to the check not being strict, but will fail on signature
           await expect(
@@ -758,7 +757,7 @@ describe('EAS API', () => {
 
         it('should verify offchain attestations with legacy/obsoleted domains', async () => {
           const { config } = offchain;
-          const customOffchain = new CustomOffchain(config, { name: 'XXX', version: '0.0.1' }, new EAS(ZERO_ADDRESS));
+          const customOffchain = new CustomOffchain(config, '0.0.1', new EAS(ZERO_ADDRESS));
 
           const params = {
             version: 1,

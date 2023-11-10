@@ -141,7 +141,7 @@ export abstract class TypedDataHandler {
 
     let expectedDomain = this.getDomainTypedData();
     if (!strict) {
-      expectedDomain = { ...expectedDomain, name: domain.name, version: domain.version };
+      expectedDomain = { ...expectedDomain, version: domain.version };
     }
 
     if (!isEqual(domain, expectedDomain)) {
