@@ -89,7 +89,7 @@ export type EIP712Response<T extends EIP712MessageTypes, P extends EIP712Params>
 export const EIP712_DOMAIN = 'EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)';
 
 export abstract class TypedDataHandler {
-  protected config: TypedDataConfig;
+  public config: TypedDataConfig;
 
   constructor(config: TypedDataConfig) {
     this.config = config;
@@ -133,9 +133,18 @@ export abstract class TypedDataHandler {
   public verifyTypedDataRequestSignature<T extends EIP712MessageTypes, P extends EIP712Params>(
     attester: string,
     response: EIP712Response<T, P>,
-    types: EIP712Types<T>
+    types: EIP712Types<T>,
+    strict = true
   ): boolean {
-    if (!isEqual(response.domain, this.getDomainTypedData())) {
+    // Normalize the chain ID
+    const domain: EIP712DomainTypedData = { ...response.domain, chainId: BigInt(response.domain.chainId) };
+
+    let expectedDomain = this.getDomainTypedData();
+    if (!strict) {
+      expectedDomain = { ...expectedDomain, name: domain.name, version: domain.version };
+    }
+
+    if (!isEqual(domain, expectedDomain)) {
       throw new Error('Invalid domain');
     }
 
@@ -153,7 +162,7 @@ export abstract class TypedDataHandler {
 
     const { signature } = response;
     const sig = Sig.from({ v: signature.v, r: hexlify(signature.r), s: hexlify(signature.s) }).serialized;
-    const recoveredAddress = verifyTypedData(response.domain, response.types, response.message, sig);
+    const recoveredAddress = verifyTypedData(domain, response.types, response.message, sig);
 
     return getAddress(attester) === getAddress(recoveredAddress);
   }

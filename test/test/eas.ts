@@ -13,6 +13,7 @@ import { getSchemaUID, getUIDFromAttestTx } from '../../src/utils';
 import Contracts from '../components/Contracts';
 import { ZERO_ADDRESS, ZERO_BYTES, ZERO_BYTES32 } from '../utils/Constants';
 import chai from './helpers/chai';
+import { CustomOffchain } from './helpers/custom-offchain';
 import {
   expectAttestation,
   expectMultiAttestations,
@@ -707,23 +708,25 @@ describe('EAS API', () => {
           await expect(() =>
             offchain.verifyOffchainAttestationSignature(senderAddress, {
               ...response,
-              ...{ domain: { ...domain, name: `BAD${domain.name}BAD` } }
-            })
-          ).to.throw('Invalid domain');
-
-          await expect(() =>
-            offchain.verifyOffchainAttestationSignature(senderAddress, {
-              ...response,
               ...{ domain: { ...domain, verifyingContract: ZERO_ADDRESS } }
             })
           ).to.throw('Invalid domain');
 
-          await expect(() =>
+          // Invalid domain verification won't throw, due to the check not being strict, but will fail on signature
+          await expect(
+            offchain.verifyOffchainAttestationSignature(senderAddress, {
+              ...response,
+              ...{ domain: { ...domain, name: `BAD${domain.name}BAD` } }
+            })
+          ).to.be.false;
+
+          // Invalid version verification won't throw, due to the check not being strict, but will fail on signature
+          await expect(
             offchain.verifyOffchainAttestationSignature(senderAddress, {
               ...response,
               ...{ domain: { ...domain, version: '9999.9999.9999' } }
             })
-          ).to.throw('Invalid domain');
+          ).to.be.false;
 
           // Invalid primary type
           await expect(() =>
@@ -751,6 +754,26 @@ describe('EAS API', () => {
               }
             })
           ).to.throw('Invalid types');
+        });
+
+        it('should verify offchain attestations with legacy/obsoleted domains', async () => {
+          const { config } = offchain;
+          const customOffchain = new CustomOffchain(config, { name: 'XXX', version: '0.0.1' }, new EAS(ZERO_ADDRESS));
+
+          const params = {
+            version: 1,
+            schema: schemaId,
+            recipient: await recipient.getAddress(),
+            time: await latest(),
+            expirationTime: NO_EXPIRATION,
+            revocable: false,
+            refUID: ZERO_BYTES32,
+            data: ZERO_BYTES
+          };
+          const senderAddress = await sender.getAddress();
+          const response = await customOffchain.signOffchainAttestation(params, sender);
+
+          await expect(offchain.verifyOffchainAttestationSignature(senderAddress, response)).to.be.true;
         });
 
         context('with an irrevocable schema', () => {
