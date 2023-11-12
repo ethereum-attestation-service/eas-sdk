@@ -33,8 +33,14 @@ class TypedDataHandler {
         const signature = ethers_1.Signature.from(rawSignature);
         return { ...types, signature: { v: signature.v, r: signature.r, s: signature.s } };
     }
-    verifyTypedDataRequestSignature(attester, response, types) {
-        if (!(0, isEqual_1.default)(response.domain, this.getDomainTypedData())) {
+    verifyTypedDataRequestSignature(attester, response, types, strict = true) {
+        // Normalize the chain ID
+        const domain = { ...response.domain, chainId: BigInt(response.domain.chainId) };
+        let expectedDomain = this.getDomainTypedData();
+        if (!strict) {
+            expectedDomain = { ...expectedDomain, version: domain.version };
+        }
+        if (!(0, isEqual_1.default)(domain, expectedDomain)) {
             throw new Error('Invalid domain');
         }
         if (response.primaryType !== types.primaryType) {
@@ -48,7 +54,7 @@ class TypedDataHandler {
         }
         const { signature } = response;
         const sig = ethers_1.Signature.from({ v: signature.v, r: (0, ethers_1.hexlify)(signature.r), s: (0, ethers_1.hexlify)(signature.s) }).serialized;
-        const recoveredAddress = (0, ethers_1.verifyTypedData)(response.domain, response.types, response.message, sig);
+        const recoveredAddress = (0, ethers_1.verifyTypedData)(domain, response.types, response.message, sig);
         return (0, ethers_1.getAddress)(attester) === (0, ethers_1.getAddress)(recoveredAddress);
     }
 }

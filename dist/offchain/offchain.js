@@ -105,7 +105,7 @@ class Offchain extends typed_data_handler_1.TypedDataHandler {
             this.verifyTypedDataRequestSignature(attester, request, {
                 primaryType: this.type.primaryType,
                 types: this.type.types
-            }));
+            }, false));
     }
     static getOffchainUID(params) {
         return (0, utils_1.getOffchainUID)(params.version ?? OffChainAttestationVersion.Legacy, params.schema, params.recipient, params.time, params.expirationTime, params.revocable, params.refUID, params.data);
