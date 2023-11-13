@@ -42,6 +42,21 @@ export const OFFCHAIN_ATTESTATION_TYPES: Record<OffChainAttestationVersion, Offc
     },
     {
       domain: 'EAS Attestation',
+      primaryType: 'Attestation',
+      types: {
+        Attest: [
+          { name: 'schema', type: 'bytes32' },
+          { name: 'recipient', type: 'address' },
+          { name: 'time', type: 'uint64' },
+          { name: 'expirationTime', type: 'uint64' },
+          { name: 'revocable', type: 'bool' },
+          { name: 'refUID', type: 'bytes32' },
+          { name: 'data', type: 'bytes' }
+        ]
+      }
+    },
+    {
+      domain: 'EAS Attestation',
       primaryType: 'Attest',
       types: {
         Attest: [
