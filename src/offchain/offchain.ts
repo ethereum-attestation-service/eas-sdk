@@ -186,23 +186,17 @@ export class Offchain extends TypedDataHandler {
       return false;
     }
 
-    for (const type of this.verificationTypes) {
-      if (
-        !this.verifyTypedDataRequestSignature(
-          attester,
-          request,
-          {
-            primaryType: type.primaryType,
-            types: type.types
-          },
-          false
-        )
-      ) {
-        return false;
-      }
-    }
-
-    return true;
+    return this.verificationTypes.some((type) =>
+      this.verifyTypedDataRequestSignature(
+        attester,
+        request,
+        {
+          primaryType: type.primaryType,
+          types: type.types
+        },
+        false
+      )
+    );
   }
 
   public static getOffchainUID(params: OffchainAttestationParams): string {
