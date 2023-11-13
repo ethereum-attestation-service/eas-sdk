@@ -7,7 +7,13 @@ import { encodeBytes32String, Signer } from 'ethers';
 import { ethers } from 'hardhat';
 import { EAS, NO_EXPIRATION } from '../../src/eas';
 import { EIP712Proxy } from '../../src/eip712-proxy';
-import { Delegated, DelegatedProxy, Offchain } from '../../src/offchain';
+import {
+  Delegated,
+  DelegatedProxy,
+  Offchain,
+  OFFCHAIN_ATTESTATION_TYPES,
+  OffChainAttestationVersion
+} from '../../src/offchain';
 import { SchemaRegistry } from '../../src/schema-registry';
 import { getSchemaUID, getUIDFromAttestTx } from '../../src/utils';
 import Contracts from '../components/Contracts';
@@ -588,10 +594,10 @@ describe('EAS API', () => {
       });
 
       describe('versioning', () => {
-        it('should support version 0', async () => {
+        it(`should support version ${OffChainAttestationVersion.Legacy}`, async () => {
           const response = await offchain.signOffchainAttestation(
             {
-              version: 0,
+              version: OffChainAttestationVersion.Legacy,
               schema: schemaId,
               recipient: await recipient.getAddress(),
               time: await latest(),
@@ -605,10 +611,10 @@ describe('EAS API', () => {
           expect(await offchain.verifyOffchainAttestationSignature(await sender.getAddress(), response)).to.be.true;
         });
 
-        it('should support version 1', async () => {
+        it(`should support version ${OffChainAttestationVersion.Version1}`, async () => {
           const response = await offchain.signOffchainAttestation(
             {
-              version: 1,
+              version: OffChainAttestationVersion.Version1,
               schema: schemaId,
               recipient: await recipient.getAddress(),
               time: await latest(),
@@ -631,7 +637,7 @@ describe('EAS API', () => {
         it('should verify the attestation onchain', async () => {
           const response = await offchain.signOffchainAttestation(
             {
-              version: 1,
+              version: OffChainAttestationVersion.Version1,
               schema: schemaId,
               recipient: await recipient.getAddress(),
               time: await latest(),
@@ -648,7 +654,7 @@ describe('EAS API', () => {
 
         it('should throw on onchain verification of invalid attestations', async () => {
           const params = {
-            version: 1,
+            version: OffChainAttestationVersion.Version1,
             schema: schemaId,
             recipient: await recipient.getAddress(),
             time: await latest(),
@@ -679,7 +685,7 @@ describe('EAS API', () => {
 
         it('should throw on offchain verification of invalid attestations', async () => {
           const params = {
-            version: 1,
+            version: OffChainAttestationVersion.Version1,
             schema: schemaId,
             recipient: await recipient.getAddress(),
             time: await latest(),
@@ -757,10 +763,8 @@ describe('EAS API', () => {
 
         it('should verify offchain attestations with legacy/obsoleted domains', async () => {
           const { config } = offchain;
-          const customOffchain = new CustomOffchain(config, '0.0.1', new EAS(ZERO_ADDRESS));
-
           const params = {
-            version: 1,
+            version: OffChainAttestationVersion.Legacy,
             schema: schemaId,
             recipient: await recipient.getAddress(),
             time: await latest(),
@@ -770,9 +774,25 @@ describe('EAS API', () => {
             data: ZERO_BYTES
           };
           const senderAddress = await sender.getAddress();
-          const response = await customOffchain.signOffchainAttestation(params, sender);
 
+          // Legacy version
+          const customOffchain = new CustomOffchain(config, { version: '0.0.1' }, new EAS(ZERO_ADDRESS));
+
+          const response = await customOffchain.signOffchainAttestation(params, sender);
           await expect(offchain.verifyOffchainAttestationSignature(senderAddress, response)).to.be.true;
+
+          // Legacy type
+          const customOffchain2 = new CustomOffchain(
+            config,
+            {
+              version: '0.26',
+              type: OFFCHAIN_ATTESTATION_TYPES[OffChainAttestationVersion.Legacy][1]
+            },
+            new EAS(ZERO_ADDRESS)
+          );
+
+          const response2 = await customOffchain2.signOffchainAttestation(params, sender);
+          await expect(offchain.verifyOffchainAttestationSignature(senderAddress, response2)).to.be.true;
         });
 
         context('with an irrevocable schema', () => {
