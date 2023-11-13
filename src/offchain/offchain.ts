@@ -8,6 +8,8 @@ import {
   EIP712Params,
   EIP712Response,
   EIP712Types,
+  InvalidPrimaryType,
+  InvalidTypes,
   PartialTypedDataConfig,
   TypedDataHandler
 } from './typed-data-handler';
@@ -201,17 +203,26 @@ export class Offchain extends TypedDataHandler {
       return false;
     }
 
-    return this.verificationTypes.some((type) =>
-      this.verifyTypedDataRequestSignature(
-        attester,
-        request,
-        {
-          primaryType: type.primaryType,
-          types: type.types
-        },
-        false
-      )
-    );
+    const typeCount = this.verificationTypes.length;
+    return this.verificationTypes.some((type, index) => {
+      try {
+        return this.verifyTypedDataRequestSignature(
+          attester,
+          request,
+          {
+            primaryType: type.primaryType,
+            types: type.types
+          },
+          false
+        );
+      } catch (e) {
+        if (index !== typeCount - 1 && (e instanceof InvalidPrimaryType || e instanceof InvalidTypes)) {
+          return false;
+        }
+
+        throw e;
+      }
+    });
   }
 
   public static getOffchainUID(params: OffchainAttestationParams): string {

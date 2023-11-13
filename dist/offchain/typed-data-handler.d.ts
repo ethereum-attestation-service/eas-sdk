@@ -51,6 +51,14 @@ export type EIP712Response<T extends EIP712MessageTypes, P extends EIP712Params>
     signature: Signature;
 };
 export declare const EIP712_DOMAIN = "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)";
+export declare class InvalidDomain extends Error {
+}
+export declare class InvalidPrimaryType extends Error {
+}
+export declare class InvalidTypes extends Error {
+}
+export declare class InvalidAddress extends Error {
+}
 export declare abstract class TypedDataHandler {
     config: TypedDataConfig;
     constructor(config: TypedDataConfig);

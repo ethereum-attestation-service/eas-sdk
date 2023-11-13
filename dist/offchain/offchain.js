@@ -140,10 +140,21 @@ class Offchain extends typed_data_handler_1.TypedDataHandler {
         if (request.uid !== Offchain.getOffchainUID(request.message)) {
             return false;
         }
-        return this.verificationTypes.some((type) => this.verifyTypedDataRequestSignature(attester, request, {
-            primaryType: type.primaryType,
-            types: type.types
-        }, false));
+        const typeCount = this.verificationTypes.length;
+        return this.verificationTypes.some((type, index) => {
+            try {
+                return this.verifyTypedDataRequestSignature(attester, request, {
+                    primaryType: type.primaryType,
+                    types: type.types
+                }, false);
+            }
+            catch (e) {
+                if (index !== typeCount - 1 && (e instanceof typed_data_handler_1.InvalidPrimaryType || e instanceof typed_data_handler_1.InvalidTypes)) {
+                    return false;
+                }
+                throw e;
+            }
+        });
     }
     static getOffchainUID(params) {
         return (0, utils_1.getOffchainUID)(params.version ?? OffChainAttestationVersion.Legacy, params.schema, params.recipient, params.time, params.expirationTime, params.revocable, params.refUID, params.data);

@@ -1,11 +1,23 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.TypedDataHandler = exports.EIP712_DOMAIN = void 0;
+exports.TypedDataHandler = exports.InvalidAddress = exports.InvalidTypes = exports.InvalidPrimaryType = exports.InvalidDomain = exports.EIP712_DOMAIN = void 0;
 const tslib_1 = require("tslib");
 const ethers_1 = require("ethers");
 const isEqual_1 = tslib_1.__importDefault(require("lodash/isEqual"));
 const utils_1 = require("../utils");
 exports.EIP712_DOMAIN = 'EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)';
+class InvalidDomain extends Error {
+}
+exports.InvalidDomain = InvalidDomain;
+class InvalidPrimaryType extends Error {
+}
+exports.InvalidPrimaryType = InvalidPrimaryType;
+class InvalidTypes extends Error {
+}
+exports.InvalidTypes = InvalidTypes;
+class InvalidAddress extends Error {
+}
+exports.InvalidAddress = InvalidAddress;
 class TypedDataHandler {
     config;
     constructor(config) {
@@ -41,16 +53,16 @@ class TypedDataHandler {
             expectedDomain = { ...expectedDomain, version: domain.version };
         }
         if (!(0, isEqual_1.default)(domain, expectedDomain)) {
-            throw new Error('Invalid domain');
+            throw new InvalidDomain();
         }
         if (response.primaryType !== types.primaryType) {
-            throw new Error('Invalid primary type');
+            throw new InvalidPrimaryType();
         }
         if (!(0, isEqual_1.default)(response.types, types.types)) {
-            throw new Error('Invalid types');
+            throw new InvalidTypes();
         }
         if (attester === utils_1.ZERO_ADDRESS) {
-            throw new Error('Invalid address');
+            throw new InvalidAddress();
         }
         const { signature } = response;
         const sig = ethers_1.Signature.from({ v: signature.v, r: (0, ethers_1.hexlify)(signature.r), s: (0, ethers_1.hexlify)(signature.s) }).serialized;

@@ -88,6 +88,11 @@ export type EIP712Response<T extends EIP712MessageTypes, P extends EIP712Params>
 
 export const EIP712_DOMAIN = 'EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)';
 
+export class InvalidDomain extends Error {}
+export class InvalidPrimaryType extends Error {}
+export class InvalidTypes extends Error {}
+export class InvalidAddress extends Error {}
+
 export abstract class TypedDataHandler {
   public config: TypedDataConfig;
 
@@ -145,19 +150,19 @@ export abstract class TypedDataHandler {
     }
 
     if (!isEqual(domain, expectedDomain)) {
-      throw new Error('Invalid domain');
+      throw new InvalidDomain();
     }
 
     if (response.primaryType !== types.primaryType) {
-      throw new Error('Invalid primary type');
+      throw new InvalidPrimaryType();
     }
 
     if (!isEqual(response.types, types.types)) {
-      throw new Error('Invalid types');
+      throw new InvalidTypes();
     }
 
     if (attester === ZERO_ADDRESS) {
-      throw new Error('Invalid address');
+      throw new InvalidAddress();
     }
 
     const { signature } = response;
