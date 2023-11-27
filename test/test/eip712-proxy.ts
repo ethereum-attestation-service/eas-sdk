@@ -1,9 +1,9 @@
+import { EAS, EIP712Proxy as EIP712ProxyContract, SchemaRegistry } from '@ethereum-attestation-service/eas-contracts';
+import { Signer } from 'ethers';
+import { ethers } from 'hardhat';
 import { EIP712Proxy } from '../../src/eip712-proxy';
 import Contracts from '../components/Contracts';
 import chai from './helpers/chai';
-import { EAS, EIP712Proxy as EIP712ProxyContract, SchemaRegistry } from '@ethereum-attestation-service/eas-contracts';
-import { ethers } from 'hardhat';
-import { Signer } from 'ethers';
 
 const { expect } = chai;
 

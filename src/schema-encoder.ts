@@ -1,7 +1,7 @@
-import { ZERO_ADDRESS } from './utils';
 import { AbiCoder, encodeBytes32String, FunctionFragment, isBytesLike } from 'ethers';
 import { CID } from 'multiformats';
 import { MultihashDigest } from 'multiformats/types/src/cid';
+import { ZERO_ADDRESS } from './utils';
 
 export type SchemaValue =
   | string

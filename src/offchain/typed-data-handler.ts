@@ -88,8 +88,13 @@ export type EIP712Response<T extends EIP712MessageTypes, P extends EIP712Params>
 
 export const EIP712_DOMAIN = 'EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)';
 
+export class InvalidDomain extends Error {}
+export class InvalidPrimaryType extends Error {}
+export class InvalidTypes extends Error {}
+export class InvalidAddress extends Error {}
+
 export abstract class TypedDataHandler {
-  protected config: TypedDataConfig;
+  public config: TypedDataConfig;
 
   constructor(config: TypedDataConfig) {
     this.config = config;
@@ -133,27 +138,36 @@ export abstract class TypedDataHandler {
   public verifyTypedDataRequestSignature<T extends EIP712MessageTypes, P extends EIP712Params>(
     attester: string,
     response: EIP712Response<T, P>,
-    types: EIP712Types<T>
+    types: EIP712Types<T>,
+    strict = true
   ): boolean {
-    if (!isEqual(response.domain, this.getDomainTypedData())) {
-      throw new Error('Invalid domain');
+    // Normalize the chain ID
+    const domain: EIP712DomainTypedData = { ...response.domain, chainId: BigInt(response.domain.chainId) };
+
+    let expectedDomain = this.getDomainTypedData();
+    if (!strict) {
+      expectedDomain = { ...expectedDomain, version: domain.version };
+    }
+
+    if (!isEqual(domain, expectedDomain)) {
+      throw new InvalidDomain();
     }
 
     if (response.primaryType !== types.primaryType) {
-      throw new Error('Invalid primary type');
+      throw new InvalidPrimaryType();
     }
 
     if (!isEqual(response.types, types.types)) {
-      throw new Error('Invalid types');
+      throw new InvalidTypes();
     }
 
     if (attester === ZERO_ADDRESS) {
-      throw new Error('Invalid address');
+      throw new InvalidAddress();
     }
 
     const { signature } = response;
     const sig = Sig.from({ v: signature.v, r: hexlify(signature.r), s: hexlify(signature.s) }).serialized;
-    const recoveredAddress = verifyTypedData(response.domain, response.types, response.message, sig);
+    const recoveredAddress = verifyTypedData(domain, response.types, response.message, sig);
 
     return getAddress(attester) === getAddress(recoveredAddress);
   }

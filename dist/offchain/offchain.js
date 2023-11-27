@@ -11,44 +11,79 @@ var OffChainAttestationVersion;
     OffChainAttestationVersion[OffChainAttestationVersion["Version1"] = 1] = "Version1";
 })(OffChainAttestationVersion || (exports.OffChainAttestationVersion = OffChainAttestationVersion = {}));
 exports.OFFCHAIN_ATTESTATION_TYPES = {
-    [OffChainAttestationVersion.Legacy]: {
-        domain: 'EAS Attestation',
-        primaryType: 'Attestation',
-        types: {
-            Attestation: [
-                { name: 'schema', type: 'bytes32' },
-                { name: 'recipient', type: 'address' },
-                { name: 'time', type: 'uint64' },
-                { name: 'expirationTime', type: 'uint64' },
-                { name: 'revocable', type: 'bool' },
-                { name: 'refUID', type: 'bytes32' },
-                { name: 'data', type: 'bytes' }
-            ]
+    [OffChainAttestationVersion.Legacy]: [
+        {
+            domain: 'EAS Attestation',
+            primaryType: 'Attestation',
+            types: {
+                Attestation: [
+                    { name: 'schema', type: 'bytes32' },
+                    { name: 'recipient', type: 'address' },
+                    { name: 'time', type: 'uint64' },
+                    { name: 'expirationTime', type: 'uint64' },
+                    { name: 'revocable', type: 'bool' },
+                    { name: 'refUID', type: 'bytes32' },
+                    { name: 'data', type: 'bytes' }
+                ]
+            }
+        },
+        {
+            domain: 'EAS Attestation',
+            primaryType: 'Attestation',
+            types: {
+                Attest: [
+                    { name: 'schema', type: 'bytes32' },
+                    { name: 'recipient', type: 'address' },
+                    { name: 'time', type: 'uint64' },
+                    { name: 'expirationTime', type: 'uint64' },
+                    { name: 'revocable', type: 'bool' },
+                    { name: 'refUID', type: 'bytes32' },
+                    { name: 'data', type: 'bytes' }
+                ]
+            }
+        },
+        {
+            domain: 'EAS Attestation',
+            primaryType: 'Attest',
+            types: {
+                Attest: [
+                    { name: 'schema', type: 'bytes32' },
+                    { name: 'recipient', type: 'address' },
+                    { name: 'time', type: 'uint64' },
+                    { name: 'expirationTime', type: 'uint64' },
+                    { name: 'revocable', type: 'bool' },
+                    { name: 'refUID', type: 'bytes32' },
+                    { name: 'data', type: 'bytes' }
+                ]
+            }
         }
-    },
-    [OffChainAttestationVersion.Version1]: {
-        domain: 'EAS Attestation',
-        primaryType: 'Attest',
-        types: {
-            Attest: [
-                { name: 'version', type: 'uint16' },
-                { name: 'schema', type: 'bytes32' },
-                { name: 'recipient', type: 'address' },
-                { name: 'time', type: 'uint64' },
-                { name: 'expirationTime', type: 'uint64' },
-                { name: 'revocable', type: 'bool' },
-                { name: 'refUID', type: 'bytes32' },
-                { name: 'data', type: 'bytes' }
-            ]
+    ],
+    [OffChainAttestationVersion.Version1]: [
+        {
+            domain: 'EAS Attestation',
+            primaryType: 'Attest',
+            types: {
+                Attest: [
+                    { name: 'version', type: 'uint16' },
+                    { name: 'schema', type: 'bytes32' },
+                    { name: 'recipient', type: 'address' },
+                    { name: 'time', type: 'uint64' },
+                    { name: 'expirationTime', type: 'uint64' },
+                    { name: 'revocable', type: 'bool' },
+                    { name: 'refUID', type: 'bytes32' },
+                    { name: 'data', type: 'bytes' }
+                ]
+            }
         }
-    }
+    ]
 };
 const DEFAULT_OFFCHAIN_ATTESTATION_OPTIONS = {
     verifyOnchain: false
 };
 class Offchain extends typed_data_handler_1.TypedDataHandler {
     version;
-    type;
+    signingType;
+    verificationTypes;
     eas;
     constructor(config, version, eas) {
         if (version > OffChainAttestationVersion.Version1) {
@@ -56,12 +91,13 @@ class Offchain extends typed_data_handler_1.TypedDataHandler {
         }
         super({ ...config, name: delegated_1.EIP712_NAME });
         this.version = version;
-        this.type = exports.OFFCHAIN_ATTESTATION_TYPES[this.version];
+        this.verificationTypes = exports.OFFCHAIN_ATTESTATION_TYPES[this.version];
+        this.signingType = this.verificationTypes[0];
         this.eas = eas;
     }
     getDomainSeparator() {
         return (0, ethers_1.keccak256)(ethers_1.AbiCoder.defaultAbiCoder().encode(['bytes32', 'bytes32', 'uint256', 'address'], [
-            (0, ethers_1.keccak256)((0, ethers_1.toUtf8Bytes)(this.type.domain)),
+            (0, ethers_1.keccak256)((0, ethers_1.toUtf8Bytes)(this.signingType.domain)),
             (0, ethers_1.keccak256)((0, ethers_1.toUtf8Bytes)(this.config.version)),
             this.config.chainId,
             this.config.address
@@ -69,7 +105,7 @@ class Offchain extends typed_data_handler_1.TypedDataHandler {
     }
     getDomainTypedData() {
         return {
-            name: this.type.domain,
+            name: this.signingType.domain,
             version: this.config.version,
             chainId: this.config.chainId,
             verifyingContract: this.config.address
@@ -79,9 +115,9 @@ class Offchain extends typed_data_handler_1.TypedDataHandler {
         const uid = Offchain.getOffchainUID(params);
         const signedRequest = await this.signTypedDataRequest(params, {
             domain: this.getDomainTypedData(),
-            primaryType: this.type.primaryType,
+            primaryType: this.signingType.primaryType,
             message: params,
-            types: this.type.types
+            types: this.signingType.types
         }, signer);
         const { verifyOnchain } = { ...DEFAULT_OFFCHAIN_ATTESTATION_OPTIONS, ...options };
         if (verifyOnchain) {
@@ -101,11 +137,24 @@ class Offchain extends typed_data_handler_1.TypedDataHandler {
         };
     }
     verifyOffchainAttestationSignature(attester, request) {
-        return (request.uid === Offchain.getOffchainUID(request.message) &&
-            this.verifyTypedDataRequestSignature(attester, request, {
-                primaryType: this.type.primaryType,
-                types: this.type.types
-            }));
+        if (request.uid !== Offchain.getOffchainUID(request.message)) {
+            return false;
+        }
+        const typeCount = this.verificationTypes.length;
+        return this.verificationTypes.some((type, index) => {
+            try {
+                return this.verifyTypedDataRequestSignature(attester, request, {
+                    primaryType: type.primaryType,
+                    types: type.types
+                }, false);
+            }
+            catch (e) {
+                if (index !== typeCount - 1 && (e instanceof typed_data_handler_1.InvalidPrimaryType || e instanceof typed_data_handler_1.InvalidTypes)) {
+                    return false;
+                }
+                throw e;
+            }
+        });
     }
     static getOffchainUID(params) {
         return (0, utils_1.getOffchainUID)(params.version ?? OffChainAttestationVersion.Legacy, params.schema, params.recipient, params.time, params.expirationTime, params.revocable, params.refUID, params.data);

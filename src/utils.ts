@@ -114,14 +114,9 @@ const getDataFromReceipt = (receipt: TransactionReceipt, event: Event, attribute
   );
 };
 
-export const getUIDsFromAttestReceipt = (receipt: TransactionReceipt): string[] =>
-  getDataFromReceipt(receipt, Event.Attested, 'uid');
-
-export const getTimestampFromTimestampReceipt = (receipt: TransactionReceipt): bigint[] =>
-  getDataFromReceipt(receipt, Event.Timestamped, 'timestamp').map((s) => BigInt(s));
-
-export const getTimestampFromOffchainRevocationReceipt = (receipt: TransactionReceipt): bigint[] =>
-  getDataFromReceipt(receipt, Event.RevokedOffchain, 'timestamp').map((s) => BigInt(s));
+export const getUIDFromAttestTx = async (res: Promise<TransactionResponse> | TransactionResponse): Promise<string> => {
+  return (await getUIDsFromMultiAttestTx(res))[0];
+};
 
 export const getUIDsFromMultiAttestTx = async (
   res: Promise<TransactionResponse> | TransactionResponse
@@ -135,41 +130,11 @@ export const getUIDsFromMultiAttestTx = async (
   return getUIDsFromAttestReceipt(receipt);
 };
 
-export const getUIDFromAttestTx = async (res: Promise<TransactionResponse> | TransactionResponse): Promise<string> => {
-  return (await getUIDsFromMultiAttestTx(res))[0];
-};
+export const getUIDsFromAttestReceipt = (receipt: TransactionReceipt): string[] =>
+  getDataFromReceipt(receipt, Event.Attested, 'uid');
 
-export const getUIDFromMultiDelegatedProxyAttestTx = async (
-  res: Promise<TransactionResponse> | TransactionResponse
-): Promise<string[]> => {
-  const tx = await res;
-  const receipt = await tx.wait();
-  if (!receipt) {
-    throw new Error(`Unable to confirm: ${tx}`);
-  }
+export const getTimestampFromTimestampReceipt = (receipt: TransactionReceipt): bigint[] =>
+  getDataFromReceipt(receipt, Event.Timestamped, 'timestamp').map((s) => BigInt(s));
 
-  return getUIDFromMultiDelegatedProxyAttestReceipt(receipt);
-};
-
-export const getUIDFromMultiDelegatedProxyAttestReceipt = async (
-  res: Promise<TransactionReceipt> | TransactionReceipt
-): Promise<string[]> => {
-  const receipt = await res;
-  if (!receipt) {
-    throw new Error(`Unable to confirm: ${res}`);
-  }
-
-  return getUIDsFromAttestReceipt(receipt);
-};
-
-export const getUIDFromDelegatedProxyAttestTx = async (
-  res: Promise<TransactionResponse> | TransactionResponse
-): Promise<string> => {
-  return (await getUIDFromMultiDelegatedProxyAttestTx(res))[0];
-};
-
-export const getUIDFromDelegatedProxyAttestReceipt = async (
-  res: Promise<TransactionReceipt> | TransactionReceipt
-): Promise<string> => {
-  return (await getUIDFromMultiDelegatedProxyAttestReceipt(res))[0];
-};
+export const getTimestampFromOffchainRevocationReceipt = (receipt: TransactionReceipt): bigint[] =>
+  getDataFromReceipt(receipt, Event.RevokedOffchain, 'timestamp').map((s) => BigInt(s));

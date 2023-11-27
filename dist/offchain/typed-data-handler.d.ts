@@ -51,11 +51,19 @@ export type EIP712Response<T extends EIP712MessageTypes, P extends EIP712Params>
     signature: Signature;
 };
 export declare const EIP712_DOMAIN = "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)";
+export declare class InvalidDomain extends Error {
+}
+export declare class InvalidPrimaryType extends Error {
+}
+export declare class InvalidTypes extends Error {
+}
+export declare class InvalidAddress extends Error {
+}
 export declare abstract class TypedDataHandler {
-    protected config: TypedDataConfig;
+    config: TypedDataConfig;
     constructor(config: TypedDataConfig);
     getDomainSeparator(): string;
     getDomainTypedData(): DomainTypedData;
     signTypedDataRequest<T extends EIP712MessageTypes, P extends EIP712Params>(params: P, types: EIP712TypedData<T, P>, signer: Signer): Promise<EIP712Response<T, P>>;
-    verifyTypedDataRequestSignature<T extends EIP712MessageTypes, P extends EIP712Params>(attester: string, response: EIP712Response<T, P>, types: EIP712Types<T>): boolean;
+    verifyTypedDataRequestSignature<T extends EIP712MessageTypes, P extends EIP712Params>(attester: string, response: EIP712Response<T, P>, types: EIP712Types<T>, strict?: boolean): boolean;
 }
