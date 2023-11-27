@@ -147,10 +147,10 @@ export class DelegatedProxy extends TypedDataHandler {
 
     if (semver.lt(config.version, '1.2.0')) {
       this.version = DelegatedProxyAttestationVersion.Legacy;
-    } else if (semver.lte(config.version, '1.3.0')) {
-      this.version = DelegatedProxyAttestationVersion.Version2;
-    } else {
+    } else if (semver.lt(config.version, '1.3.0')) {
       this.version = DelegatedProxyAttestationVersion.Version1;
+    } else {
+      this.version = DelegatedProxyAttestationVersion.Version2;
     }
 
     this.attestType = DELEGATED_PROXY_ATTESTATION_TYPES[this.version];
