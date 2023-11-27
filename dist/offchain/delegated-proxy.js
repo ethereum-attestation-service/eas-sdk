@@ -108,11 +108,11 @@ class DelegatedProxy extends typed_data_handler_1.TypedDataHandler {
         if (semver_1.default.lt(config.version, '1.2.0')) {
             this.version = DelegatedProxyAttestationVersion.Legacy;
         }
-        else if (semver_1.default.lte(config.version, '1.3.0')) {
-            this.version = DelegatedProxyAttestationVersion.Version2;
+        else if (semver_1.default.lt(config.version, '1.3.0')) {
+            this.version = DelegatedProxyAttestationVersion.Version1;
         }
         else {
-            this.version = DelegatedProxyAttestationVersion.Version1;
+            this.version = DelegatedProxyAttestationVersion.Version2;
         }
         this.attestType = DELEGATED_PROXY_ATTESTATION_TYPES[this.version];
         this.revokeType = DELEGATED_PROXY_REVOCATION_TYPES[this.version];
