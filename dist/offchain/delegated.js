@@ -4,7 +4,6 @@ exports.Delegated = exports.DelegatedAttestationVersion = exports.EIP712_NAME = 
 const tslib_1 = require("tslib");
 const omit_1 = tslib_1.__importDefault(require("lodash/omit"));
 const semver_1 = tslib_1.__importDefault(require("semver"));
-const request_1 = require("../request");
 const typed_data_handler_1 = require("./typed-data-handler");
 exports.EIP712_NAME = 'EAS';
 var DelegatedAttestationVersion;
@@ -129,12 +128,7 @@ class Delegated extends typed_data_handler_1.TypedDataHandler {
             ...params
         };
         if (this.version === DelegatedAttestationVersion.Legacy) {
-            if (params.value !== 0n) {
-                throw new Error("Committing to a value isn't supported for legacy attestations. Please specify 0 instead");
-            }
-            if (params.deadline !== request_1.NO_EXPIRATION) {
-                throw new Error(`Committing to a deadline isn't supported for legacy attestations. Please specify ${request_1.NO_EXPIRATION} instead`);
-            }
+            // Committing to a value or to a deadline isn't supported for legacy attestations, therefore they will be ignored
             effectiveParams = (0, omit_1.default)(params, ['value', 'deadline']);
         }
         return this.signTypedDataRequest(effectiveParams, {
@@ -156,12 +150,7 @@ class Delegated extends typed_data_handler_1.TypedDataHandler {
             ...params
         };
         if (this.version === DelegatedAttestationVersion.Legacy) {
-            if (params.value !== 0n) {
-                throw new Error("Committing to a value isn't supported for legacy revocations. Please specify 0 instead");
-            }
-            if (params.deadline !== request_1.NO_EXPIRATION) {
-                throw new Error(`Committing to a deadline isn't supported for legacy revocations. Please specify ${request_1.NO_EXPIRATION} instead`);
-            }
+            // Committing to a value or to a deadline isn't supported for legacy revocations, therefore they will be ignored
             effectiveParams = (0, omit_1.default)(params, ['value', 'deadline']);
         }
         return this.signTypedDataRequest(effectiveParams, {

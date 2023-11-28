@@ -1,7 +1,6 @@
 import { Signer } from 'ethers';
 import omit from 'lodash/omit';
 import semver from 'semver';
-import { NO_EXPIRATION } from '../request';
 import {
   EIP712MessageTypes,
   EIP712Params,
@@ -184,16 +183,7 @@ export class Delegated extends TypedDataHandler {
     };
 
     if (this.version === DelegatedAttestationVersion.Legacy) {
-      if (params.value !== 0n) {
-        throw new Error("Committing to a value isn't supported for legacy attestations. Please specify 0 instead");
-      }
-
-      if (params.deadline !== NO_EXPIRATION) {
-        throw new Error(
-          `Committing to a deadline isn't supported for legacy attestations. Please specify ${NO_EXPIRATION} instead`
-        );
-      }
-
+      // Committing to a value or to a deadline isn't supported for legacy attestations, therefore they will be ignored
       effectiveParams = omit(params, ['value', 'deadline']) as EIP712FullAttestationParams;
     }
 
@@ -233,16 +223,7 @@ export class Delegated extends TypedDataHandler {
     };
 
     if (this.version === DelegatedAttestationVersion.Legacy) {
-      if (params.value !== 0n) {
-        throw new Error("Committing to a value isn't supported for legacy revocations. Please specify 0 instead");
-      }
-
-      if (params.deadline !== NO_EXPIRATION) {
-        throw new Error(
-          `Committing to a deadline isn't supported for legacy revocations. Please specify ${NO_EXPIRATION} instead`
-        );
-      }
-
+      // Committing to a value or to a deadline isn't supported for legacy revocations, therefore they will be ignored
       effectiveParams = omit(params, ['value', 'deadline']) as EIP712FullRevocationParams;
     }
 

@@ -123,9 +123,7 @@ class DelegatedProxy extends typed_data_handler_1.TypedDataHandler {
             ...params
         };
         if (this.version === DelegatedProxyAttestationVersion.Legacy) {
-            if (params.value !== 0n) {
-                throw new Error("Committing to a value isn't supported for legacy attestations. Please specify 0 instead");
-            }
+            // Committing to a value isn't supported for legacy attestations, therefore it will be ignored
             effectiveParams = (0, omit_1.default)(params, ['value']);
         }
         return this.signTypedDataRequest(effectiveParams, {
@@ -147,9 +145,7 @@ class DelegatedProxy extends typed_data_handler_1.TypedDataHandler {
             ...params
         };
         if (this.version === DelegatedProxyAttestationVersion.Legacy) {
-            if (params.value !== 0n) {
-                throw new Error("Committing to a value isn't supported for legacy revocations. Please specify 0 instead");
-            }
+            // Committing to a value isn't supported for legacy revocations, therefore it will be ignored
             effectiveParams = (0, omit_1.default)(params, ['value']);
         }
         return this.signTypedDataRequest(effectiveParams, {
