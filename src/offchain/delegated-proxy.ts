@@ -167,10 +167,7 @@ export class DelegatedProxy extends TypedDataHandler {
     };
 
     if (this.version === DelegatedProxyAttestationVersion.Legacy) {
-      if (params.value !== 0n) {
-        throw new Error("Committing to a value isn't supported for legacy attestations. Please specify 0 instead");
-      }
-
+      // Committing to a value isn't supported for legacy attestations, therefore it will be ignored
       effectiveParams = omit(params, ['value']) as EIP712FullAttestationProxyParams;
     }
 
@@ -210,10 +207,7 @@ export class DelegatedProxy extends TypedDataHandler {
     };
 
     if (this.version === DelegatedProxyAttestationVersion.Legacy) {
-      if (params.value !== 0n) {
-        throw new Error("Committing to a value isn't supported for legacy revocations. Please specify 0 instead");
-      }
-
+      // Committing to a value isn't supported for legacy revocations, therefore it will be ignored
       effectiveParams = omit(params, ['value']) as EIP712FullRevocationProxyParams;
     }
 
