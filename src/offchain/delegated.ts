@@ -15,7 +15,8 @@ export {
   EIP712TypedData,
   EIP712Request,
   EIP712Response,
-  PartialTypedDataConfig
+  PartialTypedDataConfig,
+  Signature
 } from './typed-data-handler';
 
 export const EIP712_NAME = 'EAS';
