@@ -1,7 +1,7 @@
 import { ZeroAddress, ZeroHash } from 'ethers';
 import * as Base64 from 'js-base64';
 import pako from 'pako';
-import { EIP712MessageTypes, SignedOffchainAttestation } from './offchain';
+import { EIP712MessageTypes, OffChainAttestationVersion, SignedOffchainAttestation } from './offchain';
 
 export interface SignedOffchainAttestationV1 extends Omit<SignedOffchainAttestation, 'signature'> {
   r: string;
@@ -33,7 +33,7 @@ export type CompactAttestationShareablePackageObject = [
   revocable: boolean,
   data: string,
   nonce: number,
-  offchainVersion?: number
+  offchainVersion?: OffChainAttestationVersion
 ];
 
 export const createOffchainURL = (pkg: AttestationShareablePackageObject) => {
@@ -129,7 +129,7 @@ export const uncompactOffchainAttestationPackage = (
     ]
   };
 
-  if (version === 1) {
+  if (version >= OffChainAttestationVersion.Version1) {
     attestTypes.Attest.unshift({
       name: 'version',
       type: 'uint16'
@@ -144,7 +144,7 @@ export const uncompactOffchainAttestationPackage = (
         chainId: BigInt(compacted[1]),
         verifyingContract: compacted[2]
       },
-      primaryType: version === 0 ? 'Attestation' : 'Attest',
+      primaryType: version === OffChainAttestationVersion.Legacy ? 'Attestation' : 'Attest',
       types: attestTypes,
       signature: {
         r: compacted[3],
