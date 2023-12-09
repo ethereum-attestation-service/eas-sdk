@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { Signer } from 'ethers';
+import { encodeBytes32String, Signer } from 'ethers';
 import {
   AttestationRequestData,
   EAS,
@@ -170,32 +170,35 @@ export const expectAttestation = async (
       const offchain = await eas.getOffchain();
 
       const now = await latest();
+      const salt = encodeBytes32String('SALT');
       const uid = getOffchainUID(
-        OffChainAttestationVersion.Version1,
+        OffChainAttestationVersion.Version2,
         schema,
         recipient,
         now,
         expirationTime,
         revocable,
         refUID,
-        data
+        data,
+        salt
       );
-      const response = await offchain.signOffchainAttestation(
+
+      const attestation = await offchain.signOffchainAttestation(
         {
-          version: OffChainAttestationVersion.Version1,
           schema,
           recipient,
           time: now,
           expirationTime,
           revocable,
           refUID,
-          data
+          data,
+          salt
         },
         txSender
       );
 
-      expect(response.uid).to.equal(uid);
-      expect(await offchain.verifyOffchainAttestationSignature(await txSender.getAddress(), response)).to.be.true;
+      expect(attestation.uid).to.equal(uid);
+      expect(await offchain.verifyOffchainAttestationSignature(await txSender.getAddress(), attestation)).to.be.true;
 
       return uid;
     }

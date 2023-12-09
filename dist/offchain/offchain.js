@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Offchain = exports.OFFCHAIN_ATTESTATION_TYPES = exports.OffChainAttestationVersion = void 0;
+exports.Offchain = exports.SALT_SIZE = exports.OFFCHAIN_ATTESTATION_TYPES = exports.OffChainAttestationVersion = void 0;
 const ethers_1 = require("ethers");
 const utils_1 = require("../utils");
 const delegated_1 = require("./delegated");
@@ -9,6 +9,7 @@ var OffChainAttestationVersion;
 (function (OffChainAttestationVersion) {
     OffChainAttestationVersion[OffChainAttestationVersion["Legacy"] = 0] = "Legacy";
     OffChainAttestationVersion[OffChainAttestationVersion["Version1"] = 1] = "Version1";
+    OffChainAttestationVersion[OffChainAttestationVersion["Version2"] = 2] = "Version2";
 })(OffChainAttestationVersion || (exports.OffChainAttestationVersion = OffChainAttestationVersion = {}));
 exports.OFFCHAIN_ATTESTATION_TYPES = {
     [OffChainAttestationVersion.Legacy]: [
@@ -75,18 +76,38 @@ exports.OFFCHAIN_ATTESTATION_TYPES = {
                 ]
             }
         }
+    ],
+    [OffChainAttestationVersion.Version2]: [
+        {
+            domain: 'EAS Attestation',
+            primaryType: 'Attest',
+            types: {
+                Attest: [
+                    { name: 'version', type: 'uint16' },
+                    { name: 'schema', type: 'bytes32' },
+                    { name: 'recipient', type: 'address' },
+                    { name: 'time', type: 'uint64' },
+                    { name: 'expirationTime', type: 'uint64' },
+                    { name: 'revocable', type: 'bool' },
+                    { name: 'refUID', type: 'bytes32' },
+                    { name: 'data', type: 'bytes' },
+                    { name: 'salt', type: 'bytes32' }
+                ]
+            }
+        }
     ]
 };
 const DEFAULT_OFFCHAIN_ATTESTATION_OPTIONS = {
     verifyOnchain: false
 };
+exports.SALT_SIZE = 32;
 class Offchain extends typed_data_handler_1.TypedDataHandler {
     version;
     signingType;
     verificationTypes;
     eas;
     constructor(config, version, eas) {
-        if (version > OffChainAttestationVersion.Version1) {
+        if (version > OffChainAttestationVersion.Version2) {
             throw new Error('Unsupported version');
         }
         super({ ...config, name: delegated_1.EIP712_NAME });
@@ -112,11 +133,15 @@ class Offchain extends typed_data_handler_1.TypedDataHandler {
         };
     }
     async signOffchainAttestation(params, signer, options) {
-        const uid = Offchain.getOffchainUID(params);
-        const signedRequest = await this.signTypedDataRequest(params, {
+        const typedData = { version: this.version, ...params };
+        // If no salt was provided - generate a random salt.
+        if (this.version >= OffChainAttestationVersion.Version2 && !typedData.salt) {
+            typedData.salt = (0, ethers_1.hexlify)((0, ethers_1.randomBytes)(exports.SALT_SIZE));
+        }
+        const signedRequest = await this.signTypedDataRequest(typedData, {
             domain: this.getDomainTypedData(),
             primaryType: this.signingType.primaryType,
-            message: params,
+            message: typedData,
             types: this.signingType.types
         }, signer);
         const { verifyOnchain } = { ...DEFAULT_OFFCHAIN_ATTESTATION_OPTIONS, ...options };
@@ -132,18 +157,19 @@ class Offchain extends typed_data_handler_1.TypedDataHandler {
             }
         }
         return {
-            ...signedRequest,
-            uid
+            version: this.version,
+            uid: this.getOffchainUID(typedData),
+            ...signedRequest
         };
     }
-    verifyOffchainAttestationSignature(attester, request) {
-        if (request.uid !== Offchain.getOffchainUID(request.message)) {
+    verifyOffchainAttestationSignature(attester, attestation) {
+        if (attestation.uid !== Offchain.getOffchainUID(this.version, attestation)) {
             return false;
         }
         const typeCount = this.verificationTypes.length;
         return this.verificationTypes.some((type, index) => {
             try {
-                return this.verifyTypedDataRequestSignature(attester, request, {
+                return this.verifyTypedDataRequestSignature(attester, attestation, {
                     primaryType: type.primaryType,
                     types: type.types
                 }, false);
@@ -156,8 +182,11 @@ class Offchain extends typed_data_handler_1.TypedDataHandler {
             }
         });
     }
-    static getOffchainUID(params) {
-        return (0, utils_1.getOffchainUID)(params.version ?? OffChainAttestationVersion.Legacy, params.schema, params.recipient, params.time, params.expirationTime, params.revocable, params.refUID, params.data);
+    getOffchainUID(params) {
+        return (0, utils_1.getOffchainUID)(this.version, params.schema, params.recipient, params.time, params.expirationTime, params.revocable, params.refUID, params.data, params.salt);
+    }
+    static getOffchainUID(version, attestation) {
+        return (0, utils_1.getOffchainUID)(version, attestation.message.schema, attestation.message.recipient, attestation.message.time, attestation.message.expirationTime, attestation.message.revocable, attestation.message.refUID, attestation.message.data, attestation.message.salt);
     }
 }
 exports.Offchain = Offchain;

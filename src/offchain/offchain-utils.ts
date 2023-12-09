@@ -10,31 +10,33 @@ export interface SignedOffchainAttestationV1 extends Omit<SignedOffchainAttestat
 }
 
 export interface AttestationShareablePackageObject {
-  /** Signed typed data with attestation object */
+  // Signed typed data with attestation object
   sig: SignedOffchainAttestation;
-  /** Address of the signer */
+
+  // Address of the signer
   signer: string;
 }
 
-export type CompactAttestationShareablePackageObject = [
-  contractVersion: string,
-  chainId: bigint,
-  verifyingContract: string,
-  r: string,
-  s: string,
-  v: number,
-  signer: string,
-  uid: string,
-  schema: string,
-  recipient: string,
-  time: number,
-  expirationTime: number,
-  refUID: string,
-  revocable: boolean,
-  data: string,
-  nonce: number,
-  offchainVersion?: OffChainAttestationVersion
-];
+export interface CompactAttestationShareablePackageObject {
+  offchainVersion: OffChainAttestationVersion;
+  contractVersion: string;
+  chainId: bigint;
+  verifyingContract: string;
+  r: string;
+  s: string;
+  v: number;
+  signer: string;
+  uid: string;
+  schema: string;
+  recipient: string;
+  time: number;
+  expirationTime: number;
+  refUID: string;
+  revocable: boolean;
+  data: string;
+  salt?: string;
+  nonce: number;
+}
 
 export const createOffchainURL = (pkg: AttestationShareablePackageObject) => {
   const base64 = zipAndEncodeToBase64(pkg);
@@ -70,31 +72,32 @@ export const compactOffchainAttestationPackage = (
     sig = convertV1AttestationToV2(sig);
   }
 
-  return [
-    sig.domain.version,
-    sig.domain.chainId,
-    sig.domain.verifyingContract,
-    sig.signature.r,
-    sig.signature.s,
-    sig.signature.v,
+  return {
+    offchainVersion: sig.message.version,
+    contractVersion: sig.domain.version,
+    chainId: sig.domain.chainId,
+    verifyingContract: sig.domain.verifyingContract,
+    r: sig.signature.r,
+    s: sig.signature.s,
+    v: sig.signature.v,
     signer,
-    sig.uid,
-    sig.message.schema,
-    sig.message.recipient === ZeroAddress ? '0' : sig.message.recipient,
-    Number(sig.message.time),
-    Number(sig.message.expirationTime),
-    sig.message.refUID === ZeroHash ? '0' : sig.message.refUID,
-    sig.message.revocable,
-    sig.message.data,
-    Number(sig.message.nonce),
-    sig.message.version
-  ];
+    uid: sig.uid,
+    schema: sig.message.schema,
+    recipient: sig.message.recipient === ZeroAddress ? '0' : sig.message.recipient,
+    time: Number(sig.message.time),
+    expirationTime: Number(sig.message.expirationTime),
+    refUID: sig.message.refUID === ZeroHash ? '0' : sig.message.refUID,
+    revocable: sig.message.revocable,
+    data: sig.message.data,
+    salt: sig.message.salt,
+    nonce: Number(sig.message.nonce)
+  };
 };
 
 export const uncompactOffchainAttestationPackage = (
   compacted: CompactAttestationShareablePackageObject
 ): AttestationShareablePackageObject => {
-  const version = compacted[16] ? compacted[16] : 0;
+  const version = compacted.offchainVersion ?? OffChainAttestationVersion.Legacy;
 
   const attestTypes: EIP712MessageTypes = {
     Attest: [
@@ -129,42 +132,69 @@ export const uncompactOffchainAttestationPackage = (
     ]
   };
 
-  if (version >= OffChainAttestationVersion.Version1) {
-    attestTypes.Attest.unshift({
-      name: 'version',
-      type: 'uint16'
-    });
+  switch (version) {
+    case OffChainAttestationVersion.Version1:
+      {
+        attestTypes.Attest = [
+          {
+            name: 'version',
+            type: 'uint16'
+          },
+          ...attestTypes.Attest
+        ];
+      }
+
+      break;
+
+    case OffChainAttestationVersion.Version2:
+      {
+        attestTypes.Attest = [
+          {
+            name: 'version',
+            type: 'uint16'
+          },
+          ...attestTypes.Attest,
+          {
+            name: 'salt',
+            type: 'bytes32'
+          }
+        ];
+      }
+
+      break;
   }
 
   return {
     sig: {
+      version,
       domain: {
         name: 'EAS Attestation',
-        version: compacted[0],
-        chainId: BigInt(compacted[1]),
-        verifyingContract: compacted[2]
+        version: compacted.contractVersion,
+        chainId: compacted.chainId,
+        verifyingContract: compacted.verifyingContract
       },
       primaryType: version === OffChainAttestationVersion.Legacy ? 'Attestation' : 'Attest',
       types: attestTypes,
       signature: {
-        r: compacted[3],
-        s: compacted[4],
-        v: compacted[5]
+        r: compacted.r,
+        s: compacted.s,
+        v: compacted.v
       },
-      uid: compacted[7],
+      uid: compacted.uid,
       message: {
         version,
-        schema: compacted[8],
-        recipient: compacted[9] === '0' ? ZeroAddress : compacted[9],
-        time: BigInt(compacted[10]),
-        expirationTime: BigInt(compacted[11]),
-        refUID: compacted[12] === '0' ? ZeroHash : compacted[12],
-        revocable: compacted[13],
-        data: compacted[14],
-        nonce: BigInt(compacted[15])
+        schema: compacted.schema,
+        recipient: compacted.recipient === '0' ? ZeroAddress : compacted.recipient,
+        time: BigInt(compacted.time),
+        expirationTime: BigInt(compacted.expirationTime),
+        refUID: compacted.refUID === '0' ? ZeroHash : compacted.refUID,
+        revocable: compacted.revocable,
+        data: compacted.data,
+        nonce: BigInt(compacted.nonce),
+        salt: compacted.salt
       }
     },
-    signer: compacted[6]
+    signer: compacted.signer
   };
 };
 

@@ -9,6 +9,7 @@ import {
   TransactionResponse,
   ZeroAddress
 } from 'ethers';
+import { OffChainAttestationVersion } from './offchain';
 
 export const ZERO_ADDRESS = ZeroAddress;
 export const ZERO_BYTES = '0x';
@@ -53,16 +54,17 @@ export const getOffchainUID = (
   expirationTime: bigint,
   revocable: boolean,
   refUID: string,
-  data: string
+  data: string,
+  salt?: string
 ) => {
   switch (version) {
-    case 0:
+    case OffChainAttestationVersion.Legacy:
       return solidityPackedKeccak256(
         ['bytes', 'address', 'address', 'uint64', 'uint64', 'bool', 'bytes32', 'bytes', 'uint32'],
         [hexlify(toUtf8Bytes(schema)), recipient, ZERO_ADDRESS, time, expirationTime, revocable, refUID, data, 0]
       );
 
-    case 1:
+    case OffChainAttestationVersion.Version1:
       return solidityPackedKeccak256(
         ['uint16', 'bytes', 'address', 'address', 'uint64', 'uint64', 'bool', 'bytes32', 'bytes', 'uint32'],
         [
@@ -75,6 +77,24 @@ export const getOffchainUID = (
           revocable,
           refUID,
           data,
+          0
+        ]
+      );
+
+    case OffChainAttestationVersion.Version2:
+      return solidityPackedKeccak256(
+        ['uint16', 'bytes', 'address', 'address', 'uint64', 'uint64', 'bool', 'bytes32', 'bytes', 'bytes32', 'uint32'],
+        [
+          version,
+          hexlify(toUtf8Bytes(schema)),
+          recipient,
+          ZERO_ADDRESS,
+          time,
+          expirationTime,
+          revocable,
+          refUID,
+          data,
+          salt,
           0
         ]
       );
