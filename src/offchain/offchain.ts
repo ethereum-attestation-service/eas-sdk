@@ -148,7 +148,7 @@ export class Offchain extends TypedDataHandler {
   protected readonly verificationTypes: OffchainAttestationType[];
   private readonly eas: EAS;
 
-  constructor(config: PartialTypedDataConfig, version: number, eas: EAS) {
+  constructor(config: PartialTypedDataConfig, version: OffChainAttestationVersion, eas: EAS) {
     if (version > OffChainAttestationVersion.Version2) {
       throw new Error('Unsupported version');
     }

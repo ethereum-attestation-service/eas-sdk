@@ -38,7 +38,7 @@ export declare class Offchain extends TypedDataHandler {
     protected signingType: OffchainAttestationType;
     protected readonly verificationTypes: OffchainAttestationType[];
     private readonly eas;
-    constructor(config: PartialTypedDataConfig, version: number, eas: EAS);
+    constructor(config: PartialTypedDataConfig, version: OffChainAttestationVersion, eas: EAS);
     getDomainSeparator(): string;
     getDomainTypedData(): DomainTypedData;
     signOffchainAttestation(params: OffchainAttestationParams, signer: Signer, options?: OffchainAttestationOptions): Promise<SignedOffchainAttestation>;
