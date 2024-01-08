@@ -1,17 +1,17 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Offchain = exports.OFFCHAIN_ATTESTATION_TYPES = exports.OffChainAttestationVersion = void 0;
+exports.Offchain = exports.OFFCHAIN_ATTESTATION_TYPES = exports.OffchainAttestationVersion = void 0;
 const ethers_1 = require("ethers");
 const utils_1 = require("../utils");
 const delegated_1 = require("./delegated");
 const typed_data_handler_1 = require("./typed-data-handler");
-var OffChainAttestationVersion;
-(function (OffChainAttestationVersion) {
-    OffChainAttestationVersion[OffChainAttestationVersion["Legacy"] = 0] = "Legacy";
-    OffChainAttestationVersion[OffChainAttestationVersion["Version1"] = 1] = "Version1";
-})(OffChainAttestationVersion || (exports.OffChainAttestationVersion = OffChainAttestationVersion = {}));
+var OffchainAttestationVersion;
+(function (OffchainAttestationVersion) {
+    OffchainAttestationVersion[OffchainAttestationVersion["Legacy"] = 0] = "Legacy";
+    OffchainAttestationVersion[OffchainAttestationVersion["Version1"] = 1] = "Version1";
+})(OffchainAttestationVersion || (exports.OffchainAttestationVersion = OffchainAttestationVersion = {}));
 exports.OFFCHAIN_ATTESTATION_TYPES = {
-    [OffChainAttestationVersion.Legacy]: [
+    [OffchainAttestationVersion.Legacy]: [
         {
             domain: 'EAS Attestation',
             primaryType: 'Attestation',
@@ -58,7 +58,7 @@ exports.OFFCHAIN_ATTESTATION_TYPES = {
             }
         }
     ],
-    [OffChainAttestationVersion.Version1]: [
+    [OffchainAttestationVersion.Version1]: [
         {
             domain: 'EAS Attestation',
             primaryType: 'Attest',
@@ -86,7 +86,7 @@ class Offchain extends typed_data_handler_1.TypedDataHandler {
     verificationTypes;
     eas;
     constructor(config, version, eas) {
-        if (version > OffChainAttestationVersion.Version1) {
+        if (version > OffchainAttestationVersion.Version1) {
             throw new Error('Unsupported version');
         }
         super({ ...config, name: delegated_1.EIP712_NAME });
@@ -157,7 +157,7 @@ class Offchain extends typed_data_handler_1.TypedDataHandler {
         });
     }
     static getOffchainUID(params) {
-        return (0, utils_1.getOffchainUID)(params.version ?? OffChainAttestationVersion.Legacy, params.schema, params.recipient, params.time, params.expirationTime, params.revocable, params.refUID, params.data);
+        return (0, utils_1.getOffchainUID)(params.version ?? OffchainAttestationVersion.Legacy, params.schema, params.recipient, params.time, params.expirationTime, params.revocable, params.refUID, params.data);
     }
 }
 exports.Offchain = Offchain;

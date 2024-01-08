@@ -4,7 +4,7 @@ import {
   decodeBase64ZippedBase64,
   EAS,
   Offchain,
-  OffChainAttestationVersion,
+  OffchainAttestationVersion,
   zipAndEncodeToBase64
 } from '../../src';
 import { ZERO_ADDRESS } from '../utils/Constants';
@@ -92,7 +92,7 @@ describe('offchain utils', () => {
           address: testAttestation.sig.domain.verifyingContract,
           version: testAttestation.sig.domain.version
         },
-        OffChainAttestationVersion.Version1,
+        OffchainAttestationVersion.Version1,
         new EAS(ZERO_ADDRESS)
       );
 
