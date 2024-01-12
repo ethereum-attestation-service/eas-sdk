@@ -20,13 +20,13 @@ export interface OffchainAttestationType extends EIP712Types<EIP712MessageTypes>
   domain: string;
 }
 
-export enum OffChainAttestationVersion {
+export enum OffchainAttestationVersion {
   Legacy = 0,
   Version1 = 1
 }
 
-export const OFFCHAIN_ATTESTATION_TYPES: Record<OffChainAttestationVersion, OffchainAttestationType[]> = {
-  [OffChainAttestationVersion.Legacy]: [
+export const OFFCHAIN_ATTESTATION_TYPES: Record<OffchainAttestationVersion, OffchainAttestationType[]> = {
+  [OffchainAttestationVersion.Legacy]: [
     {
       domain: 'EAS Attestation',
       primaryType: 'Attestation',
@@ -73,7 +73,7 @@ export const OFFCHAIN_ATTESTATION_TYPES: Record<OffChainAttestationVersion, Offc
       }
     }
   ],
-  [OffChainAttestationVersion.Version1]: [
+  [OffchainAttestationVersion.Version1]: [
     {
       domain: 'EAS Attestation',
       primaryType: 'Attest',
@@ -117,13 +117,13 @@ export interface SignedOffchainAttestation extends EIP712Response<EIP712MessageT
 }
 
 export class Offchain extends TypedDataHandler {
-  public readonly version: OffChainAttestationVersion;
+  public readonly version: OffchainAttestationVersion;
   protected signingType: OffchainAttestationType;
   protected readonly verificationTypes: OffchainAttestationType[];
   private readonly eas: EAS;
 
   constructor(config: PartialTypedDataConfig, version: number, eas: EAS) {
-    if (version > OffChainAttestationVersion.Version1) {
+    if (version > OffchainAttestationVersion.Version1) {
       throw new Error('Unsupported version');
     }
 
@@ -227,7 +227,7 @@ export class Offchain extends TypedDataHandler {
 
   public static getOffchainUID(params: OffchainAttestationParams): string {
     return getOffchainUID(
-      params.version ?? OffChainAttestationVersion.Legacy,
+      params.version ?? OffchainAttestationVersion.Legacy,
       params.schema,
       params.recipient,
       params.time,

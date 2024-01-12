@@ -1,6 +1,6 @@
 import { Signer } from 'ethers';
 import { EIP712MessageTypes, EIP712Params, EIP712Response, PartialTypedDataConfig, TypedDataHandler } from './typed-data-handler';
-export { EIP712MessageTypes, EIP712TypedData, EIP712Request, EIP712Response, PartialTypedDataConfig } from './typed-data-handler';
+export { EIP712MessageTypes, EIP712TypedData, EIP712Request, EIP712Response, PartialTypedDataConfig, Signature } from './typed-data-handler';
 export declare const EIP712_NAME = "EAS";
 export declare enum DelegatedAttestationVersion {
     Legacy = 0,

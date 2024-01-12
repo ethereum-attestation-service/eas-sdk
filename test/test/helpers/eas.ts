@@ -19,7 +19,7 @@ import {
   EIP712Response,
   EIP712RevocationParams,
   EIP712RevocationProxyParams,
-  OffChainAttestationVersion
+  OffchainAttestationVersion
 } from '../../../src/offchain';
 import { Transaction } from '../../../src/transaction';
 import { getOffchainUID } from '../../../src/utils';
@@ -171,7 +171,7 @@ export const expectAttestation = async (
 
       const now = await latest();
       const uid = getOffchainUID(
-        OffChainAttestationVersion.Version1,
+        OffchainAttestationVersion.Version1,
         schema,
         recipient,
         now,
@@ -182,7 +182,7 @@ export const expectAttestation = async (
       );
       const response = await offchain.signOffchainAttestation(
         {
-          version: OffChainAttestationVersion.Version1,
+          version: OffchainAttestationVersion.Version1,
           schema,
           recipient,
           time: now,
