@@ -5,6 +5,7 @@ const tslib_1 = require("tslib");
 const ethers_1 = require("ethers");
 const Base64 = tslib_1.__importStar(require("js-base64"));
 const pako_1 = tslib_1.__importDefault(require("pako"));
+const offchain_1 = require("./offchain");
 const createOffchainURL = (pkg) => {
     const base64 = (0, exports.zipAndEncodeToBase64)(pkg);
     return `/offchain/url/#attestation=${encodeURIComponent(base64)}`;
@@ -25,8 +26,8 @@ const decodeBase64ZippedBase64 = (base64) => {
 };
 exports.decodeBase64ZippedBase64 = decodeBase64ZippedBase64;
 const compactOffchainAttestationPackage = (pkg) => {
-    const signer = pkg.signer;
-    let sig = pkg.sig;
+    const { signer } = pkg;
+    let { sig } = pkg;
     if ((0, exports.isSignedOffchainAttestationV1)(sig)) {
         sig = convertV1AttestationToV2(sig);
     }
@@ -47,12 +48,13 @@ const compactOffchainAttestationPackage = (pkg) => {
         sig.message.revocable,
         sig.message.data,
         Number(sig.message.nonce),
-        sig.message.version
+        sig.message.version,
+        sig.message.salt
     ];
 };
 exports.compactOffchainAttestationPackage = compactOffchainAttestationPackage;
 const uncompactOffchainAttestationPackage = (compacted) => {
-    const version = compacted[16] ? compacted[16] : 0;
+    const version = compacted[16] ? compacted[16] : offchain_1.OffchainAttestationVersion.Legacy;
     const attestTypes = {
         Attest: [
             {
@@ -85,21 +87,44 @@ const uncompactOffchainAttestationPackage = (compacted) => {
             }
         ]
     };
-    if (version === 1) {
-        attestTypes.Attest.unshift({
-            name: 'version',
-            type: 'uint16'
-        });
+    switch (version) {
+        case offchain_1.OffchainAttestationVersion.Legacy:
+            break;
+        case offchain_1.OffchainAttestationVersion.Version1:
+            attestTypes.Attest = [
+                {
+                    name: 'version',
+                    type: 'uint16'
+                },
+                ...attestTypes.Attest
+            ];
+            break;
+        case offchain_1.OffchainAttestationVersion.Version2:
+            attestTypes.Attest = [
+                {
+                    name: 'version',
+                    type: 'uint16'
+                },
+                ...attestTypes.Attest,
+                {
+                    name: 'salt',
+                    type: 'bytes32'
+                }
+            ];
+            break;
+        default:
+            throw new Error(`Unsupported version: ${version}`);
     }
     return {
         sig: {
+            version,
             domain: {
                 name: 'EAS Attestation',
                 version: compacted[0],
                 chainId: BigInt(compacted[1]),
                 verifyingContract: compacted[2]
             },
-            primaryType: version === 0 ? 'Attestation' : 'Attest',
+            primaryType: version === offchain_1.OffchainAttestationVersion.Legacy ? 'Attestation' : 'Attest',
             types: attestTypes,
             signature: {
                 r: compacted[3],
@@ -116,7 +141,8 @@ const uncompactOffchainAttestationPackage = (compacted) => {
                 refUID: compacted[12] === '0' ? ethers_1.ZeroHash : compacted[12],
                 revocable: compacted[13],
                 data: compacted[14],
-                nonce: BigInt(compacted[15])
+                nonce: BigInt(compacted[15]),
+                salt: compacted[17]
             }
         },
         signer: compacted[6]
@@ -131,6 +157,7 @@ function convertV1AttestationToV2(attestation) {
     const { v, r, s, ...rest } = attestation;
     return {
         ...rest,
+        version: offchain_1.OffchainAttestationVersion.Version1,
         signature: {
             v,
             r,

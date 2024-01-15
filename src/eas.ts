@@ -450,7 +450,7 @@ export class EAS extends Base<EASContract> {
         version: await this.getVersion(),
         chainId: await this.getChainId()
       },
-      OffchainAttestationVersion.Version1,
+      OffchainAttestationVersion.Version2,
       this
     );
 

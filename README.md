@@ -297,7 +297,7 @@ const attestation = {
     },
     uid: "0x5134f511e0533f997e569dac711952dde21daf14b316f3cce23835defc82c065",
     message: {
-      version: OffchainAttestationVersion.Version1,
+      version: OffchainAttestationVersion.Version2,
       schema: "0x27d06e3659317e9a4f8154d1e849eb53d43d91fb4f219884d1684f86d797804a",
       refUID: "0x0000000000000000000000000000000000000000000000000000000000000000",
       time: 1671219600,
@@ -316,7 +316,7 @@ const EAS_CONFIG: PartialTypedDataConfig = {
   version: attestation.sig.domain.version,
   chainId: attestation.sig.domain.chainId,
 };
-const offchain = new Offchain(EAS_CONFIG, OffchainAttestationVersion.Version1);
+const offchain = new Offchain(EAS_CONFIG, OffchainAttestationVersion.Version2);
 const isValidAttestation = offchain.verifyOffchainAttestationSignature(
   attestation.signer,
   attestation.sig
