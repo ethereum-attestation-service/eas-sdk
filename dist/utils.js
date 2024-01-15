@@ -24,9 +24,9 @@ const getUID = (schema, recipient, attester, time, expirationTime, revocable, re
 exports.getUID = getUID;
 const getOffchainUID = (version, schema, recipient, time, expirationTime, revocable, refUID, data, salt) => {
     switch (version) {
-        case offchain_1.OffChainAttestationVersion.Legacy:
+        case offchain_1.OffchainAttestationVersion.Legacy:
             return (0, ethers_1.solidityPackedKeccak256)(['bytes', 'address', 'address', 'uint64', 'uint64', 'bool', 'bytes32', 'bytes', 'uint32'], [(0, ethers_1.hexlify)((0, ethers_1.toUtf8Bytes)(schema)), recipient, exports.ZERO_ADDRESS, time, expirationTime, revocable, refUID, data, 0]);
-        case offchain_1.OffChainAttestationVersion.Version1:
+        case offchain_1.OffchainAttestationVersion.Version1:
             return (0, ethers_1.solidityPackedKeccak256)(['uint16', 'bytes', 'address', 'address', 'uint64', 'uint64', 'bool', 'bytes32', 'bytes', 'uint32'], [
                 version,
                 (0, ethers_1.hexlify)((0, ethers_1.toUtf8Bytes)(schema)),
@@ -39,7 +39,7 @@ const getOffchainUID = (version, schema, recipient, time, expirationTime, revoca
                 data,
                 0
             ]);
-        case offchain_1.OffChainAttestationVersion.Version2:
+        case offchain_1.OffchainAttestationVersion.Version2:
             return (0, ethers_1.solidityPackedKeccak256)(['uint16', 'bytes', 'address', 'address', 'uint64', 'uint64', 'bool', 'bytes32', 'bytes', 'bytes32', 'uint32'], [
                 version,
                 (0, ethers_1.hexlify)((0, ethers_1.toUtf8Bytes)(schema)),

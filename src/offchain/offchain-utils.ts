@@ -1,7 +1,7 @@
 import { ZeroAddress, ZeroHash } from 'ethers';
 import * as Base64 from 'js-base64';
 import pako from 'pako';
-import { EIP712MessageTypes, OffChainAttestationVersion, SignedOffchainAttestation } from './offchain';
+import { EIP712MessageTypes, OffchainAttestationVersion, SignedOffchainAttestation } from './offchain';
 
 export interface SignedOffchainAttestationV1 extends Omit<SignedOffchainAttestation, 'signature' | 'version'> {
   r: string;
@@ -97,7 +97,7 @@ export const compactOffchainAttestationPackage = (
 export const uncompactOffchainAttestationPackage = (
   compacted: CompactAttestationShareablePackageObject
 ): AttestationShareablePackageObject => {
-  const version = compacted[16] ? compacted[16] : OffChainAttestationVersion.Legacy;
+  const version = compacted[16] ? compacted[16] : OffchainAttestationVersion.Legacy;
 
   const attestTypes: EIP712MessageTypes = {
     Attest: [
@@ -133,10 +133,10 @@ export const uncompactOffchainAttestationPackage = (
   };
 
   switch (version) {
-    case OffChainAttestationVersion.Legacy:
+    case OffchainAttestationVersion.Legacy:
       break;
 
-    case OffChainAttestationVersion.Version1:
+    case OffchainAttestationVersion.Version1:
       attestTypes.Attest = [
         {
           name: 'version',
@@ -147,7 +147,7 @@ export const uncompactOffchainAttestationPackage = (
 
       break;
 
-    case OffChainAttestationVersion.Version2:
+    case OffchainAttestationVersion.Version2:
       attestTypes.Attest = [
         {
           name: 'version',
@@ -175,7 +175,7 @@ export const uncompactOffchainAttestationPackage = (
         chainId: BigInt(compacted[1]),
         verifyingContract: compacted[2]
       },
-      primaryType: version === OffChainAttestationVersion.Legacy ? 'Attestation' : 'Attest',
+      primaryType: version === OffchainAttestationVersion.Legacy ? 'Attestation' : 'Attest',
       types: attestTypes,
       signature: {
         r: compacted[3],
@@ -210,7 +210,7 @@ function convertV1AttestationToV2(attestation: SignedOffchainAttestationV1): Sig
   const { v, r, s, ...rest } = attestation;
   return {
     ...rest,
-    version: OffChainAttestationVersion.Version1,
+    version: OffchainAttestationVersion.Version1,
     signature: {
       v,
       r,

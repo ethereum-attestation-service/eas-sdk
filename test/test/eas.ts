@@ -12,7 +12,7 @@ import {
   DelegatedProxy,
   Offchain,
   OFFCHAIN_ATTESTATION_TYPES,
-  OffChainAttestationVersion
+  OffchainAttestationVersion
 } from '../../src/offchain';
 import { InvalidAddress, InvalidDomain, InvalidPrimaryType, InvalidTypes } from '../../src/offchain/typed-data-handler';
 import { SchemaRegistry } from '../../src/schema-registry';
@@ -601,7 +601,7 @@ describe('EAS API', () => {
 
         it('should support customizable salts', async () => {
           const params = {
-            version: OffChainAttestationVersion.Version2,
+            version: OffchainAttestationVersion.Version2,
             schema: schemaId,
             recipient: await recipient.getAddress(),
             time: await latest(),
@@ -630,7 +630,7 @@ describe('EAS API', () => {
 
         it('should generate a random salt by default', async () => {
           const params = {
-            version: OffChainAttestationVersion.Version2,
+            version: OffchainAttestationVersion.Version2,
             schema: schemaId,
             recipient: await recipient.getAddress(),
             time: await latest(),
@@ -678,7 +678,7 @@ describe('EAS API', () => {
 
         it('should throw on onchain verification of invalid attestations', async () => {
           const params = {
-            version: OffChainAttestationVersion.Version2,
+            version: OffchainAttestationVersion.Version2,
             schema: schemaId,
             recipient: await recipient.getAddress(),
             time: await latest(),
@@ -710,7 +710,7 @@ describe('EAS API', () => {
 
         it('should throw on offchain verification of invalid attestations', async () => {
           const params = {
-            version: OffChainAttestationVersion.Version2,
+            version: OffchainAttestationVersion.Version2,
             schema: schemaId,
             recipient: await recipient.getAddress(),
             time: await latest(),
@@ -789,7 +789,7 @@ describe('EAS API', () => {
         it('should verify offchain attestations with legacy/obsoleted domains', async () => {
           const { config } = offchain;
           const params = {
-            version: OffChainAttestationVersion.Legacy,
+            version: OffchainAttestationVersion.Legacy,
             schema: schemaId,
             recipient: await recipient.getAddress(),
             time: await latest(),
@@ -801,11 +801,11 @@ describe('EAS API', () => {
           const senderAddress = await sender.getAddress();
 
           // Legacy version
-          const legacyOffchain = new Offchain(config, OffChainAttestationVersion.Legacy, new EAS(ZERO_ADDRESS));
+          const legacyOffchain = new Offchain(config, OffchainAttestationVersion.Legacy, new EAS(ZERO_ADDRESS));
 
           let customOffchain = new CustomOffchain(
             config,
-            OffChainAttestationVersion.Legacy,
+            OffchainAttestationVersion.Legacy,
             { contractVersion: '0.0.1' },
             new EAS(ZERO_ADDRESS)
           );
@@ -814,10 +814,10 @@ describe('EAS API', () => {
           await expect(legacyOffchain.verifyOffchainAttestationSignature(senderAddress, attestation)).to.be.true;
 
           // Legacy types
-          for (const type of OFFCHAIN_ATTESTATION_TYPES[OffChainAttestationVersion.Legacy].slice(1)) {
+          for (const type of OFFCHAIN_ATTESTATION_TYPES[OffchainAttestationVersion.Legacy].slice(1)) {
             customOffchain = new CustomOffchain(
               config,
-              OffChainAttestationVersion.Legacy,
+              OffchainAttestationVersion.Legacy,
               {
                 contractVersion: '0.26',
                 type

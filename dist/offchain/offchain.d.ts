@@ -5,12 +5,12 @@ export { EIP712Request, PartialTypedDataConfig, EIP712MessageTypes } from './typ
 export interface OffchainAttestationType extends EIP712Types<EIP712MessageTypes> {
     domain: string;
 }
-export declare enum OffChainAttestationVersion {
+export declare enum OffchainAttestationVersion {
     Legacy = 0,
     Version1 = 1,
     Version2 = 2
 }
-export declare const OFFCHAIN_ATTESTATION_TYPES: Record<OffChainAttestationVersion, OffchainAttestationType[]>;
+export declare const OFFCHAIN_ATTESTATION_TYPES: Record<OffchainAttestationVersion, OffchainAttestationType[]>;
 export type OffchainAttestationParams = {
     schema: string;
     recipient: string;
@@ -22,27 +22,27 @@ export type OffchainAttestationParams = {
     salt?: string;
 } & Partial<EIP712Params>;
 export type OffchainAttestationTypedData = OffchainAttestationParams & {
-    version: OffChainAttestationVersion;
+    version: OffchainAttestationVersion;
 };
 export type OffchainAttestationOptions = {
     salt?: string;
     verifyOnchain: boolean;
 };
 export interface SignedOffchainAttestation extends EIP712Response<EIP712MessageTypes, OffchainAttestationTypedData> {
-    version: OffChainAttestationVersion;
+    version: OffchainAttestationVersion;
     uid: string;
 }
 export declare const SALT_SIZE = 32;
 export declare class Offchain extends TypedDataHandler {
-    readonly version: OffChainAttestationVersion;
+    readonly version: OffchainAttestationVersion;
     protected signingType: OffchainAttestationType;
     protected readonly verificationTypes: OffchainAttestationType[];
     private readonly eas;
-    constructor(config: PartialTypedDataConfig, version: OffChainAttestationVersion, eas: EAS);
+    constructor(config: PartialTypedDataConfig, version: OffchainAttestationVersion, eas: EAS);
     getDomainSeparator(): string;
     getDomainTypedData(): DomainTypedData;
     signOffchainAttestation(params: OffchainAttestationParams, signer: Signer, options?: OffchainAttestationOptions): Promise<SignedOffchainAttestation>;
     verifyOffchainAttestationSignature(attester: string, attestation: SignedOffchainAttestation): boolean;
     private getOffchainUID;
-    static getOffchainUID(version: OffChainAttestationVersion, attestation: SignedOffchainAttestation): string;
+    static getOffchainUID(version: OffchainAttestationVersion, attestation: SignedOffchainAttestation): string;
 }

@@ -2,7 +2,7 @@ import { EAS__factory, EAS as EASContract } from '@ethereum-attestation-service/
 import { Overrides, TransactionReceipt } from 'ethers';
 import { EIP712Proxy } from './eip712-proxy';
 import { legacyVersion } from './legacy/version';
-import { Delegated, Offchain, OffChainAttestationVersion } from './offchain';
+import { Delegated, Offchain, OffchainAttestationVersion } from './offchain';
 import {
   AttestationRequest,
   DelegatedAttestationRequest,
@@ -450,7 +450,7 @@ export class EAS extends Base<EASContract> {
         version: await this.getVersion(),
         chainId: await this.getChainId()
       },
-      OffChainAttestationVersion.Version2,
+      OffchainAttestationVersion.Version2,
       this
     );
 

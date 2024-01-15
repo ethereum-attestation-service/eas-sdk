@@ -4,7 +4,7 @@ import {
   decodeBase64ZippedBase64,
   EAS,
   Offchain,
-  OffChainAttestationVersion,
+  OffchainAttestationVersion,
   SignedOffchainAttestation,
   zipAndEncodeToBase64
 } from '../../src';
@@ -23,7 +23,7 @@ const TEST_ATTESTATIONS: Spec[] = [
   {
     attestation: {
       sig: {
-        version: OffChainAttestationVersion.Version2,
+        version: OffchainAttestationVersion.Version2,
         domain: {
           name: 'EAS Attestation',
           version: '1.3.0',
@@ -63,7 +63,7 @@ const TEST_ATTESTATIONS: Spec[] = [
         },
         uid: '0x854d8e26b2bbdc3577fc78c6d2f512258fcc9b91a60858985a216c0ef526ee82',
         message: {
-          version: OffChainAttestationVersion.Version2,
+          version: OffchainAttestationVersion.Version2,
           schema: '0x33e9094830a5cba5554d1954310e4fbed2ef5f859ec1404619adea4207f391fd',
           recipient: '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266',
           time: 1690299812n,
@@ -119,7 +119,7 @@ const TEST_ATTESTATIONS: Spec[] = [
         },
         uid: '0x35bcdfc396e713ace4513fb166b2ac2e5613f12e4aed5d5cdb637051750f6e0b',
         message: {
-          version: OffChainAttestationVersion.Version1,
+          version: OffchainAttestationVersion.Version1,
           schema: '0x33e9094830a5cba5554d1954310e4fbed2ef5f859ec1404619adea4207f391fd',
           recipient: '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266',
           time: 1690299812n,

@@ -19,7 +19,7 @@ import {
   EIP712Response,
   EIP712RevocationParams,
   EIP712RevocationProxyParams,
-  OffChainAttestationVersion
+  OffchainAttestationVersion
 } from '../../../src/offchain';
 import { Transaction } from '../../../src/transaction';
 import { getOffchainUID } from '../../../src/utils';
@@ -172,7 +172,7 @@ export const expectAttestation = async (
       const now = await latest();
       const salt = encodeBytes32String('SALT');
       const uid = getOffchainUID(
-        OffChainAttestationVersion.Version2,
+        OffchainAttestationVersion.Version2,
         schema,
         recipient,
         now,

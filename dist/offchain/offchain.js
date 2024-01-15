@@ -1,18 +1,18 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Offchain = exports.SALT_SIZE = exports.OFFCHAIN_ATTESTATION_TYPES = exports.OffChainAttestationVersion = void 0;
+exports.Offchain = exports.SALT_SIZE = exports.OFFCHAIN_ATTESTATION_TYPES = exports.OffchainAttestationVersion = void 0;
 const ethers_1 = require("ethers");
 const utils_1 = require("../utils");
 const delegated_1 = require("./delegated");
 const typed_data_handler_1 = require("./typed-data-handler");
-var OffChainAttestationVersion;
-(function (OffChainAttestationVersion) {
-    OffChainAttestationVersion[OffChainAttestationVersion["Legacy"] = 0] = "Legacy";
-    OffChainAttestationVersion[OffChainAttestationVersion["Version1"] = 1] = "Version1";
-    OffChainAttestationVersion[OffChainAttestationVersion["Version2"] = 2] = "Version2";
-})(OffChainAttestationVersion || (exports.OffChainAttestationVersion = OffChainAttestationVersion = {}));
+var OffchainAttestationVersion;
+(function (OffchainAttestationVersion) {
+    OffchainAttestationVersion[OffchainAttestationVersion["Legacy"] = 0] = "Legacy";
+    OffchainAttestationVersion[OffchainAttestationVersion["Version1"] = 1] = "Version1";
+    OffchainAttestationVersion[OffchainAttestationVersion["Version2"] = 2] = "Version2";
+})(OffchainAttestationVersion || (exports.OffchainAttestationVersion = OffchainAttestationVersion = {}));
 exports.OFFCHAIN_ATTESTATION_TYPES = {
-    [OffChainAttestationVersion.Legacy]: [
+    [OffchainAttestationVersion.Legacy]: [
         {
             domain: 'EAS Attestation',
             primaryType: 'Attestation',
@@ -59,7 +59,7 @@ exports.OFFCHAIN_ATTESTATION_TYPES = {
             }
         }
     ],
-    [OffChainAttestationVersion.Version1]: [
+    [OffchainAttestationVersion.Version1]: [
         {
             domain: 'EAS Attestation',
             primaryType: 'Attest',
@@ -77,7 +77,7 @@ exports.OFFCHAIN_ATTESTATION_TYPES = {
             }
         }
     ],
-    [OffChainAttestationVersion.Version2]: [
+    [OffchainAttestationVersion.Version2]: [
         {
             domain: 'EAS Attestation',
             primaryType: 'Attest',
@@ -107,7 +107,7 @@ class Offchain extends typed_data_handler_1.TypedDataHandler {
     verificationTypes;
     eas;
     constructor(config, version, eas) {
-        if (version > OffChainAttestationVersion.Version2) {
+        if (version > OffchainAttestationVersion.Version2) {
             throw new Error('Unsupported version');
         }
         super({ ...config, name: delegated_1.EIP712_NAME });
@@ -135,7 +135,7 @@ class Offchain extends typed_data_handler_1.TypedDataHandler {
     async signOffchainAttestation(params, signer, options) {
         const typedData = { version: this.version, ...params };
         // If no salt was provided - generate a random salt.
-        if (this.version >= OffChainAttestationVersion.Version2 && !typedData.salt) {
+        if (this.version >= OffchainAttestationVersion.Version2 && !typedData.salt) {
             typedData.salt = (0, ethers_1.hexlify)((0, ethers_1.randomBytes)(exports.SALT_SIZE));
         }
         const signedRequest = await this.signTypedDataRequest(typedData, {

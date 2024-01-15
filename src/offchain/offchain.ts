@@ -20,14 +20,14 @@ export interface OffchainAttestationType extends EIP712Types<EIP712MessageTypes>
   domain: string;
 }
 
-export enum OffChainAttestationVersion {
+export enum OffchainAttestationVersion {
   Legacy = 0,
   Version1 = 1,
   Version2 = 2
 }
 
-export const OFFCHAIN_ATTESTATION_TYPES: Record<OffChainAttestationVersion, OffchainAttestationType[]> = {
-  [OffChainAttestationVersion.Legacy]: [
+export const OFFCHAIN_ATTESTATION_TYPES: Record<OffchainAttestationVersion, OffchainAttestationType[]> = {
+  [OffchainAttestationVersion.Legacy]: [
     {
       domain: 'EAS Attestation',
       primaryType: 'Attestation',
@@ -74,7 +74,7 @@ export const OFFCHAIN_ATTESTATION_TYPES: Record<OffChainAttestationVersion, Offc
       }
     }
   ],
-  [OffChainAttestationVersion.Version1]: [
+  [OffchainAttestationVersion.Version1]: [
     {
       domain: 'EAS Attestation',
       primaryType: 'Attest',
@@ -92,7 +92,7 @@ export const OFFCHAIN_ATTESTATION_TYPES: Record<OffChainAttestationVersion, Offc
       }
     }
   ],
-  [OffChainAttestationVersion.Version2]: [
+  [OffchainAttestationVersion.Version2]: [
     {
       domain: 'EAS Attestation',
       primaryType: 'Attest',
@@ -124,7 +124,7 @@ export type OffchainAttestationParams = {
   salt?: string;
 } & Partial<EIP712Params>;
 
-export type OffchainAttestationTypedData = OffchainAttestationParams & { version: OffChainAttestationVersion };
+export type OffchainAttestationTypedData = OffchainAttestationParams & { version: OffchainAttestationVersion };
 
 export type OffchainAttestationOptions = {
   salt?: string;
@@ -136,20 +136,20 @@ const DEFAULT_OFFCHAIN_ATTESTATION_OPTIONS: OffchainAttestationOptions = {
 };
 
 export interface SignedOffchainAttestation extends EIP712Response<EIP712MessageTypes, OffchainAttestationTypedData> {
-  version: OffChainAttestationVersion;
+  version: OffchainAttestationVersion;
   uid: string;
 }
 
 export const SALT_SIZE = 32;
 
 export class Offchain extends TypedDataHandler {
-  public readonly version: OffChainAttestationVersion;
+  public readonly version: OffchainAttestationVersion;
   protected signingType: OffchainAttestationType;
   protected readonly verificationTypes: OffchainAttestationType[];
   private readonly eas: EAS;
 
-  constructor(config: PartialTypedDataConfig, version: OffChainAttestationVersion, eas: EAS) {
-    if (version > OffChainAttestationVersion.Version2) {
+  constructor(config: PartialTypedDataConfig, version: OffchainAttestationVersion, eas: EAS) {
+    if (version > OffchainAttestationVersion.Version2) {
       throw new Error('Unsupported version');
     }
 
@@ -193,7 +193,7 @@ export class Offchain extends TypedDataHandler {
     const typedData = { version: this.version, ...params };
 
     // If no salt was provided - generate a random salt.
-    if (this.version >= OffChainAttestationVersion.Version2 && !typedData.salt) {
+    if (this.version >= OffchainAttestationVersion.Version2 && !typedData.salt) {
       typedData.salt = hexlify(randomBytes(SALT_SIZE));
     }
 
@@ -272,7 +272,7 @@ export class Offchain extends TypedDataHandler {
     );
   }
 
-  public static getOffchainUID(version: OffChainAttestationVersion, attestation: SignedOffchainAttestation): string {
+  public static getOffchainUID(version: OffchainAttestationVersion, attestation: SignedOffchainAttestation): string {
     return getOffchainUID(
       version,
       attestation.message.schema,
