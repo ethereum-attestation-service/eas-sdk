@@ -168,11 +168,10 @@ const signer = new ethers.Wallet(privateKey, provider);
 const offchainAttestation = await offchain.signOffchainAttestation({
   recipient: '0xFD50b031E778fAb33DfD2Fc3Ca66a1EeF0652165',
   // Unix timestamp of when attestation expires. (0 for no expiration)
-  expirationTime: 0,
+  expirationTime: BigInt(0),
   // Unix timestamp of current time
-  time: 1671219636,
+  time: BigInt(Math.floor(Date.now() / 1000)),
   revocable: true, // Be aware that if your schema is not revocable, this MUST be false
-  version: 1,
   nonce: 0,
   schema: "0xb16fa048b0d597f5a821747eba64efa4762ee5143e9a80600d0005386edfc995",
   refUID: '0x0000000000000000000000000000000000000000000000000000000000000000',
