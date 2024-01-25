@@ -151,11 +151,16 @@ console.log("New attestation UID:", newAttestationUID);
 To create an offchain attestation, you can use the `signOffchainAttestation` function provided by the Offchain class in the EAS SDK. Here's an example:
 
 ```javascript
-import { SchemaEncoder } from "@ethereum-attestation-service/eas-sdk";
+import { EAS, SchemaEncoder } from "@ethereum-attestation-service/eas-sdk";
+
+// Initialize EAS with the EAS contract address on whichever chain where your schema is defined
+const eas = new EAS(EASContractAddress);
 
 const offchain = await eas.getOffchain();
 
 // Initialize SchemaEncoder with the schema string
+// Note these values are sample values and should be filled with actual values
+// Code samples can be found when viewing each schema on easscan.org
 const schemaEncoder = new SchemaEncoder("uint256 eventId, uint8 voteIndex");
 const encodedData = schemaEncoder.encodeData([
   { name: "eventId", value: 1, type: "uint256" },
@@ -168,11 +173,11 @@ const signer = new ethers.Wallet(privateKey, provider);
 const offchainAttestation = await offchain.signOffchainAttestation({
   recipient: '0xFD50b031E778fAb33DfD2Fc3Ca66a1EeF0652165',
   // Unix timestamp of when attestation expires. (0 for no expiration)
-  expirationTime: BigInt(0),
+  expirationTime: 0n,
   // Unix timestamp of current time
   time: BigInt(Math.floor(Date.now() / 1000)),
   revocable: true, // Be aware that if your schema is not revocable, this MUST be false
-  nonce: 0,
+  nonce: 0, // This variable is optional
   schema: "0xb16fa048b0d597f5a821747eba64efa4762ee5143e9a80600d0005386edfc995",
   refUID: '0x0000000000000000000000000000000000000000000000000000000000000000',
   data: encodedData,
