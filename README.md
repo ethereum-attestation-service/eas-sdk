@@ -177,7 +177,7 @@ const offchainAttestation = await offchain.signOffchainAttestation({
   // Unix timestamp of current time
   time: BigInt(Math.floor(Date.now() / 1000)),
   revocable: true, // Be aware that if your schema is not revocable, this MUST be false
-  nonce: 0, // This variable is optional
+  nonce: 0n, // This variable is optional
   schema: "0xb16fa048b0d597f5a821747eba64efa4762ee5143e9a80600d0005386edfc995",
   refUID: '0x0000000000000000000000000000000000000000000000000000000000000000',
   data: encodedData,
