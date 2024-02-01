@@ -1,13 +1,11 @@
 import { SignedOffchainAttestation } from './offchain';
-export interface SignedOffchainAttestationV1 extends Omit<SignedOffchainAttestation, 'signature'> {
+export interface SignedOffchainAttestationV1 extends Omit<SignedOffchainAttestation, 'signature' | 'version'> {
     r: string;
     s: string;
     v: number;
 }
 export interface AttestationShareablePackageObject {
-    /** Signed typed data with attestation object */
     sig: SignedOffchainAttestation;
-    /** Address of the signer */
     signer: string;
 }
 export type CompactAttestationShareablePackageObject = [
@@ -27,7 +25,8 @@ export type CompactAttestationShareablePackageObject = [
     revocable: boolean,
     data: string,
     nonce: number,
-    offchainVersion?: number
+    offchainVersion?: number,
+    salt?: string
 ];
 export declare const createOffchainURL: (pkg: AttestationShareablePackageObject) => string;
 export declare const zipAndEncodeToBase64: (pkg: AttestationShareablePackageObject) => string;

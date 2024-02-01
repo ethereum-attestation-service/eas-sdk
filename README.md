@@ -151,11 +151,16 @@ console.log("New attestation UID:", newAttestationUID);
 To create an offchain attestation, you can use the `signOffchainAttestation` function provided by the Offchain class in the EAS SDK. Here's an example:
 
 ```javascript
-import { SchemaEncoder } from "@ethereum-attestation-service/eas-sdk";
+import { EAS, SchemaEncoder } from "@ethereum-attestation-service/eas-sdk";
+
+// Initialize EAS with the EAS contract address on whichever chain where your schema is defined
+const eas = new EAS(EASContractAddress);
 
 const offchain = await eas.getOffchain();
 
 // Initialize SchemaEncoder with the schema string
+// Note these values are sample values and should be filled with actual values
+// Code samples can be found when viewing each schema on easscan.org
 const schemaEncoder = new SchemaEncoder("uint256 eventId, uint8 voteIndex");
 const encodedData = schemaEncoder.encodeData([
   { name: "eventId", value: 1, type: "uint256" },
@@ -168,12 +173,11 @@ const signer = new ethers.Wallet(privateKey, provider);
 const offchainAttestation = await offchain.signOffchainAttestation({
   recipient: '0xFD50b031E778fAb33DfD2Fc3Ca66a1EeF0652165',
   // Unix timestamp of when attestation expires. (0 for no expiration)
-  expirationTime: 0,
+  expirationTime: 0n,
   // Unix timestamp of current time
-  time: 1671219636,
+  time: BigInt(Math.floor(Date.now() / 1000)),
   revocable: true, // Be aware that if your schema is not revocable, this MUST be false
-  version: 1,
-  nonce: 0,
+  nonce: 0n, // This variable is optional
   schema: "0xb16fa048b0d597f5a821747eba64efa4762ee5143e9a80600d0005386edfc995",
   refUID: '0x0000000000000000000000000000000000000000000000000000000000000000',
   data: encodedData,
@@ -210,7 +214,7 @@ import { EAS } from "@ethereum-attestation-service/eas-sdk";
 const eas = new EAS(EASContractAddress);
 eas.connect(provider);
 
-const data = ethers.utils.formatBytes32String('0x1234');
+const data = ethers.encodeBytes32String('0x1234');
 
 const transaction = await eas.timestamp(data);
 
@@ -226,8 +230,8 @@ import { EAS } from "@ethereum-attestation-service/eas-sdk";
 const eas = new EAS(EASContractAddress);
 eas.connect(provider);
 
-const data1 = ethers.utils.formatBytes32String('0x3e23b395b2bd2d37dd0f6e4148ac6b9e7ed22f2215107958f95cc1489e4e6289');
-const data2 = ethers.utils.formatBytes32String('0x6776de8122c352b4d671003e58ca112aedb99f34c629a1d1fe3b332504e2943a');
+const data1 = ethers.encodeBytes32String('0x3e23b395b2bd2d37dd0f6e4148ac6b9e7ed22f2215107958f95cc1489e4e6289');
+const data2 = ethers.encodeBytes32String('0x6776de8122c352b4d671003e58ca112aedb99f34c629a1d1fe3b332504e2943a');
 
 const transaction = await eas.multiTimestamp([data1, data2]);
 
@@ -245,7 +249,7 @@ import { EAS } from "@ethereum-attestation-service/eas-sdk";
 const eas = new EAS(EASContractAddress);
 eas.connect(provider);
 
-const data = ethers.utils.formatBytes32String('0x6776de8122c352b4d671003e58ca112aedb99f34c629a1d1fe3b332504e2943a');
+const data = ethers.encodeBytes32String('0x6776de8122c352b4d671003e58ca112aedb99f34c629a1d1fe3b332504e2943a');
 
 const transaction = await eas.revokeOffchain(data);
 
@@ -261,8 +265,8 @@ import { EAS } from "@ethereum-attestation-service/eas-sdk";
 const eas = new EAS(EASContractAddress);
 eas.connect(provider);
 
-const data1 = ethers.utils.formatBytes32String('0x6776de8122c352b4d671003e58ca112aedb99f34c629a1d1fe3b332504e2943a');
-const data2 = ethers.utils.formatBytes32String('0x3e23b395b2bd2d37dd0f6e4148ac6b9e7ed22f2215107958f95cc1489e4e6289');
+const data1 = ethers.encodeBytes32String('0x6776de8122c352b4d671003e58ca112aedb99f34c629a1d1fe3b332504e2943a');
+const data2 = ethers.encodeBytes32String('0x3e23b395b2bd2d37dd0f6e4148ac6b9e7ed22f2215107958f95cc1489e4e6289');
 
 const transaction = await eas.multiRevokeOffchain([data1, data2]);
 
@@ -297,7 +301,7 @@ const attestation = {
     },
     uid: "0x5134f511e0533f997e569dac711952dde21daf14b316f3cce23835defc82c065",
     message: {
-      version: OffchainAttestationVersion.Version1,
+      version: OffchainAttestationVersion.Version2,
       schema: "0x27d06e3659317e9a4f8154d1e849eb53d43d91fb4f219884d1684f86d797804a",
       refUID: "0x0000000000000000000000000000000000000000000000000000000000000000",
       time: 1671219600,
@@ -316,7 +320,7 @@ const EAS_CONFIG: PartialTypedDataConfig = {
   version: attestation.sig.domain.version,
   chainId: attestation.sig.domain.chainId,
 };
-const offchain = new Offchain(EAS_CONFIG, OffchainAttestationVersion.Version1);
+const offchain = new Offchain(EAS_CONFIG, OffchainAttestationVersion.Version2);
 const isValidAttestation = offchain.verifyOffchainAttestationSignature(
   attestation.signer,
   attestation.sig
