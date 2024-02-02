@@ -1,5 +1,10 @@
-import { EAS } from '../../../src/eas';
-import { Offchain, OffchainAttestationType, OffchainAttestationVersion, TypedDataConfig } from '../../../src/offchain';
+import { EAS } from '../../../../src/eas';
+import {
+  Offchain,
+  OffchainAttestationType,
+  OffchainAttestationVersion,
+  TypedDataConfig
+} from '../../../../src/offchain';
 
 interface CustomOffchainParams {
   contractVersion: string;
