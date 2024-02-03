@@ -33,7 +33,7 @@ export type CompactAttestationShareablePackageObject = [
   refUID: string,
   revocable: boolean,
   data: string,
-  nonce: number,
+  reserved: number, // This field is currently unused and will serialized as 0
   offchainVersion?: number,
   salt?: string
 ];
@@ -88,7 +88,7 @@ export const compactOffchainAttestationPackage = (
     sig.message.refUID === ZeroHash ? '0' : sig.message.refUID,
     sig.message.revocable,
     sig.message.data,
-    Number(sig.message.nonce),
+    0,
     sig.message.version,
     sig.message.salt
   ];
@@ -192,7 +192,6 @@ export const uncompactOffchainAttestationPackage = (
         refUID: compacted[12] === '0' ? ZeroHash : compacted[12],
         revocable: compacted[13],
         data: compacted[14],
-        nonce: BigInt(compacted[15]),
         salt: compacted[17]
       }
     },
