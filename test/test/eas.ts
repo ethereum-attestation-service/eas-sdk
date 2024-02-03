@@ -20,7 +20,6 @@ import { getSchemaUID, getUIDFromAttestTx } from '../../src/utils';
 import Contracts from '../components/Contracts';
 import { ZERO_ADDRESS, ZERO_BYTES, ZERO_BYTES32 } from '../utils/Constants';
 import chai from './helpers/chai';
-import { CustomOffchain } from './helpers/custom-offchain';
 import {
   expectAttestation,
   expectMultiAttestations,
@@ -28,6 +27,7 @@ import {
   expectRevocation,
   SignatureType
 } from './helpers/eas';
+import { CustomOffchain } from './helpers/mocks/custom-offchain';
 import { duration, latest } from './helpers/time';
 import { createWallet } from './helpers/wallet';
 

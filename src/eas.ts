@@ -57,6 +57,11 @@ export class EAS extends Base<EASContract> {
 
     super(new EAS__factory(), address, signerOrProvider);
 
+    // Check for ethers v6 compatibility
+    if (!this.contract.getAddress) {
+      throw new Error('Incompatible ethers version detect. Make sure to use the SDK with ethers v6 or later');
+    }
+
     if (proxy) {
       this.proxy = proxy;
     }
