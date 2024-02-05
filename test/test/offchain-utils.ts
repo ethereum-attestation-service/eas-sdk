@@ -71,8 +71,7 @@ const TEST_ATTESTATIONS: Spec[] = [
           revocable: true,
           refUID: '0x0000000000000000000000000000000000000000000000000000000000000000',
           data: '0x',
-          salt: '0x0000000000000000000000000000000000000000000000000000000000000123',
-          nonce: 0n
+          salt: '0x0000000000000000000000000000000000000000000000000000000000000123'
         }
       },
       signer: '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266'
@@ -126,8 +125,7 @@ const TEST_ATTESTATIONS: Spec[] = [
           expirationTime: 1692891810n,
           revocable: true,
           refUID: '0x0000000000000000000000000000000000000000000000000000000000000000',
-          data: '0x',
-          nonce: 0n
+          data: '0x'
         }
       } as unknown as SignedOffchainAttestation,
       signer: '0x8f80b8f45cA0F036da46fFA4D9e5e42D086fB302'

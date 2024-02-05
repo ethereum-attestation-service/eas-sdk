@@ -47,7 +47,7 @@ const compactOffchainAttestationPackage = (pkg) => {
         sig.message.refUID === ethers_1.ZeroHash ? '0' : sig.message.refUID,
         sig.message.revocable,
         sig.message.data,
-        Number(sig.message.nonce),
+        0,
         sig.message.version,
         sig.message.salt
     ];
@@ -141,7 +141,6 @@ const uncompactOffchainAttestationPackage = (compacted) => {
                 refUID: compacted[12] === '0' ? ethers_1.ZeroHash : compacted[12],
                 revocable: compacted[13],
                 data: compacted[14],
-                nonce: BigInt(compacted[15]),
                 salt: compacted[17]
             }
         },

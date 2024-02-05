@@ -8,3 +8,7 @@
 ## 1.4.1 (2024-02-02)
 
 - Check for ethers v6 compatibility
+
+## 1.4.2 (2024-02-03)
+
+- Remove nonce from serialization/deserialization of offchain attestations
