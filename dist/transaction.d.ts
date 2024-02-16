@@ -1,5 +1,9 @@
-import { Addressable, BaseContract, ContractFactory, ContractRunner, TransactionReceipt, TransactionResponse } from 'ethers';
-export interface Signer extends Addressable, ContractRunner {
+import { Addressable, BaseContract, ContractFactory, TransactionReceipt, TransactionRequest, TransactionResponse } from 'ethers';
+export interface Signer extends Addressable {
+    estimateGas?: (tx: TransactionRequest) => Promise<bigint>;
+    call?: (tx: TransactionRequest) => Promise<string>;
+    resolveName?: (name: string) => Promise<null | string>;
+    sendTransaction?: (tx: TransactionRequest) => Promise<TransactionResponse>;
 }
 export declare class Transaction<T> {
     readonly tx: TransactionResponse;

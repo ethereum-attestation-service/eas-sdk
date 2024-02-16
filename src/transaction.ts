@@ -4,10 +4,16 @@ import {
   ContractFactory,
   ContractRunner,
   TransactionReceipt,
+  TransactionRequest,
   TransactionResponse
 } from 'ethers';
 
-export interface Signer extends Addressable, ContractRunner {}
+export interface Signer extends Addressable {
+  estimateGas?: (tx: TransactionRequest) => Promise<bigint>;
+  call?: (tx: TransactionRequest) => Promise<string>;
+  resolveName?: (name: string) => Promise<null | string>;
+  sendTransaction?: (tx: TransactionRequest) => Promise<TransactionResponse>;
+}
 
 export class Transaction<T> {
   public readonly tx: TransactionResponse;
@@ -40,7 +46,7 @@ export class Base<C extends BaseContract> {
 
   // Connects the API to a specific signer
   public connect(signer: Signer) {
-    this.contract = this.contract.connect(signer) as C;
+    this.contract = this.contract.connect(signer as unknown as ContractRunner) as C;
 
     return this;
   }
