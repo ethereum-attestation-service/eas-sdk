@@ -6,14 +6,29 @@ import {
   ContractFactory,
   ContractRunner,
   MinedTransactionResponse,
-  Signature,
   TransactionLike,
   TransactionReceipt,
-  TransactionRequest,
-  TransactionResponseParams
+  TransactionRequest
 } from 'ethers';
 
-export interface TransactionResponse extends TransactionLike<string>, TransactionResponseParams {
+export interface EthersSignature {
+  r: string;
+  s: string;
+  v: 27 | 28;
+  networkV: null | bigint;
+
+  get legacyChainId(): null | bigint;
+  get yParity(): 0 | 1;
+  get yParityAndS(): string;
+  get compactSerialized(): string;
+  get serialized(): string;
+
+  clone(): EthersSignature;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  toJSON(): any;
+}
+
+export interface TransactionResponse extends TransactionLike<string> {
   readonly blockNumber: null | number;
   readonly blockHash: null | string;
   readonly index: number;
@@ -30,7 +45,7 @@ export interface TransactionResponse extends TransactionLike<string>, Transactio
   readonly data: string;
   readonly value: bigint;
   readonly chainId: bigint;
-  readonly signature: Signature;
+  readonly signature: EthersSignature;
   readonly accessList: null | AccessList;
   readonly blobVersionedHashes?: null | Array<string>;
 

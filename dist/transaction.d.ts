@@ -1,5 +1,18 @@
-import { AccessList, Addressable, BaseContract, Block, ContractFactory, MinedTransactionResponse, Signature, TransactionLike, TransactionReceipt, TransactionRequest, TransactionResponseParams } from 'ethers';
-export interface TransactionResponse extends TransactionLike<string>, TransactionResponseParams {
+import { AccessList, Addressable, BaseContract, Block, ContractFactory, MinedTransactionResponse, TransactionLike, TransactionReceipt, TransactionRequest } from 'ethers';
+export interface EthersSignature {
+    r: string;
+    s: string;
+    v: 27 | 28;
+    networkV: null | bigint;
+    get legacyChainId(): null | bigint;
+    get yParity(): 0 | 1;
+    get yParityAndS(): string;
+    get compactSerialized(): string;
+    get serialized(): string;
+    clone(): EthersSignature;
+    toJSON(): any;
+}
+export interface TransactionResponse extends TransactionLike<string> {
     readonly blockNumber: null | number;
     readonly blockHash: null | string;
     readonly index: number;
@@ -16,7 +29,7 @@ export interface TransactionResponse extends TransactionLike<string>, Transactio
     readonly data: string;
     readonly value: bigint;
     readonly chainId: bigint;
-    readonly signature: Signature;
+    readonly signature: EthersSignature;
     readonly accessList: null | AccessList;
     readonly blobVersionedHashes?: null | Array<string>;
     toJSON(): any;
