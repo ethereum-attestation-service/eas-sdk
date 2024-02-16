@@ -7,13 +7,13 @@ const transaction_1 = require("./transaction");
 class Indexer extends transaction_1.Base {
     delegated;
     constructor(address, options) {
-        const { signerOrProvider } = options || {};
-        super(new eas_contracts_1.Indexer__factory(), address, signerOrProvider);
+        const { signer } = options || {};
+        super(new eas_contracts_1.Indexer__factory(), address, signer);
     }
     // Connects the API to a specific signer
-    connect(signerOrProvider) {
+    connect(signer) {
         delete this.delegated;
-        super.connect(signerOrProvider);
+        super.connect(signer);
         return this;
     }
     // Returns the version of the contract

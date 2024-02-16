@@ -10,13 +10,13 @@ const utils_1 = require("./utils");
 class EIP712Proxy extends transaction_1.Base {
     delegated;
     constructor(address, options) {
-        const { signerOrProvider } = options || {};
-        super(new eas_contracts_1.EIP712Proxy__factory(), address, signerOrProvider);
+        const { signer } = options || {};
+        super(new eas_contracts_1.EIP712Proxy__factory(), address, signer);
     }
     // Connects the API to a specific signer
-    connect(signerOrProvider) {
+    connect(signer) {
         delete this.delegated;
-        super.connect(signerOrProvider);
+        super.connect(signer);
         return this;
     }
     // Returns the version of the contract

@@ -26,7 +26,7 @@ describe('EIP712Proxy API', () => {
     eas = await Contracts.EAS.deploy(await registry.getAddress());
 
     proxyContract = await Contracts.EIP712Proxy.deploy(await eas.getAddress(), EIP712_PROXY_NAME);
-    proxy = new EIP712Proxy(await proxyContract.getAddress(), { signerOrProvider: sender });
+    proxy = new EIP712Proxy(await proxyContract.getAddress(), { signer: sender });
   });
 
   describe('construction', () => {

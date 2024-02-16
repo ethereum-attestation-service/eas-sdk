@@ -1,8 +1,8 @@
 import { Indexer as IndexerContract } from '@ethereum-attestation-service/eas-contracts';
 import { Overrides } from 'ethers';
-import { Base, SignerOrProvider, Transaction } from './transaction';
+import { Base, Signer, Transaction } from './transaction';
 export interface IndexerOptions {
-    signerOrProvider?: SignerOrProvider;
+    signer?: Signer;
 }
 export interface UIDOptions {
     uid: string;
@@ -46,7 +46,7 @@ export interface GetSchemaAttestationUIDCountOptions {
 export declare class Indexer extends Base<IndexerContract> {
     private delegated?;
     constructor(address: string, options?: IndexerOptions);
-    connect(signerOrProvider: SignerOrProvider): this;
+    connect(signer: Signer): this;
     getVersion(): Promise<string>;
     getEAS(): Promise<string>;
     indexAttestation({ uid }: IndexAttestationOptions, overrides?: Overrides): Promise<Transaction<void>>;

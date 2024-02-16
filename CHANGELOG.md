@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.5.0 (2024-02-16)
+
+- Introduce a framework-agnostic Signer interface which replace the previous usage of the signer/provider
+
 ## 1.4.2 (2024-02-03)
 
 - Remove nonce from serialization/deserialization of offchain attestations

@@ -2,14 +2,14 @@ import { EIP712Proxy as EIP712ProxyContract } from '@ethereum-attestation-servic
 import { Overrides } from 'ethers';
 import { DelegatedProxy } from './offchain';
 import { DelegatedProxyAttestationRequest, DelegatedProxyRevocationRequest, MultiDelegatedProxyAttestationRequest, MultiDelegatedProxyRevocationRequest } from './request';
-import { Base, SignerOrProvider, Transaction } from './transaction';
+import { Base, Signer, Transaction } from './transaction';
 export interface EIP712ProxyOptions {
-    signerOrProvider?: SignerOrProvider;
+    signer?: Signer;
 }
 export declare class EIP712Proxy extends Base<EIP712ProxyContract> {
     private delegated?;
     constructor(address: string, options?: EIP712ProxyOptions);
-    connect(signerOrProvider: SignerOrProvider): this;
+    connect(signer: Signer): this;
     getVersion(): Promise<string>;
     getEAS(): Promise<string>;
     getName(): Promise<string>;
