@@ -1,13 +1,55 @@
 import {
+  AccessList,
+  Addressable,
   BaseContract,
+  Block,
   ContractFactory,
   ContractRunner,
-  Signer as EthersSigner,
+  MinedTransactionResponse,
+  Signature,
+  TransactionLike,
   TransactionReceipt,
-  TransactionResponse
+  TransactionRequest,
+  TransactionResponseParams
 } from 'ethers';
 
-export interface Signer extends Omit<EthersSigner, 'provider'> {}
+export interface TransactionResponse extends TransactionLike<string>, TransactionResponseParams {
+  readonly blockNumber: null | number;
+  readonly blockHash: null | string;
+  readonly index: number;
+  readonly hash: string;
+  readonly type: number;
+  readonly to: null | string;
+  readonly from: string;
+  readonly nonce: number;
+  readonly gasLimit: bigint;
+  readonly gasPrice: bigint;
+  readonly maxPriorityFeePerGas: null | bigint;
+  readonly maxFeePerGas: null | bigint;
+  readonly maxFeePerBlobGas: null | bigint;
+  readonly data: string;
+  readonly value: bigint;
+  readonly chainId: bigint;
+  readonly signature: Signature;
+  readonly accessList: null | AccessList;
+  readonly blobVersionedHashes: null | Array<string>;
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  toJSON(): any;
+  getBlock(): Promise<null | Block>;
+  getTransaction(): Promise<null | TransactionResponse>;
+  confirmations(): Promise<number>;
+  wait(confirms?: number, timeout?: number): Promise<null | TransactionReceipt>;
+  isMined(): this is MinedTransactionResponse;
+  isLegacy(): this is TransactionResponse & { accessList: null; maxFeePerGas: null; maxPriorityFeePerGas: null };
+}
+
+export interface Signer extends Addressable {
+  estimateGas?: (tx: TransactionRequest) => Promise<bigint>;
+  call?: (tx: TransactionRequest) => Promise<string>;
+  resolveName?: (name: string) => Promise<null | string>;
+  sendTransaction?: (tx: TransactionRequest) => Promise<TransactionResponse>;
+}
 
 export class Transaction<T> {
   public readonly tx: TransactionResponse;
