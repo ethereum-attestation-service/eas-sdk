@@ -26,13 +26,13 @@ export interface TransactionResponse extends TransactionLike<string>, Transactio
   readonly gasPrice: bigint;
   readonly maxPriorityFeePerGas: null | bigint;
   readonly maxFeePerGas: null | bigint;
-  readonly maxFeePerBlobGas: null | bigint;
+  readonly maxFeePerBlobGas?: null | bigint;
   readonly data: string;
   readonly value: bigint;
   readonly chainId: bigint;
   readonly signature: Signature;
   readonly accessList: null | AccessList;
-  readonly blobVersionedHashes: null | Array<string>;
+  readonly blobVersionedHashes?: null | Array<string>;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   toJSON(): any;
