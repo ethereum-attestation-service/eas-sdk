@@ -9,27 +9,27 @@ import {
   MultiDelegatedProxyRevocationRequest,
   NO_EXPIRATION
 } from './request';
-import { Base, SignerOrProvider, Transaction } from './transaction';
+import { Base, Signer, Transaction } from './transaction';
 import { getUIDsFromAttestReceipt, ZERO_BYTES32 } from './utils';
 
 export interface EIP712ProxyOptions {
-  signerOrProvider?: SignerOrProvider;
+  signer?: Signer;
 }
 
 export class EIP712Proxy extends Base<EIP712ProxyContract> {
   private delegated?: DelegatedProxy;
 
   constructor(address: string, options?: EIP712ProxyOptions) {
-    const { signerOrProvider } = options || {};
+    const { signer } = options || {};
 
-    super(new EIP712Proxy__factory(), address, signerOrProvider);
+    super(new EIP712Proxy__factory(), address, signer);
   }
 
   // Connects the API to a specific signer
-  public connect(signerOrProvider: SignerOrProvider) {
+  public connect(signer: Signer) {
     delete this.delegated;
 
-    super.connect(signerOrProvider);
+    super.connect(signer);
 
     return this;
   }

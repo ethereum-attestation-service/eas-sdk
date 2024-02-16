@@ -63,11 +63,11 @@ describe('EAS API', () => {
     proxyContract = await Contracts.EIP712Proxy.deploy(await easContract.getAddress(), EIP712_PROXY_NAME);
   });
 
-  context('with a provider', () => {
+  context('with a signer', () => {
     beforeEach(async () => {
-      eas = new EAS(await easContract.getAddress(), { signerOrProvider: ethers.provider });
-
-      schemaRegistry = new SchemaRegistry(await registry.getAddress(), { signerOrProvider: ethers.provider });
+      proxy = new EIP712Proxy(await proxyContract.getAddress(), { signer: sender });
+      eas = new EAS(await easContract.getAddress(), { signer: sender, proxy });
+      schemaRegistry = new SchemaRegistry(await registry.getAddress(), { signer: sender });
     });
 
     describe('construction', () => {
@@ -76,72 +76,6 @@ describe('EAS API', () => {
 
         expect(await eas.getVersion()).to.equal(await easContract.version());
       });
-    });
-
-    context('with a registered schema', () => {
-      const schema = 'bool like';
-      const schemaId = getSchemaUID(schema, ZERO_ADDRESS, true);
-
-      beforeEach(async () => {
-        await registry.register(schema, ZERO_ADDRESS, true);
-      });
-
-      it('should be able to query the schema registry', async () => {
-        expect((await schemaRegistry.getSchema({ uid: schemaId })).uid).to.equal(schemaId);
-      });
-
-      it('should not be able to make new attestations', async () => {
-        await expect(
-          eas.attest({
-            schema: schemaId,
-            data: {
-              recipient: await recipient.getAddress(),
-              expirationTime: NO_EXPIRATION,
-              revocable: true,
-              refUID: ZERO_BYTES32,
-              data: ZERO_BYTES
-            }
-          })
-        ).to.be.rejectedWith('contract runner does not support sending transactions');
-      });
-
-      it('should not be able to register a new schema', async () => {
-        await expect(schemaRegistry.register({ schema, resolverAddress: ZERO_ADDRESS })).to.be.rejectedWith(
-          'contract runner does not support sending transactions'
-        );
-      });
-
-      context('with an attestation', () => {
-        let uid: string;
-
-        beforeEach(async () => {
-          const res = await easContract.attest({
-            schema: schemaId,
-            data: {
-              recipient: await recipient.getAddress(),
-              expirationTime: NO_EXPIRATION,
-              revocable: true,
-              refUID: ZERO_BYTES32,
-              data: ZERO_BYTES,
-              value: 0
-            }
-          });
-
-          uid = await getUIDFromAttestTx(res);
-        });
-
-        it('should be able to query the EAS', async () => {
-          expect((await eas.getAttestation(uid)).uid).to.equal(uid);
-        });
-      });
-    });
-  });
-
-  context('with a signer', () => {
-    beforeEach(async () => {
-      proxy = new EIP712Proxy(await proxyContract.getAddress(), { signerOrProvider: sender });
-      eas = new EAS(await easContract.getAddress(), { signerOrProvider: sender, proxy });
-      schemaRegistry = new SchemaRegistry(await registry.getAddress(), { signerOrProvider: sender });
     });
 
     describe('attesting', () => {
