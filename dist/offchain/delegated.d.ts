@@ -1,5 +1,4 @@
-import { Signer } from 'ethers';
-import { EIP712MessageTypes, EIP712Params, EIP712Response, PartialTypedDataConfig, TypedDataHandler } from './typed-data-handler';
+import { EIP712MessageTypes, EIP712Params, EIP712Response, PartialTypedDataConfig, TypeDataSigner, TypedDataHandler } from './typed-data-handler';
 export { EIP712MessageTypes, EIP712TypedData, EIP712Request, EIP712Response, PartialTypedDataConfig, Signature } from './typed-data-handler';
 export declare const EIP712_NAME = "EAS";
 export declare enum DelegatedAttestationVersion {
@@ -28,8 +27,8 @@ export declare class Delegated extends TypedDataHandler {
     private readonly attestType;
     private readonly revokeType;
     constructor(config: PartialTypedDataConfig);
-    signDelegatedAttestation(params: EIP712AttestationParams, signer: Signer): Promise<EIP712Response<EIP712MessageTypes, EIP712AttestationParams>>;
+    signDelegatedAttestation(params: EIP712AttestationParams, signer: TypeDataSigner): Promise<EIP712Response<EIP712MessageTypes, EIP712AttestationParams>>;
     verifyDelegatedAttestationSignature(attester: string, response: EIP712Response<EIP712MessageTypes, EIP712AttestationParams>): boolean;
-    signDelegatedRevocation(params: EIP712RevocationParams, signer: Signer): Promise<EIP712Response<EIP712MessageTypes, EIP712RevocationParams>>;
+    signDelegatedRevocation(params: EIP712RevocationParams, signer: TypeDataSigner): Promise<EIP712Response<EIP712MessageTypes, EIP712RevocationParams>>;
     verifyDelegatedRevocationSignature(revoker: string, response: EIP712Response<EIP712MessageTypes, EIP712RevocationParams>): boolean;
 }
