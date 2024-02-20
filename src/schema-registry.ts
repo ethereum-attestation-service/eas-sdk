@@ -4,7 +4,7 @@ import {
 } from '@ethereum-attestation-service/eas-contracts';
 import { Overrides, TransactionReceipt } from 'ethers';
 import { legacyVersion } from './legacy/version';
-import { Base, Signer, Transaction } from './transaction';
+import { Base, Transaction, TransactionSigner } from './transaction';
 import { getSchemaUID, ZERO_ADDRESS, ZERO_BYTES32 } from './utils';
 
 export declare type SchemaRecord = {
@@ -25,7 +25,7 @@ export interface GetSchemaParams {
 }
 
 export interface SchemaRegistryOptions {
-  signer?: Signer;
+  signer?: TransactionSigner;
 }
 
 export class SchemaRegistry extends Base<SchemaRegistryContract> {

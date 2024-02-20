@@ -1,6 +1,6 @@
 import { SchemaRegistry as SchemaRegistryContract } from '@ethereum-attestation-service/eas-contracts';
 import { Overrides } from 'ethers';
-import { Base, Signer, Transaction } from './transaction';
+import { Base, Transaction, TransactionSigner } from './transaction';
 export declare type SchemaRecord = {
     uid: string;
     resolver: string;
@@ -16,7 +16,7 @@ export interface GetSchemaParams {
     uid: string;
 }
 export interface SchemaRegistryOptions {
-    signer?: Signer;
+    signer?: TransactionSigner;
 }
 export declare class SchemaRegistry extends Base<SchemaRegistryContract> {
     constructor(address: string, options?: SchemaRegistryOptions);

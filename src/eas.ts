@@ -18,7 +18,7 @@ import {
   NO_EXPIRATION,
   RevocationRequest
 } from './request';
-import { Base, Signer, Transaction } from './transaction';
+import { Base, Transaction, TransactionSigner } from './transaction';
 import {
   getTimestampFromOffchainRevocationReceipt,
   getTimestampFromTimestampReceipt,
@@ -43,7 +43,7 @@ export interface Attestation {
 }
 
 export interface EASOptions {
-  signer?: Signer;
+  signer?: TransactionSigner;
   proxy?: EIP712Proxy;
 }
 
@@ -68,7 +68,7 @@ export class EAS extends Base<EASContract> {
   }
 
   // Connects the API to a specific signer
-  public connect(signer: Signer) {
+  public connect(signer: TransactionSigner) {
     delete this.delegated;
     delete this.offchain;
 

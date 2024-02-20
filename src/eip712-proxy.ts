@@ -9,11 +9,11 @@ import {
   MultiDelegatedProxyRevocationRequest,
   NO_EXPIRATION
 } from './request';
-import { Base, Signer, Transaction } from './transaction';
+import { Base, Transaction, TransactionSigner } from './transaction';
 import { getUIDsFromAttestReceipt, ZERO_BYTES32 } from './utils';
 
 export interface EIP712ProxyOptions {
-  signer?: Signer;
+  signer?: TransactionSigner;
 }
 
 export class EIP712Proxy extends Base<EIP712ProxyContract> {
@@ -26,7 +26,7 @@ export class EIP712Proxy extends Base<EIP712ProxyContract> {
   }
 
   // Connects the API to a specific signer
-  public connect(signer: Signer) {
+  public connect(signer: TransactionSigner) {
     delete this.delegated;
 
     super.connect(signer);

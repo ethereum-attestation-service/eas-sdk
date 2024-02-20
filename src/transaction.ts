@@ -8,11 +8,12 @@ import {
   TransactionResponse
 } from 'ethers';
 
-export interface Signer extends Addressable {
+export interface TransactionSigner extends Addressable {
   estimateGas?: (tx: TransactionRequest) => Promise<bigint>;
   call?: (tx: TransactionRequest) => Promise<string>;
   resolveName?: (name: string) => Promise<null | string>;
-  sendTransaction?: (tx: TransactionRequest) => Promise<never>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  sendTransaction?: (tx: TransactionRequest) => Promise<any>;
 }
 
 export class Transaction<T> {
@@ -37,7 +38,7 @@ export class Transaction<T> {
 export class Base<C extends BaseContract> {
   public contract: C;
 
-  constructor(factory: ContractFactory, address: string, signer?: Signer) {
+  constructor(factory: ContractFactory, address: string, signer?: TransactionSigner) {
     this.contract = factory.attach(address) as C;
     if (signer) {
       this.connect(signer);
@@ -45,7 +46,7 @@ export class Base<C extends BaseContract> {
   }
 
   // Connects the API to a specific signer
-  public connect(signer: Signer) {
+  public connect(signer: TransactionSigner) {
     this.contract = this.contract.connect(signer as unknown as ContractRunner) as C;
 
     return this;
