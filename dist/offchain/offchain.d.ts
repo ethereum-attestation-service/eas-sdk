@@ -1,6 +1,5 @@
-import { Signer } from 'ethers';
 import { EAS } from '../eas';
-import { DomainTypedData, EIP712MessageTypes, EIP712Params, EIP712Response, EIP712Types, PartialTypedDataConfig, TypedDataHandler } from './typed-data-handler';
+import { DomainTypedData, EIP712MessageTypes, EIP712Params, EIP712Response, EIP712Types, PartialTypedDataConfig, TypeDataSigner, TypedDataHandler } from './typed-data-handler';
 export { EIP712Request, PartialTypedDataConfig, EIP712MessageTypes } from './typed-data-handler';
 export interface OffchainAttestationType extends EIP712Types<EIP712MessageTypes> {
     domain: string;
@@ -41,7 +40,7 @@ export declare class Offchain extends TypedDataHandler {
     constructor(config: PartialTypedDataConfig, version: OffchainAttestationVersion, eas: EAS);
     getDomainSeparator(): string;
     getDomainTypedData(): DomainTypedData;
-    signOffchainAttestation(params: OffchainAttestationParams, signer: Signer, options?: OffchainAttestationOptions): Promise<SignedOffchainAttestation>;
+    signOffchainAttestation(params: OffchainAttestationParams, signer: TypeDataSigner, options?: OffchainAttestationOptions): Promise<SignedOffchainAttestation>;
     verifyOffchainAttestationSignature(attester: string, attestation: SignedOffchainAttestation): boolean;
     private getOffchainUID;
     static getOffchainUID(version: OffchainAttestationVersion, attestation: SignedOffchainAttestation): string;

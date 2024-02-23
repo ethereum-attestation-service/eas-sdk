@@ -1,4 +1,3 @@
-import { Signer } from 'ethers';
 import omit from 'lodash/omit';
 import semver from 'semver';
 import { EIP712AttestationParams, EIP712RevocationParams } from './delegated';
@@ -6,6 +5,7 @@ import {
   EIP712MessageTypes,
   EIP712Response,
   EIP712Types,
+  TypeDataSigner,
   TypedDataConfig,
   TypedDataHandler
 } from './typed-data-handler';
@@ -159,7 +159,7 @@ export class DelegatedProxy extends TypedDataHandler {
 
   public async signDelegatedProxyAttestation(
     params: EIP712AttestationProxyParams,
-    signer: Signer
+    signer: TypeDataSigner
   ): Promise<EIP712Response<EIP712MessageTypes, EIP712AttestationProxyParams>> {
     let effectiveParams: EIP712FullAttestationProxyParams = {
       attester: await signer.getAddress(),
@@ -199,7 +199,7 @@ export class DelegatedProxy extends TypedDataHandler {
 
   public async signDelegatedProxyRevocation(
     params: EIP712RevocationProxyParams,
-    signer: Signer
+    signer: TypeDataSigner
   ): Promise<EIP712Response<EIP712MessageTypes, EIP712RevocationProxyParams>> {
     let effectiveParams: EIP712FullRevocationProxyParams = {
       revoker: await signer.getAddress(),

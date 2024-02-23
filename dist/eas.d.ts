@@ -3,7 +3,7 @@ import { Overrides } from 'ethers';
 import { EIP712Proxy } from './eip712-proxy';
 import { Delegated, Offchain } from './offchain';
 import { AttestationRequest, DelegatedAttestationRequest, DelegatedProxyAttestationRequest, DelegatedProxyRevocationRequest, DelegatedRevocationRequest, MultiAttestationRequest, MultiDelegatedAttestationRequest, MultiDelegatedProxyAttestationRequest, MultiDelegatedProxyRevocationRequest, MultiDelegatedRevocationRequest, MultiRevocationRequest, RevocationRequest } from './request';
-import { Base, SignerOrProvider, Transaction } from './transaction';
+import { Base, Transaction, TransactionSigner } from './transaction';
 export { Overrides } from 'ethers';
 export * from './request';
 export interface Attestation {
@@ -19,7 +19,7 @@ export interface Attestation {
     data: string;
 }
 export interface EASOptions {
-    signerOrProvider?: SignerOrProvider;
+    signer?: TransactionSigner;
     proxy?: EIP712Proxy;
 }
 export declare class EAS extends Base<EASContract> {
@@ -27,7 +27,7 @@ export declare class EAS extends Base<EASContract> {
     private delegated?;
     private offchain?;
     constructor(address: string, options?: EASOptions);
-    connect(signerOrProvider: SignerOrProvider): this;
+    connect(signer: TransactionSigner): this;
     getVersion(): Promise<string>;
     getAttestation(uid: string): Promise<Attestation>;
     isAttestationValid(uid: string): Promise<boolean>;

@@ -18,7 +18,7 @@ import {
   NO_EXPIRATION,
   RevocationRequest
 } from './request';
-import { Base, SignerOrProvider, Transaction } from './transaction';
+import { Base, Transaction, TransactionSigner } from './transaction';
 import {
   getTimestampFromOffchainRevocationReceipt,
   getTimestampFromTimestampReceipt,
@@ -43,7 +43,7 @@ export interface Attestation {
 }
 
 export interface EASOptions {
-  signerOrProvider?: SignerOrProvider;
+  signer?: TransactionSigner;
   proxy?: EIP712Proxy;
 }
 
@@ -53,9 +53,9 @@ export class EAS extends Base<EASContract> {
   private offchain?: Offchain;
 
   constructor(address: string, options?: EASOptions) {
-    const { signerOrProvider, proxy } = options || {};
+    const { signer, proxy } = options || {};
 
-    super(new EAS__factory(), address, signerOrProvider);
+    super(new EAS__factory(), address, signer);
 
     // Check for ethers v6 compatibility
     if (!this.contract.getAddress) {
@@ -68,11 +68,11 @@ export class EAS extends Base<EASContract> {
   }
 
   // Connects the API to a specific signer
-  public connect(signerOrProvider: SignerOrProvider) {
+  public connect(signer: TransactionSigner) {
     delete this.delegated;
     delete this.offchain;
 
-    super.connect(signerOrProvider);
+    super.connect(signer);
 
     return this;
   }

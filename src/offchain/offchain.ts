@@ -1,4 +1,4 @@
-import { AbiCoder, hexlify, keccak256, randomBytes, Signer, toUtf8Bytes } from 'ethers';
+import { AbiCoder, hexlify, keccak256, randomBytes, toUtf8Bytes } from 'ethers';
 import { EAS } from '../eas';
 import { getOffchainUID, ZERO_BYTES32 } from '../utils';
 import { EIP712_NAME } from './delegated';
@@ -11,6 +11,7 @@ import {
   InvalidPrimaryType,
   InvalidTypes,
   PartialTypedDataConfig,
+  TypeDataSigner,
   TypedDataHandler
 } from './typed-data-handler';
 
@@ -187,7 +188,7 @@ export class Offchain extends TypedDataHandler {
 
   public async signOffchainAttestation(
     params: OffchainAttestationParams,
-    signer: Signer,
+    signer: TypeDataSigner,
     options?: OffchainAttestationOptions
   ): Promise<SignedOffchainAttestation> {
     const typedData = { version: this.version, ...params };

@@ -14,8 +14,8 @@ class EAS extends transaction_1.Base {
     delegated;
     offchain;
     constructor(address, options) {
-        const { signerOrProvider, proxy } = options || {};
-        super(new eas_contracts_1.EAS__factory(), address, signerOrProvider);
+        const { signer, proxy } = options || {};
+        super(new eas_contracts_1.EAS__factory(), address, signer);
         // Check for ethers v6 compatibility
         if (!this.contract.getAddress) {
             throw new Error('Incompatible ethers version detect. Make sure to use the SDK with ethers v6 or later');
@@ -25,10 +25,10 @@ class EAS extends transaction_1.Base {
         }
     }
     // Connects the API to a specific signer
-    connect(signerOrProvider) {
+    connect(signer) {
         delete this.delegated;
         delete this.offchain;
-        super.connect(signerOrProvider);
+        super.connect(signer);
         return this;
     }
     // Returns the version of the contract

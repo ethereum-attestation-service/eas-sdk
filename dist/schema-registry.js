@@ -7,8 +7,8 @@ const transaction_1 = require("./transaction");
 const utils_1 = require("./utils");
 class SchemaRegistry extends transaction_1.Base {
     constructor(address, options) {
-        const { signerOrProvider } = options || {};
-        super(new eas_contracts_1.SchemaRegistry__factory(), address, signerOrProvider);
+        const { signer } = options || {};
+        super(new eas_contracts_1.SchemaRegistry__factory(), address, signer);
     }
     // Returns the version of the contract
     async getVersion() {

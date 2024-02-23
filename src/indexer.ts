@@ -2,10 +2,10 @@ import { Indexer__factory, Indexer as IndexerContract } from '@ethereum-attestat
 import { Overrides } from 'ethers';
 import { legacyVersion } from './legacy/version';
 import { DelegatedProxy } from './offchain';
-import { Base, SignerOrProvider, Transaction } from './transaction';
+import { Base, Transaction, TransactionSigner } from './transaction';
 
 export interface IndexerOptions {
-  signerOrProvider?: SignerOrProvider;
+  signer?: TransactionSigner;
 }
 
 export interface UIDOptions {
@@ -60,16 +60,16 @@ export class Indexer extends Base<IndexerContract> {
   private delegated?: DelegatedProxy;
 
   constructor(address: string, options?: IndexerOptions) {
-    const { signerOrProvider } = options || {};
+    const { signer } = options || {};
 
-    super(new Indexer__factory(), address, signerOrProvider);
+    super(new Indexer__factory(), address, signer);
   }
 
   // Connects the API to a specific signer
-  public connect(signerOrProvider: SignerOrProvider) {
+  public connect(signer: TransactionSigner) {
     delete this.delegated;
 
-    super.connect(signerOrProvider);
+    super.connect(signer);
 
     return this;
   }

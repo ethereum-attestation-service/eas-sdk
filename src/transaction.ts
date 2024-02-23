@@ -1,6 +1,20 @@
-import { BaseContract, ContractFactory, Provider, Signer, TransactionReceipt, TransactionResponse } from 'ethers';
+import {
+  Addressable,
+  BaseContract,
+  ContractFactory,
+  ContractRunner,
+  TransactionReceipt,
+  TransactionRequest,
+  TransactionResponse
+} from 'ethers';
 
-export declare type SignerOrProvider = Signer | Provider;
+export interface TransactionSigner extends Addressable {
+  estimateGas?: (tx: TransactionRequest) => Promise<bigint>;
+  call?: (tx: TransactionRequest) => Promise<string>;
+  resolveName?: (name: string) => Promise<null | string>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  sendTransaction?: (tx: TransactionRequest) => Promise<any>;
+}
 
 export class Transaction<T> {
   public readonly tx: TransactionResponse;
@@ -24,16 +38,16 @@ export class Transaction<T> {
 export class Base<C extends BaseContract> {
   public contract: C;
 
-  constructor(factory: ContractFactory, address: string, signerOrProvider?: SignerOrProvider) {
+  constructor(factory: ContractFactory, address: string, signer?: TransactionSigner) {
     this.contract = factory.attach(address) as C;
-    if (signerOrProvider) {
-      this.connect(signerOrProvider);
+    if (signer) {
+      this.connect(signer);
     }
   }
 
   // Connects the API to a specific signer
-  public connect(signerOrProvider: SignerOrProvider) {
-    this.contract = this.contract.connect(signerOrProvider) as C;
+  public connect(signer: TransactionSigner) {
+    this.contract = this.contract.connect(signer as unknown as ContractRunner) as C;
 
     return this;
   }

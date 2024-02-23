@@ -1,15 +1,26 @@
 import {
   AbiCoder,
+  Addressable,
   getAddress,
   hexlify,
   keccak256,
   Signature as Sig,
-  Signer,
   toUtf8Bytes,
+  TypedDataDomain,
+  TypedDataField,
   verifyTypedData
 } from 'ethers';
 import isEqual from 'lodash/isEqual';
 import { ZERO_ADDRESS } from '../utils';
+
+export interface TypeDataSigner extends Addressable {
+  signTypedData(
+    domain: TypedDataDomain,
+    types: Record<string, Array<TypedDataField>>,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    value: Record<string, any>
+  ): Promise<string>;
+}
 
 export interface PartialTypedDataConfig {
   address: string;
@@ -127,7 +138,7 @@ export abstract class TypedDataHandler {
   public async signTypedDataRequest<T extends EIP712MessageTypes, P extends EIP712Params>(
     params: P,
     types: EIP712TypedData<T, P>,
-    signer: Signer
+    signer: TypeDataSigner
   ): Promise<EIP712Response<T, P>> {
     const rawSignature = await signer.signTypedData(types.domain, types.types, params);
     const signature = Sig.from(rawSignature);
