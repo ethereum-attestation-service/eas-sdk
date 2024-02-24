@@ -3,6 +3,7 @@
 ## 1.5.0 (2024-02-16)
 
 - Introduce framework-agnostic `TransactionSigner` and `TypeDataSigner` interfaces which replace the previous usage of the signer/provider
+- Fix recipient being mandatory in `attest()` calls
 
 ## 1.4.2 (2024-02-03)
 

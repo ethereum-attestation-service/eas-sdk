@@ -78,13 +78,13 @@ class EAS extends transaction_1.Base {
         return this.setOffchain();
     }
     // Attests to a specific schema
-    async attest({ schema, data: { recipient, data, expirationTime = request_1.NO_EXPIRATION, revocable = true, refUID = utils_1.ZERO_BYTES32, value = 0n } }, overrides) {
+    async attest({ schema, data: { recipient = utils_1.ZERO_ADDRESS, data, expirationTime = request_1.NO_EXPIRATION, revocable = true, refUID = utils_1.ZERO_BYTES32, value = 0n } }, overrides) {
         const tx = await this.contract.attest({ schema, data: { recipient, expirationTime, revocable, refUID, data, value } }, { value, ...overrides });
         // eslint-disable-next-line require-await
         return new transaction_1.Transaction(tx, async (receipt) => (0, utils_1.getUIDsFromAttestReceipt)(receipt)[0]);
     }
     // Attests to a specific schema via an EIP712 delegation request
-    async attestByDelegation({ schema, data: { recipient, data, expirationTime = request_1.NO_EXPIRATION, revocable = true, refUID = utils_1.ZERO_BYTES32, value = 0n }, signature, attester, deadline = request_1.NO_EXPIRATION }, overrides) {
+    async attestByDelegation({ schema, data: { recipient = utils_1.ZERO_ADDRESS, data, expirationTime = request_1.NO_EXPIRATION, revocable = true, refUID = utils_1.ZERO_BYTES32, value = 0n }, signature, attester, deadline = request_1.NO_EXPIRATION }, overrides) {
         const tx = await this.contract.attestByDelegation({
             schema,
             data: {
@@ -107,7 +107,7 @@ class EAS extends transaction_1.Base {
         const multiAttestationRequests = requests.map((r) => ({
             schema: r.schema,
             data: r.data.map((d) => ({
-                recipient: d.recipient,
+                recipient: d.recipient ?? utils_1.ZERO_ADDRESS,
                 expirationTime: d.expirationTime ?? request_1.NO_EXPIRATION,
                 revocable: d.revocable ?? true,
                 refUID: d.refUID ?? utils_1.ZERO_BYTES32,
@@ -131,7 +131,7 @@ class EAS extends transaction_1.Base {
         const multiAttestationRequests = requests.map((r) => ({
             schema: r.schema,
             data: r.data.map((d) => ({
-                recipient: d.recipient,
+                recipient: d.recipient ?? utils_1.ZERO_ADDRESS,
                 expirationTime: d.expirationTime ?? request_1.NO_EXPIRATION,
                 revocable: d.revocable ?? true,
                 refUID: d.refUID ?? utils_1.ZERO_BYTES32,
