@@ -23,6 +23,7 @@ import {
   getTimestampFromOffchainRevocationReceipt,
   getTimestampFromTimestampReceipt,
   getUIDsFromAttestReceipt,
+  ZERO_ADDRESS,
   ZERO_BYTES32
 } from './utils';
 
@@ -139,7 +140,7 @@ export class EAS extends Base<EASContract> {
   public async attest(
     {
       schema,
-      data: { recipient, data, expirationTime = NO_EXPIRATION, revocable = true, refUID = ZERO_BYTES32, value = 0n }
+      data: { recipient = ZERO_ADDRESS, data, expirationTime = NO_EXPIRATION, revocable = true, refUID = ZERO_BYTES32, value = 0n }
     }: AttestationRequest,
     overrides?: Overrides
   ): Promise<Transaction<string>> {
@@ -156,7 +157,7 @@ export class EAS extends Base<EASContract> {
   public async attestByDelegation(
     {
       schema,
-      data: { recipient, data, expirationTime = NO_EXPIRATION, revocable = true, refUID = ZERO_BYTES32, value = 0n },
+      data: { recipient = ZERO_ADDRESS, data, expirationTime = NO_EXPIRATION, revocable = true, refUID = ZERO_BYTES32, value = 0n },
       signature,
       attester,
       deadline = NO_EXPIRATION
@@ -190,7 +191,7 @@ export class EAS extends Base<EASContract> {
     const multiAttestationRequests = requests.map((r) => ({
       schema: r.schema,
       data: r.data.map((d) => ({
-        recipient: d.recipient,
+        recipient: d.recipient ?? ZERO_ADDRESS,
         expirationTime: d.expirationTime ?? NO_EXPIRATION,
         revocable: d.revocable ?? true,
         refUID: d.refUID ?? ZERO_BYTES32,
@@ -221,7 +222,7 @@ export class EAS extends Base<EASContract> {
     const multiAttestationRequests = requests.map((r) => ({
       schema: r.schema,
       data: r.data.map((d) => ({
-        recipient: d.recipient,
+        recipient: d.recipient ?? ZERO_ADDRESS,
         expirationTime: d.expirationTime ?? NO_EXPIRATION,
         revocable: d.revocable ?? true,
         refUID: d.refUID ?? ZERO_BYTES32,
