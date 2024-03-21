@@ -27,7 +27,6 @@ import {
   ZERO_BYTES32
 } from './utils';
 
-export { Overrides } from 'ethers';
 export * from './request';
 
 export interface Attestation {
@@ -62,6 +61,8 @@ export class EAS extends Base<EASContract> {
     if (!this.contract.getAddress) {
       throw new Error('Incompatible ethers version detect. Make sure to use the SDK with ethers v6 or later');
     }
+
+    this.signer = signer;
 
     if (proxy) {
       this.proxy = proxy;
@@ -140,54 +141,84 @@ export class EAS extends Base<EASContract> {
   public async attest(
     {
       schema,
-      data: { recipient = ZERO_ADDRESS, data, expirationTime = NO_EXPIRATION, revocable = true, refUID = ZERO_BYTES32, value = 0n }
+      data: {
+        recipient = ZERO_ADDRESS,
+        data,
+        expirationTime = NO_EXPIRATION,
+        revocable = true,
+        refUID = ZERO_BYTES32,
+        value = 0n
+      }
     }: AttestationRequest,
     overrides?: Overrides
   ): Promise<Transaction<string>> {
-    const tx = await this.contract.attest(
-      { schema, data: { recipient, expirationTime, revocable, refUID, data, value } },
-      { value, ...overrides }
-    );
+    if (!this.signer) {
+      throw new Error('Invalid signer');
+    }
 
-    // eslint-disable-next-line require-await
-    return new Transaction(tx, async (receipt: TransactionReceipt) => getUIDsFromAttestReceipt(receipt)[0]);
+    return new Transaction(
+      await this.contract.attest.populateTransaction(
+        { schema, data: { recipient, expirationTime, revocable, refUID, data, value } },
+        { value, ...overrides }
+      ),
+      this.signer,
+      // eslint-disable-next-line require-await
+      async (receipt: TransactionReceipt) => getUIDsFromAttestReceipt(receipt)[0]
+    );
   }
 
   // Attests to a specific schema via an EIP712 delegation request
   public async attestByDelegation(
     {
       schema,
-      data: { recipient = ZERO_ADDRESS, data, expirationTime = NO_EXPIRATION, revocable = true, refUID = ZERO_BYTES32, value = 0n },
+      data: {
+        recipient = ZERO_ADDRESS,
+        data,
+        expirationTime = NO_EXPIRATION,
+        revocable = true,
+        refUID = ZERO_BYTES32,
+        value = 0n
+      },
       signature,
       attester,
       deadline = NO_EXPIRATION
     }: DelegatedAttestationRequest,
     overrides?: Overrides
   ): Promise<Transaction<string>> {
-    const tx = await this.contract.attestByDelegation(
-      {
-        schema,
-        data: {
-          recipient,
-          expirationTime,
-          revocable,
-          refUID,
-          data,
-          value
-        },
-        signature,
-        attester,
-        deadline
-      },
-      { value, ...overrides }
-    );
+    if (!this.signer) {
+      throw new Error('Invalid signer');
+    }
 
-    // eslint-disable-next-line require-await
-    return new Transaction(tx, async (receipt: TransactionReceipt) => getUIDsFromAttestReceipt(receipt)[0]);
+    return new Transaction(
+      await this.contract.attestByDelegation.populateTransaction(
+        {
+          schema,
+          data: {
+            recipient,
+            expirationTime,
+            revocable,
+            refUID,
+            data,
+            value
+          },
+          signature,
+          attester,
+          deadline
+        },
+        { value, ...overrides }
+      ),
+      this.signer,
+      // eslint-disable-next-line require-await
+      async (receipt: TransactionReceipt) => getUIDsFromAttestReceipt(receipt)[0]
+    );
   }
 
   // Multi-attests to multiple schemas
   public async multiAttest(requests: MultiAttestationRequest[], overrides?: Overrides): Promise<Transaction<string[]>> {
+    if (!this.signer) {
+      throw new Error('Invalid signer');
+    }
+
     const multiAttestationRequests = requests.map((r) => ({
       schema: r.schema,
       data: r.data.map((d) => ({
@@ -205,13 +236,15 @@ export class EAS extends Base<EASContract> {
       return res + total;
     }, 0n);
 
-    const tx = await this.contract.multiAttest(multiAttestationRequests, {
-      value: requestedValue,
-      ...overrides
-    });
-
-    // eslint-disable-next-line require-await
-    return new Transaction(tx, async (receipt: TransactionReceipt) => getUIDsFromAttestReceipt(receipt));
+    return new Transaction(
+      await this.contract.multiAttest.populateTransaction(multiAttestationRequests, {
+        value: requestedValue,
+        ...overrides
+      }),
+      this.signer,
+      // eslint-disable-next-line require-await
+      async (receipt: TransactionReceipt) => getUIDsFromAttestReceipt(receipt)
+    );
   }
 
   // Multi-attests to multiple schemas via an EIP712 delegation requests
@@ -219,6 +252,10 @@ export class EAS extends Base<EASContract> {
     requests: MultiDelegatedAttestationRequest[],
     overrides?: Overrides
   ): Promise<Transaction<string[]>> {
+    if (!this.signer) {
+      throw new Error('Invalid signer');
+    }
+
     const multiAttestationRequests = requests.map((r) => ({
       schema: r.schema,
       data: r.data.map((d) => ({
@@ -239,13 +276,15 @@ export class EAS extends Base<EASContract> {
       return res + total;
     }, 0n);
 
-    const tx = await this.contract.multiAttestByDelegation(multiAttestationRequests, {
-      value: requestedValue,
-      ...overrides
-    });
-
-    // eslint-disable-next-line require-await
-    return new Transaction(tx, async (receipt: TransactionReceipt) => getUIDsFromAttestReceipt(receipt));
+    return new Transaction(
+      await this.contract.multiAttestByDelegation.populateTransaction(multiAttestationRequests, {
+        value: requestedValue,
+        ...overrides
+      }),
+      this.signer,
+      // eslint-disable-next-line require-await
+      async (receipt: TransactionReceipt) => getUIDsFromAttestReceipt(receipt)
+    );
   }
 
   // Revokes an existing attestation
@@ -253,9 +292,15 @@ export class EAS extends Base<EASContract> {
     { schema, data: { uid, value = 0n } }: RevocationRequest,
     overrides?: Overrides
   ): Promise<Transaction<void>> {
-    const tx = await this.contract.revoke({ schema, data: { uid, value } }, { value, ...overrides });
+    if (!this.signer) {
+      throw new Error('Invalid signer');
+    }
 
-    return new Transaction(tx, async () => {});
+    return new Transaction(
+      await this.contract.revoke.populateTransaction({ schema, data: { uid, value } }, { value, ...overrides }),
+      this.signer,
+      async () => {}
+    );
   }
 
   // Revokes an existing attestation an EIP712 delegation request
@@ -263,25 +308,35 @@ export class EAS extends Base<EASContract> {
     { schema, data: { uid, value = 0n }, signature, revoker, deadline = NO_EXPIRATION }: DelegatedRevocationRequest,
     overrides?: Overrides
   ): Promise<Transaction<void>> {
-    const tx = await this.contract.revokeByDelegation(
-      {
-        schema,
-        data: {
-          uid,
-          value
-        },
-        signature,
-        revoker,
-        deadline
-      },
-      { value, ...overrides }
-    );
+    if (!this.signer) {
+      throw new Error('Invalid signer');
+    }
 
-    return new Transaction(tx, async () => {});
+    return new Transaction(
+      await this.contract.revokeByDelegation.populateTransaction(
+        {
+          schema,
+          data: {
+            uid,
+            value
+          },
+          signature,
+          revoker,
+          deadline
+        },
+        { value, ...overrides }
+      ),
+      this.signer,
+      async () => {}
+    );
   }
 
   // Multi-revokes multiple attestations
   public async multiRevoke(requests: MultiRevocationRequest[], overrides?: Overrides): Promise<Transaction<void>> {
+    if (!this.signer) {
+      throw new Error('Invalid signer');
+    }
+
     const multiRevocationRequests = requests.map((r) => ({
       schema: r.schema,
       data: r.data.map((d) => ({
@@ -295,12 +350,14 @@ export class EAS extends Base<EASContract> {
       return res + total;
     }, 0n);
 
-    const tx = await this.contract.multiRevoke(multiRevocationRequests, {
-      value: requestedValue,
-      ...overrides
-    });
-
-    return new Transaction(tx, async () => {});
+    return new Transaction(
+      await this.contract.multiRevoke.populateTransaction(multiRevocationRequests, {
+        value: requestedValue,
+        ...overrides
+      }),
+      this.signer,
+      async () => {}
+    );
   }
 
   // Multi-revokes multiple attestations via an EIP712 delegation requests
@@ -308,6 +365,10 @@ export class EAS extends Base<EASContract> {
     requests: MultiDelegatedRevocationRequest[],
     overrides?: Overrides
   ): Promise<Transaction<void>> {
+    if (!this.signer) {
+      throw new Error('Invalid signer');
+    }
+
     const multiRevocationRequests = requests.map((r) => ({
       schema: r.schema,
       data: r.data.map((d) => ({
@@ -324,12 +385,14 @@ export class EAS extends Base<EASContract> {
       return res + total;
     }, 0n);
 
-    const tx = await this.contract.multiRevokeByDelegation(multiRevocationRequests, {
-      value: requestedValue,
-      ...overrides
-    });
-
-    return new Transaction(tx, async () => {});
+    return new Transaction(
+      await this.contract.multiRevokeByDelegation.populateTransaction(multiRevocationRequests, {
+        value: requestedValue,
+        ...overrides
+      }),
+      this.signer,
+      async () => {}
+    );
   }
 
   // Attests to a specific schema via an EIP712 delegation request using an external EIP712 proxy
@@ -382,26 +445,41 @@ export class EAS extends Base<EASContract> {
 
   // Timestamps the specified bytes32 data
   public async timestamp(data: string, overrides?: Overrides): Promise<Transaction<bigint>> {
-    const tx = await this.contract.timestamp(data, overrides ?? {});
+    if (!this.signer) {
+      throw new Error('Invalid signer');
+    }
 
-    // eslint-disable-next-line require-await
-    return new Transaction(tx, async (receipt: TransactionReceipt) => getTimestampFromTimestampReceipt(receipt)[0]);
+    return new Transaction(
+      await this.contract.timestamp.populateTransaction(data, overrides ?? {}),
+      this.signer,
+      // eslint-disable-next-line require-await
+      async (receipt: TransactionReceipt) => getTimestampFromTimestampReceipt(receipt)[0]
+    );
   }
 
   // Timestamps the specified multiple bytes32 data
   public async multiTimestamp(data: string[], overrides?: Overrides): Promise<Transaction<bigint[]>> {
-    const tx = await this.contract.multiTimestamp(data, overrides ?? {});
+    if (!this.signer) {
+      throw new Error('Invalid signer');
+    }
 
-    // eslint-disable-next-line require-await
-    return new Transaction(tx, async (receipt: TransactionReceipt) => getTimestampFromTimestampReceipt(receipt));
+    return new Transaction(
+      await this.contract.multiTimestamp.populateTransaction(data, overrides ?? {}),
+      this.signer,
+      // eslint-disable-next-line require-await
+      async (receipt: TransactionReceipt) => getTimestampFromTimestampReceipt(receipt)
+    );
   }
 
   // Revokes the specified offchain attestation UID
   public async revokeOffchain(uid: string, overrides?: Overrides): Promise<Transaction<bigint>> {
-    const tx = await this.contract.revokeOffchain(uid, overrides ?? {});
+    if (!this.signer) {
+      throw new Error('Invalid signer');
+    }
 
     return new Transaction(
-      tx,
+      await this.contract.revokeOffchain.populateTransaction(uid, overrides ?? {}),
+      this.signer,
       // eslint-disable-next-line require-await
       async (receipt: TransactionReceipt) => getTimestampFromOffchainRevocationReceipt(receipt)[0]
     );
@@ -409,11 +487,15 @@ export class EAS extends Base<EASContract> {
 
   // Revokes the specified multiple offchain attestation UIDs
   public async multiRevokeOffchain(uids: string[], overrides?: Overrides): Promise<Transaction<bigint[]>> {
-    const tx = await this.contract.multiRevokeOffchain(uids, overrides ?? {});
+    if (!this.signer) {
+      throw new Error('Invalid signer');
+    }
 
-    // eslint-disable-next-line require-await
-    return new Transaction(tx, async (receipt: TransactionReceipt) =>
-      getTimestampFromOffchainRevocationReceipt(receipt)
+    return new Transaction(
+      await this.contract.multiRevokeOffchain.populateTransaction(uids, overrides ?? {}),
+      this.signer,
+      // eslint-disable-next-line require-await
+      async (receipt: TransactionReceipt) => getTimestampFromOffchainRevocationReceipt(receipt)
     );
   }
 

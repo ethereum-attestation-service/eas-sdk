@@ -470,8 +470,8 @@ describe('EAS API', () => {
               expect(await eas.getTimestamp(data1)).to.equal(timestamp);
 
               if (maxPriorityFeePerGas && maxFeePerGas) {
-                expect(tx.tx.maxPriorityFeePerGas).to.equal(maxPriorityFeePerGas);
-                expect(tx.tx.maxFeePerGas).to.equal(maxFeePerGas);
+                expect(tx.data.maxPriorityFeePerGas).to.equal(maxPriorityFeePerGas);
+                expect(tx.data.maxFeePerGas).to.equal(maxFeePerGas);
               }
 
               const tx2 = await eas.timestamp(data2, overrides);
@@ -481,8 +481,8 @@ describe('EAS API', () => {
               expect(await eas.getTimestamp(data2)).to.equal(timestamp2);
 
               if (maxPriorityFeePerGas && maxFeePerGas) {
-                expect(tx2.tx.maxPriorityFeePerGas).to.equal(maxPriorityFeePerGas);
-                expect(tx2.tx.maxFeePerGas).to.equal(maxFeePerGas);
+                expect(tx2.data.maxPriorityFeePerGas).to.equal(maxPriorityFeePerGas);
+                expect(tx2.data.maxFeePerGas).to.equal(maxFeePerGas);
               }
             });
 
@@ -501,8 +501,8 @@ describe('EAS API', () => {
               }
 
               if (maxPriorityFeePerGas && maxFeePerGas) {
-                expect(tx.tx.maxPriorityFeePerGas).to.equal(maxPriorityFeePerGas);
-                expect(tx.tx.maxFeePerGas).to.equal(maxFeePerGas);
+                expect(tx.data.maxPriorityFeePerGas).to.equal(maxPriorityFeePerGas);
+                expect(tx.data.maxFeePerGas).to.equal(maxFeePerGas);
               }
             });
 
@@ -819,8 +819,8 @@ describe('EAS API', () => {
                 expect(await eas.getRevocationOffchain(await sender.getAddress(), data1)).to.equal(timestamp);
 
                 if (maxPriorityFeePerGas && maxFeePerGas) {
-                  expect(tx.tx.maxPriorityFeePerGas).to.equal(maxPriorityFeePerGas);
-                  expect(tx.tx.maxFeePerGas).to.equal(maxFeePerGas);
+                  expect(tx.data.maxPriorityFeePerGas).to.equal(maxPriorityFeePerGas);
+                  expect(tx.data.maxFeePerGas).to.equal(maxFeePerGas);
                 }
 
                 const tx2 = await eas.revokeOffchain(data2, overrides);
@@ -830,8 +830,8 @@ describe('EAS API', () => {
                 expect(await eas.getRevocationOffchain(await sender.getAddress(), data2)).to.equal(timestamp2);
 
                 if (maxPriorityFeePerGas && maxFeePerGas) {
-                  expect(tx2.tx.maxPriorityFeePerGas).to.equal(maxPriorityFeePerGas);
-                  expect(tx2.tx.maxFeePerGas).to.equal(maxFeePerGas);
+                  expect(tx2.data.maxPriorityFeePerGas).to.equal(maxPriorityFeePerGas);
+                  expect(tx2.data.maxFeePerGas).to.equal(maxFeePerGas);
                 }
               });
 
@@ -850,8 +850,8 @@ describe('EAS API', () => {
                 }
 
                 if (maxPriorityFeePerGas && maxFeePerGas) {
-                  expect(tx.tx.maxPriorityFeePerGas).to.equal(maxPriorityFeePerGas);
-                  expect(tx.tx.maxFeePerGas).to.equal(maxFeePerGas);
+                  expect(tx.data.maxPriorityFeePerGas).to.equal(maxPriorityFeePerGas);
+                  expect(tx.data.maxFeePerGas).to.equal(maxFeePerGas);
                 }
               });
             }

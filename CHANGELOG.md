@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.6.0 (2024-03-20)
+
+- Don't automatically broadcast transactions. In order to broadcast transactions, it's now always necessary to call the `wait()` function.
+
 ## 1.5.0 (2024-02-16)
 
 - Introduce framework-agnostic `TransactionSigner` and `TypeDataSigner` interfaces which replace the previous usage of the signer/provider
