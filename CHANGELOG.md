@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.6.0 (2024-03-20)
+## 2.0.0-beta.1 (2024-03-21)
 
 - Don't automatically broadcast transactions. In order to broadcast transactions, it's now always necessary to call the `wait()` function.
 
