@@ -26,13 +26,17 @@ class Indexer extends transaction_1.Base {
     }
     // Indexes an existing attestation
     async indexAttestation({ uid }, overrides) {
-        const tx = await this.contract.indexAttestation(uid, { ...overrides });
-        return new transaction_1.Transaction(tx, async () => { });
+        if (!this.signer) {
+            throw new Error('Invalid signer');
+        }
+        return new transaction_1.Transaction(await this.contract.indexAttestation.populateTransaction(uid, { ...overrides }), this.signer, async () => { });
     }
     // Indexes multiple existing attestations
     async indexAttestations({ uids }, overrides) {
-        const tx = await this.contract.indexAttestations(uids, { ...overrides });
-        return new transaction_1.Transaction(tx, async () => { });
+        if (!this.signer) {
+            throw new Error('Invalid signer');
+        }
+        return new transaction_1.Transaction(await this.contract.indexAttestations.populateTransaction(uids, { ...overrides }), this.signer, async () => { });
     }
     isAttestationIndexed({ uid }, overrides) {
         return this.contract.isAttestationIndexed(uid, { ...overrides });
