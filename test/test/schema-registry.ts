@@ -25,7 +25,7 @@ describe('SchemaRegistry API', () => {
   beforeEach(async () => {
     schemaRegistryContract = await Contracts.SchemaRegistry.deploy();
 
-    schemaRegistry = new SchemaRegistry(await schemaRegistryContract.getAddress());
+    schemaRegistry = new SchemaRegistry(await schemaRegistryContract.getAddress(), { signer: sender });
     schemaRegistry.connect(sender);
   });
 

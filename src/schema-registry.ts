@@ -45,11 +45,15 @@ export class SchemaRegistry extends Base<SchemaRegistryContract> {
     { schema, resolverAddress = ZERO_ADDRESS, revocable = true }: RegisterSchemaParams,
     overrides?: Overrides
   ): Promise<Transaction<string>> {
-    const tx = await this.contract.register(schema, resolverAddress, revocable, overrides ?? {});
+    if (!this.signer) {
+      throw new Error('Invalid signer');
+    }
 
-    // eslint-disable-next-line require-await
-    return new Transaction(tx, async (_receipt: TransactionReceipt) =>
-      getSchemaUID(schema, resolverAddress, revocable)
+    return new Transaction(
+      await this.contract.register.populateTransaction(schema, resolverAddress, revocable, overrides ?? {}),
+      this.signer,
+      // eslint-disable-next-line require-await
+      async (_receipt: TransactionReceipt) => getSchemaUID(schema, resolverAddress, revocable)
     );
   }
 

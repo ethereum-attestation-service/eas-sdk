@@ -207,8 +207,8 @@ export const expectAttestation = async (
   expect(await eas.isAttestationValid(uid)).to.be.true;
 
   if (maxPriorityFeePerGas && maxFeePerGas && tx) {
-    expect(tx.tx.maxPriorityFeePerGas).to.equal(maxPriorityFeePerGas);
-    expect(tx.tx.maxFeePerGas).to.equal(maxFeePerGas);
+    expect(tx.data.maxPriorityFeePerGas).to.equal(maxPriorityFeePerGas);
+    expect(tx.data.maxFeePerGas).to.equal(maxFeePerGas);
   }
 
   return uid;
@@ -352,8 +352,8 @@ export const expectMultiAttestations = async (
   }
 
   if (maxPriorityFeePerGas && maxFeePerGas && tx) {
-    expect(tx.tx.maxPriorityFeePerGas).to.equal(maxPriorityFeePerGas);
-    expect(tx.tx.maxFeePerGas).to.equal(maxFeePerGas);
+    expect(tx.data.maxPriorityFeePerGas).to.equal(maxPriorityFeePerGas);
+    expect(tx.data.maxFeePerGas).to.equal(maxFeePerGas);
   }
 };
 
@@ -381,6 +381,7 @@ export const expectRevocation = async (
   switch (signatureType) {
     case SignatureType.Direct: {
       tx = await eas.connect(txSender).revoke({ schema, data: { uid, value } }, overrides);
+      await tx.wait();
 
       break;
     }
@@ -404,6 +405,7 @@ export const expectRevocation = async (
         },
         overrides
       );
+      await tx.wait();
 
       break;
     }
@@ -429,6 +431,7 @@ export const expectRevocation = async (
         },
         overrides
       );
+      await tx.wait();
 
       break;
     }
@@ -437,8 +440,8 @@ export const expectRevocation = async (
   expect(await eas.isAttestationRevoked(uid)).to.be.true;
 
   if (maxPriorityFeePerGas && maxFeePerGas && tx) {
-    expect(tx.tx.maxPriorityFeePerGas).to.equal(maxPriorityFeePerGas);
-    expect(tx.tx.maxFeePerGas).to.equal(maxFeePerGas);
+    expect(tx.data.maxPriorityFeePerGas).to.equal(maxPriorityFeePerGas);
+    expect(tx.data.maxFeePerGas).to.equal(maxFeePerGas);
   }
 };
 
@@ -463,7 +466,8 @@ export const expectMultiRevocations = async (
 
   switch (signatureType) {
     case SignatureType.Direct: {
-      await eas.connect(txSender).multiRevoke(requests);
+      tx = await eas.connect(txSender).multiRevoke(requests, overrides);
+      await tx.wait();
 
       break;
     }
@@ -500,6 +504,7 @@ export const expectMultiRevocations = async (
       }
 
       tx = await eas.connect(txSender).multiRevokeByDelegation(multiDelegatedRevocationRequests, overrides);
+      await tx.wait();
 
       break;
     }
@@ -538,6 +543,7 @@ export const expectMultiRevocations = async (
       }
 
       tx = await eas.connect(txSender).multiRevokeByDelegationProxy(multiDelegatedProxyRevocationRequests, overrides);
+      await tx.wait();
 
       break;
     }
@@ -551,7 +557,7 @@ export const expectMultiRevocations = async (
   }
 
   if (maxPriorityFeePerGas && maxFeePerGas && tx) {
-    expect(tx.tx.maxPriorityFeePerGas).to.equal(maxPriorityFeePerGas);
-    expect(tx.tx.maxFeePerGas).to.equal(maxFeePerGas);
+    expect(tx.data.maxPriorityFeePerGas).to.equal(maxPriorityFeePerGas);
+    expect(tx.data.maxFeePerGas).to.equal(maxFeePerGas);
   }
 };

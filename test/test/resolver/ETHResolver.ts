@@ -44,12 +44,12 @@ describe('ETHResolver', () => {
     resolver = await Contracts.ETHResolver.deploy(await easContract.getAddress(), incentive);
     expect(await resolver.isPayable()).to.be.true;
 
-    eas = new EAS(await easContract.getAddress());
+    eas = new EAS(await easContract.getAddress(), { signer: sender });
     eas.connect(sender);
 
     await sender.sendTransaction({ to: await resolver.getAddress(), value: incentive * 2n });
 
-    schemaRegistry = new SchemaRegistry(await registry.getAddress());
+    schemaRegistry = new SchemaRegistry(await registry.getAddress(), { signer: sender });
     schemaRegistry.connect(sender);
 
     const tx = await schemaRegistry.register({ schema, resolverAddress: await resolver.getAddress() });
@@ -83,7 +83,8 @@ describe('ETHResolver', () => {
       const prevResolverBalance = await getBalance(await resolver.getAddress());
 
       const value = incentive;
-      await eas.revoke({ schema: schemaId, data: { uid, value } });
+      const tx = await eas.revoke({ schema: schemaId, data: { uid, value } });
+      await tx.wait();
 
       expect(await eas.isAttestationRevoked(uid)).to.be.true;
 

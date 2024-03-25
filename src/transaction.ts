@@ -3,32 +3,39 @@ import {
   BaseContract,
   ContractFactory,
   ContractRunner,
+  ContractTransaction,
   TransactionReceipt,
-  TransactionRequest,
-  TransactionResponse
+  TransactionRequest
 } from 'ethers';
 
 export interface TransactionSigner extends Addressable {
-  estimateGas?: (tx: TransactionRequest) => Promise<bigint>;
-  call?: (tx: TransactionRequest) => Promise<string>;
-  resolveName?: (name: string) => Promise<null | string>;
+  estimateGas: (tx: TransactionRequest) => Promise<bigint>;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  sendTransaction?: (tx: TransactionRequest) => Promise<any>;
+  sendTransaction: (tx: TransactionRequest) => Promise<any>;
+  call: (tx: TransactionRequest) => Promise<string>;
+  resolveName: (name: string) => Promise<null | string>;
 }
 
 export class Transaction<T> {
-  public readonly tx: TransactionResponse;
+  public readonly data: ContractTransaction;
+  private readonly signer: TransactionSigner;
   private readonly waitCallback: (receipt: TransactionReceipt) => Promise<T>;
 
-  constructor(tx: TransactionResponse, waitCallback: (receipt: TransactionReceipt) => Promise<T>) {
-    this.tx = tx;
+  constructor(
+    data: ContractTransaction,
+    signer: TransactionSigner,
+    waitCallback: (receipt: TransactionReceipt) => Promise<T>
+  ) {
+    this.data = data;
+    this.signer = signer;
     this.waitCallback = waitCallback;
   }
 
   public async wait(confirmations?: number): Promise<T> {
-    const receipt = await this.tx.wait(confirmations);
+    const tx = await this.signer.sendTransaction(this.data);
+    const receipt = await tx.wait(confirmations);
     if (!receipt) {
-      throw new Error(`Unable to confirm: ${this.tx}`);
+      throw new Error(`Unable to confirm: ${tx}`);
     }
 
     return this.waitCallback(receipt);
@@ -37,11 +44,14 @@ export class Transaction<T> {
 
 export class Base<C extends BaseContract> {
   public contract: C;
+  protected signer?: TransactionSigner;
 
   constructor(factory: ContractFactory, address: string, signer?: TransactionSigner) {
     this.contract = factory.attach(address) as C;
     if (signer) {
       this.connect(signer);
+
+      this.signer = signer;
     }
   }
 
