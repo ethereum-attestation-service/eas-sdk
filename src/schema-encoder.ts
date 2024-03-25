@@ -106,8 +106,8 @@ export class SchemaEncoder {
         schemaItem.type === 'bytes32' && schemaItem.name === 'ipfsHash'
           ? SchemaEncoder.decodeIpfsValue(value as string)
           : schemaItem.type === 'bytes32' && typeof value === 'string' && !isBytesLike(value)
-          ? encodeBytes32String(value)
-          : value
+            ? encodeBytes32String(value)
+            : value
       );
     }
 
