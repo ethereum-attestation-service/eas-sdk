@@ -86,9 +86,15 @@ export class Indexer extends Base<IndexerContract> {
 
   // Indexes an existing attestation
   public async indexAttestation({ uid }: IndexAttestationOptions, overrides?: Overrides): Promise<Transaction<void>> {
-    const tx = await this.contract.indexAttestation(uid, { ...overrides });
+    if (!this.signer) {
+      throw new Error('Invalid signer');
+    }
 
-    return new Transaction(tx, async () => {});
+    return new Transaction(
+      await this.contract.indexAttestation.populateTransaction(uid, { ...overrides }),
+      this.signer,
+      async () => {}
+    );
   }
 
   // Indexes multiple existing attestations
@@ -96,9 +102,15 @@ export class Indexer extends Base<IndexerContract> {
     { uids }: IndexAttestationsOptions,
     overrides?: Overrides
   ): Promise<Transaction<void>> {
-    const tx = await this.contract.indexAttestations(uids, { ...overrides });
+    if (!this.signer) {
+      throw new Error('Invalid signer');
+    }
 
-    return new Transaction(tx, async () => {});
+    return new Transaction(
+      await this.contract.indexAttestations.populateTransaction(uids, { ...overrides }),
+      this.signer,
+      async () => {}
+    );
   }
 
   public isAttestationIndexed({ uid }: IsAttestationIndexedOptions, overrides?: Overrides): Promise<boolean> {

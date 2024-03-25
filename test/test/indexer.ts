@@ -160,9 +160,11 @@ describe('Indexer API', () => {
           infos[uid] = info;
         }
 
-        uids.length === 1
-          ? await indexer.indexAttestation({ uid: uids[0] })
-          : await indexer.indexAttestations({ uids });
+        const tx =
+          uids.length === 1
+            ? await indexer.indexAttestation({ uid: uids[0] })
+            : await indexer.indexAttestations({ uids });
+        await tx.wait();
 
         for (const uid of uids) {
           const info = infos[uid];
