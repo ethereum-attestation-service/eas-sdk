@@ -205,7 +205,7 @@ export const isSignedOffchainAttestationV1 = (
   return 'v' in attestation && 'r' in attestation && 's' in attestation;
 };
 
-function convertV1AttestationToV2(attestation: SignedOffchainAttestationV1): SignedOffchainAttestation {
+const convertV1AttestationToV2 = (attestation: SignedOffchainAttestationV1): SignedOffchainAttestation => {
   const { v, r, s, ...rest } = attestation;
   return {
     ...rest,
@@ -216,4 +216,4 @@ function convertV1AttestationToV2(attestation: SignedOffchainAttestationV1): Sig
       s
     }
   };
-}
+};
