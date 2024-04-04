@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.0.1-beta.1 (2024-04-04)
+
+- Fix signer assignment during `connect` (2.0.0-beta.1 regression).
+
 ## 2.0.0-beta.1 (2024-03-21)
 
 - Don't automatically broadcast transactions. In order to broadcast transactions, it's now always necessary to call the `wait()` function.
