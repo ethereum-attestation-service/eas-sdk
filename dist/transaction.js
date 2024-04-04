@@ -33,6 +33,7 @@ class Base {
     // Connects the API to a specific signer
     connect(signer) {
         this.contract = this.contract.connect(signer);
+        this.signer = signer;
         return this;
     }
     // Gets the chain ID

@@ -152,7 +152,7 @@ const isSignedOffchainAttestationV1 = (attestation) => {
     return 'v' in attestation && 'r' in attestation && 's' in attestation;
 };
 exports.isSignedOffchainAttestationV1 = isSignedOffchainAttestationV1;
-function convertV1AttestationToV2(attestation) {
+const convertV1AttestationToV2 = (attestation) => {
     const { v, r, s, ...rest } = attestation;
     return {
         ...rest,
@@ -163,5 +163,5 @@ function convertV1AttestationToV2(attestation) {
             s
         }
     };
-}
+};
 //# sourceMappingURL=offchain-utils.js.map
