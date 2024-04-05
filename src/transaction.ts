@@ -59,6 +59,8 @@ export class Base<C extends BaseContract> {
   public connect(signer: TransactionSigner) {
     this.contract = this.contract.connect(signer as unknown as ContractRunner) as C;
 
+    this.signer = signer;
+
     return this;
   }
 
