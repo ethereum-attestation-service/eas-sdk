@@ -553,21 +553,16 @@ describe('EAS API', () => {
         let offchain: Offchain;
 
         const schema = 'bool like';
-        const schemaId = getSchemaUID(schema, ZERO_ADDRESS, true);
+        let schemaId: string;
 
         beforeEach(async () => {
-          await schemaRegistry.register({ schema, resolverAddress: ZERO_ADDRESS, revocable: false });
-        });
+          const tx = await schemaRegistry.register({ schema, resolverAddress: ZERO_ADDRESS, revocable: false });
+          schemaId = await tx.wait();
 
-        beforeEach(async () => {
           offchain = await eas.getOffchain();
         });
 
         describe('salting', () => {
-          beforeEach(async () => {
-            await schemaRegistry.register({ schema, resolverAddress: ZERO_ADDRESS, revocable: true });
-          });
-
           it('should support customizable salts', async () => {
             const params = {
               version: OffchainAttestationVersion.Version2,
@@ -626,10 +621,6 @@ describe('EAS API', () => {
 
         describe('verification', () => {
           const salt = encodeBytes32String('SALT');
-
-          beforeEach(async () => {
-            await schemaRegistry.register({ schema, resolverAddress: ZERO_ADDRESS, revocable: true });
-          });
 
           it('should verify the attestation onchain', async () => {
             const attestation = await offchain.signOffchainAttestation(
@@ -808,10 +799,15 @@ describe('EAS API', () => {
 
           context('with an irrevocable schema', () => {
             const schema2 = 'bytes32 eventId,uint8 ticketType,uint32 ticketNum';
-            const schema2Id = getSchemaUID(schema2, ZERO_ADDRESS, false);
+            let schema2Id: string;
 
             beforeEach(async () => {
-              await schemaRegistry.register({ schema: schema2, resolverAddress: ZERO_ADDRESS, revocable: false });
+              const tx = await schemaRegistry.register({
+                schema: schema2,
+                resolverAddress: ZERO_ADDRESS,
+                revocable: false
+              });
+              schema2Id = await tx.wait();
             });
 
             it('should throw on verification of invalid offchain attestations', async () => {
@@ -910,10 +906,11 @@ describe('EAS API', () => {
         let delegated: Delegated;
 
         const schema = 'bool like';
-        const schemaId = getSchemaUID(schema, ZERO_ADDRESS, true);
+        let schemaId: string;
 
         beforeEach(async () => {
-          await schemaRegistry.register({ schema, resolverAddress: ZERO_ADDRESS, revocable: false });
+          const tx = await schemaRegistry.register({ schema, resolverAddress: ZERO_ADDRESS, revocable: false });
+          schemaId = await tx.wait();
         });
 
         beforeEach(async () => {
@@ -1072,10 +1069,11 @@ describe('EAS API', () => {
           let delegatedProxy: DelegatedProxy;
 
           const schema = 'bool like';
-          const schemaId = getSchemaUID(schema, ZERO_ADDRESS, true);
+          let schemaId: string;
 
           beforeEach(async () => {
-            await schemaRegistry.register({ schema, resolverAddress: ZERO_ADDRESS, revocable: false });
+            const tx = await schemaRegistry.register({ schema, resolverAddress: ZERO_ADDRESS, revocable: false });
+            schemaId = await tx.wait();
           });
 
           beforeEach(async () => {
