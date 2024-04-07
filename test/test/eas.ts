@@ -11,7 +11,6 @@ import {
 } from '../../src/offchain';
 import { InvalidAddress, InvalidDomain, InvalidPrimaryType, InvalidTypes } from '../../src/offchain/typed-data-handler';
 import { SchemaRegistry } from '../../src/schema-registry';
-import { getSchemaUID } from '../../src/utils';
 import Contracts from '../components/Contracts';
 import { ZERO_ADDRESS, ZERO_BYTES, ZERO_BYTES32 } from '../utils/Constants';
 import chai from './helpers/chai';
