@@ -26,6 +26,8 @@ export declare class EAS extends Base<EASContract> {
     private proxy?;
     private delegated?;
     private offchain?;
+    private version?;
+    private legacyEAS;
     constructor(address: string, options?: EASOptions);
     connect(signer: TransactionSigner): this;
     getVersion(): Promise<string>;
@@ -59,4 +61,5 @@ export declare class EAS extends Base<EASContract> {
     getRevokeTypeHash(): Promise<string>;
     private setDelegated;
     private setOffchain;
+    private isLegacyContract;
 }

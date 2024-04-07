@@ -3,16 +3,21 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.EAS = void 0;
 const tslib_1 = require("tslib");
 const eas_contracts_1 = require("@ethereum-attestation-service/eas-contracts");
+const eas_contracts_legacy_1 = require("@ethereum-attestation-service/eas-contracts-legacy");
+const semver_1 = tslib_1.__importDefault(require("semver"));
 const version_1 = require("./legacy/version");
 const offchain_1 = require("./offchain");
 const request_1 = require("./request");
 const transaction_1 = require("./transaction");
 const utils_1 = require("./utils");
+const LEGACY_VERSION = '1.1.0';
 tslib_1.__exportStar(require("./request"), exports);
 class EAS extends transaction_1.Base {
     proxy;
     delegated;
     offchain;
+    version;
+    legacyEAS;
     constructor(address, options) {
         const { signer, proxy } = options || {};
         super(new eas_contracts_1.EAS__factory(), address, signer);
@@ -23,17 +28,24 @@ class EAS extends transaction_1.Base {
         if (proxy) {
             this.proxy = proxy;
         }
+        this.legacyEAS = new transaction_1.Base(new eas_contracts_legacy_1.EAS__factory(), address, signer);
     }
     // Connects the API to a specific signer
     connect(signer) {
         delete this.delegated;
         delete this.offchain;
         super.connect(signer);
+        if (this.legacyEAS) {
+            this.legacyEAS.connect(signer);
+        }
         return this;
     }
     // Returns the version of the contract
     async getVersion() {
-        return (await (0, version_1.legacyVersion)(this.contract)) ?? this.contract.version();
+        if (this.version) {
+            return this.version;
+        }
+        return (this.version = (await (0, version_1.legacyVersion)(this.contract)) ?? (await this.contract.version()));
     }
     // Returns an existing schema by attestation UID
     getAttestation(uid) {
@@ -85,20 +97,38 @@ class EAS extends transaction_1.Base {
     }
     // Attests to a specific schema via an EIP712 delegation request
     async attestByDelegation({ schema, data: { recipient = utils_1.ZERO_ADDRESS, data, expirationTime = request_1.NO_EXPIRATION, revocable = true, refUID = utils_1.ZERO_BYTES32, value = 0n }, signature, attester, deadline = request_1.NO_EXPIRATION }, overrides) {
-        const tx = await this.contract.attestByDelegation({
-            schema,
-            data: {
-                recipient,
-                expirationTime,
-                revocable,
-                refUID,
-                data,
-                value
-            },
-            signature,
-            attester,
-            deadline
-        }, { value, ...overrides });
+        let tx;
+        if (await this.isLegacyContract()) {
+            tx = await this.legacyEAS.contract.attestByDelegation({
+                schema,
+                data: {
+                    recipient,
+                    expirationTime,
+                    revocable,
+                    refUID,
+                    data,
+                    value
+                },
+                signature,
+                attester
+            }, { value, ...overrides });
+        }
+        else {
+            tx = await this.contract.attestByDelegation({
+                schema,
+                data: {
+                    recipient,
+                    expirationTime,
+                    revocable,
+                    refUID,
+                    data,
+                    value
+                },
+                signature,
+                attester,
+                deadline
+            }, { value, ...overrides });
+        }
         // eslint-disable-next-line require-await
         return new transaction_1.Transaction(tx, async (receipt) => (0, utils_1.getUIDsFromAttestReceipt)(receipt)[0]);
     }
@@ -128,28 +158,54 @@ class EAS extends transaction_1.Base {
     }
     // Multi-attests to multiple schemas via an EIP712 delegation requests
     async multiAttestByDelegation(requests, overrides) {
-        const multiAttestationRequests = requests.map((r) => ({
-            schema: r.schema,
-            data: r.data.map((d) => ({
-                recipient: d.recipient ?? utils_1.ZERO_ADDRESS,
-                expirationTime: d.expirationTime ?? request_1.NO_EXPIRATION,
-                revocable: d.revocable ?? true,
-                refUID: d.refUID ?? utils_1.ZERO_BYTES32,
-                data: d.data ?? utils_1.ZERO_BYTES32,
-                value: d.value ?? 0n
-            })),
-            signatures: r.signatures,
-            attester: r.attester,
-            deadline: r.deadline ?? request_1.NO_EXPIRATION
-        }));
-        const requestedValue = multiAttestationRequests.reduce((res, { data }) => {
-            const total = data.reduce((res, r) => res + r.value, 0n);
-            return res + total;
-        }, 0n);
-        const tx = await this.contract.multiAttestByDelegation(multiAttestationRequests, {
-            value: requestedValue,
-            ...overrides
-        });
+        let tx;
+        if (await this.isLegacyContract()) {
+            const multiAttestationRequests = requests.map((r) => ({
+                schema: r.schema,
+                data: r.data.map((d) => ({
+                    recipient: d.recipient ?? utils_1.ZERO_ADDRESS,
+                    expirationTime: d.expirationTime ?? request_1.NO_EXPIRATION,
+                    revocable: d.revocable ?? true,
+                    refUID: d.refUID ?? utils_1.ZERO_BYTES32,
+                    data: d.data ?? utils_1.ZERO_BYTES32,
+                    value: d.value ?? 0n
+                })),
+                signatures: r.signatures,
+                attester: r.attester
+            }));
+            const requestedValue = multiAttestationRequests.reduce((res, { data }) => {
+                const total = data.reduce((res, r) => res + r.value, 0n);
+                return res + total;
+            }, 0n);
+            tx = await this.legacyEAS.contract.multiAttestByDelegation(multiAttestationRequests, {
+                value: requestedValue,
+                ...overrides
+            });
+        }
+        else {
+            const multiAttestationRequests = requests.map((r) => ({
+                schema: r.schema,
+                data: r.data.map((d) => ({
+                    recipient: d.recipient ?? utils_1.ZERO_ADDRESS,
+                    expirationTime: d.expirationTime ?? request_1.NO_EXPIRATION,
+                    revocable: d.revocable ?? true,
+                    refUID: d.refUID ?? utils_1.ZERO_BYTES32,
+                    data: d.data ?? utils_1.ZERO_BYTES32,
+                    value: d.value ?? 0n
+                })),
+                signatures: r.signatures,
+                attester: r.attester,
+                deadline: r.deadline ?? request_1.NO_EXPIRATION
+            }));
+            const requestedValue = multiAttestationRequests.reduce((res, { data }) => {
+                const total = data.reduce((res, r) => res + r.value, 0n);
+                return res + total;
+            }, 0n);
+            tx = await this.contract.multiAttestByDelegation(multiAttestationRequests, {
+                value: requestedValue,
+                ...overrides
+            });
+        }
         // eslint-disable-next-line require-await
         return new transaction_1.Transaction(tx, async (receipt) => (0, utils_1.getUIDsFromAttestReceipt)(receipt));
     }
@@ -160,16 +216,30 @@ class EAS extends transaction_1.Base {
     }
     // Revokes an existing attestation an EIP712 delegation request
     async revokeByDelegation({ schema, data: { uid, value = 0n }, signature, revoker, deadline = request_1.NO_EXPIRATION }, overrides) {
-        const tx = await this.contract.revokeByDelegation({
-            schema,
-            data: {
-                uid,
-                value
-            },
-            signature,
-            revoker,
-            deadline
-        }, { value, ...overrides });
+        let tx;
+        if (await this.isLegacyContract()) {
+            tx = await this.legacyEAS.contract.revokeByDelegation({
+                schema,
+                data: {
+                    uid,
+                    value
+                },
+                signature,
+                revoker
+            }, { value, ...overrides });
+        }
+        else {
+            tx = await this.contract.revokeByDelegation({
+                schema,
+                data: {
+                    uid,
+                    value
+                },
+                signature,
+                revoker,
+                deadline
+            }, { value, ...overrides });
+        }
         return new transaction_1.Transaction(tx, async () => { });
     }
     // Multi-revokes multiple attestations
@@ -193,24 +263,46 @@ class EAS extends transaction_1.Base {
     }
     // Multi-revokes multiple attestations via an EIP712 delegation requests
     async multiRevokeByDelegation(requests, overrides) {
-        const multiRevocationRequests = requests.map((r) => ({
-            schema: r.schema,
-            data: r.data.map((d) => ({
-                uid: d.uid,
-                value: d.value ?? 0n
-            })),
-            signatures: r.signatures,
-            revoker: r.revoker,
-            deadline: r.deadline ?? request_1.NO_EXPIRATION
-        }));
-        const requestedValue = multiRevocationRequests.reduce((res, { data }) => {
-            const total = data.reduce((res, r) => res + r.value, 0n);
-            return res + total;
-        }, 0n);
-        const tx = await this.contract.multiRevokeByDelegation(multiRevocationRequests, {
-            value: requestedValue,
-            ...overrides
-        });
+        let tx;
+        if (await this.isLegacyContract()) {
+            const multiRevocationRequests = requests.map((r) => ({
+                schema: r.schema,
+                data: r.data.map((d) => ({
+                    uid: d.uid,
+                    value: d.value ?? 0n
+                })),
+                signatures: r.signatures,
+                revoker: r.revoker
+            }));
+            const requestedValue = multiRevocationRequests.reduce((res, { data }) => {
+                const total = data.reduce((res, r) => res + r.value, 0n);
+                return res + total;
+            }, 0n);
+            tx = await this.legacyEAS.contract.multiRevokeByDelegation(multiRevocationRequests, {
+                value: requestedValue,
+                ...overrides
+            });
+        }
+        else {
+            const multiRevocationRequests = requests.map((r) => ({
+                schema: r.schema,
+                data: r.data.map((d) => ({
+                    uid: d.uid,
+                    value: d.value ?? 0n
+                })),
+                signatures: r.signatures,
+                revoker: r.revoker,
+                deadline: r.deadline ?? request_1.NO_EXPIRATION
+            }));
+            const requestedValue = multiRevocationRequests.reduce((res, { data }) => {
+                const total = data.reduce((res, r) => res + r.value, 0n);
+                return res + total;
+            }, 0n);
+            tx = await this.contract.multiRevokeByDelegation(multiRevocationRequests, {
+                value: requestedValue,
+                ...overrides
+            });
+        }
         return new transaction_1.Transaction(tx, async () => { });
     }
     // Attests to a specific schema via an EIP712 delegation request using an external EIP712 proxy
@@ -286,7 +378,7 @@ class EAS extends transaction_1.Base {
     async setDelegated() {
         this.delegated = new offchain_1.Delegated({
             address: await this.contract.getAddress(),
-            version: await this.getVersion(),
+            domainSeparator: await this.getDomainSeparator(),
             chainId: await this.getChainId()
         });
         return this.delegated;
@@ -299,6 +391,9 @@ class EAS extends transaction_1.Base {
             chainId: await this.getChainId()
         }, offchain_1.OffchainAttestationVersion.Version2, this);
         return this.offchain;
+    }
+    async isLegacyContract() {
+        return semver_1.default.lte(await this.getVersion(), LEGACY_VERSION);
     }
 }
 exports.EAS = EAS;

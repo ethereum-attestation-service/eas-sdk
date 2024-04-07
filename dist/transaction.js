@@ -19,15 +19,18 @@ class Transaction {
 exports.Transaction = Transaction;
 class Base {
     contract;
+    signer;
     constructor(factory, address, signer) {
         this.contract = factory.attach(address);
         if (signer) {
             this.connect(signer);
+            this.signer = signer;
         }
     }
     // Connects the API to a specific signer
     connect(signer) {
         this.contract = this.contract.connect(signer);
+        this.signer = signer;
         return this;
     }
     // Gets the chain ID

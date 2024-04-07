@@ -13,6 +13,7 @@ export declare class Transaction<T> {
 }
 export declare class Base<C extends BaseContract> {
     contract: C;
+    protected signer?: TransactionSigner;
     constructor(factory: ContractFactory, address: string, signer?: TransactionSigner);
     connect(signer: TransactionSigner): this;
     getChainId(): Promise<bigint>;
