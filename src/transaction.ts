@@ -40,6 +40,7 @@ export class Base<C extends BaseContract> {
 
   constructor(factory: ContractFactory, address: string, signer?: TransactionSigner) {
     this.contract = factory.attach(address) as C;
+
     if (signer) {
       this.connect(signer);
     }
@@ -48,6 +49,8 @@ export class Base<C extends BaseContract> {
   // Connects the API to a specific signer
   public connect(signer: TransactionSigner) {
     this.contract = this.contract.connect(signer as unknown as ContractRunner) as C;
+
+    this.connect(signer);
 
     return this;
   }
