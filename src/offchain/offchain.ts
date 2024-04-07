@@ -1,7 +1,6 @@
 import { AbiCoder, hexlify, keccak256, randomBytes, toUtf8Bytes } from 'ethers';
 import { EAS } from '../eas';
 import { getOffchainUID, ZERO_BYTES32 } from '../utils';
-import { EIP712_NAME } from './delegated';
 import {
   DomainTypedData,
   EIP712MessageTypes,
@@ -10,12 +9,12 @@ import {
   EIP712Types,
   InvalidPrimaryType,
   InvalidTypes,
-  PartialTypedDataConfig,
   TypeDataSigner,
   TypedDataHandler
 } from './typed-data-handler';
+import { EIP712_NAME } from './versions';
 
-export { EIP712Request, PartialTypedDataConfig, EIP712MessageTypes } from './typed-data-handler';
+export { EIP712Request, EIP712MessageTypes } from './typed-data-handler';
 
 export interface OffchainAttestationType extends EIP712Types<EIP712MessageTypes> {
   domain: string;
@@ -143,13 +142,19 @@ export interface SignedOffchainAttestation extends EIP712Response<EIP712MessageT
 
 export const SALT_SIZE = 32;
 
+export interface OffchainConfig {
+  address: string;
+  version: string;
+  chainId: bigint;
+}
+
 export class Offchain extends TypedDataHandler {
   public readonly version: OffchainAttestationVersion;
   protected signingType: OffchainAttestationType;
   protected readonly verificationTypes: OffchainAttestationType[];
   private readonly eas: EAS;
 
-  constructor(config: PartialTypedDataConfig, version: OffchainAttestationVersion, eas: EAS) {
+  constructor(config: OffchainConfig, version: OffchainAttestationVersion, eas: EAS) {
     if (version > OffchainAttestationVersion.Version2) {
       throw new Error('Unsupported version');
     }

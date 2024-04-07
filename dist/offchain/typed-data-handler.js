@@ -24,12 +24,15 @@ class TypedDataHandler {
         this.config = config;
     }
     getDomainSeparator() {
+        return TypedDataHandler.getDomainSeparator(this.config);
+    }
+    static getDomainSeparator(config) {
         return (0, ethers_1.keccak256)(ethers_1.AbiCoder.defaultAbiCoder().encode(['bytes32', 'bytes32', 'bytes32', 'uint256', 'address'], [
             (0, ethers_1.keccak256)((0, ethers_1.toUtf8Bytes)(exports.EIP712_DOMAIN)),
-            (0, ethers_1.keccak256)((0, ethers_1.toUtf8Bytes)(this.config.name)),
-            (0, ethers_1.keccak256)((0, ethers_1.toUtf8Bytes)(this.config.version)),
-            this.config.chainId,
-            this.config.address
+            (0, ethers_1.keccak256)((0, ethers_1.toUtf8Bytes)(config.name)),
+            (0, ethers_1.keccak256)((0, ethers_1.toUtf8Bytes)(config.version)),
+            config.chainId,
+            config.address
         ]));
     }
     getDomainTypedData() {
