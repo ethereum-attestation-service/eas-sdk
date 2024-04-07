@@ -140,7 +140,14 @@ export class EAS extends Base<EASContract> {
   public async attest(
     {
       schema,
-      data: { recipient = ZERO_ADDRESS, data, expirationTime = NO_EXPIRATION, revocable = true, refUID = ZERO_BYTES32, value = 0n }
+      data: {
+        recipient = ZERO_ADDRESS,
+        data,
+        expirationTime = NO_EXPIRATION,
+        revocable = true,
+        refUID = ZERO_BYTES32,
+        value = 0n
+      }
     }: AttestationRequest,
     overrides?: Overrides
   ): Promise<Transaction<string>> {
@@ -157,10 +164,16 @@ export class EAS extends Base<EASContract> {
   public async attestByDelegation(
     {
       schema,
-      data: { recipient = ZERO_ADDRESS, data, expirationTime = NO_EXPIRATION, revocable = true, refUID = ZERO_BYTES32, value = 0n },
+      data: {
+        recipient = ZERO_ADDRESS,
+        data,
+        expirationTime = NO_EXPIRATION,
+        revocable = true,
+        refUID = ZERO_BYTES32,
+        value = 0n
+      },
       signature,
-      attester,
-      deadline = NO_EXPIRATION
+      attester
     }: DelegatedAttestationRequest,
     overrides?: Overrides
   ): Promise<Transaction<string>> {
@@ -176,9 +189,9 @@ export class EAS extends Base<EASContract> {
           value
         },
         signature,
-        attester,
-        deadline
-      },
+        attester
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any,
       { value, ...overrides }
     );
 
@@ -441,7 +454,7 @@ export class EAS extends Base<EASContract> {
   private async setDelegated(): Promise<Delegated> {
     this.delegated = new Delegated({
       address: await this.contract.getAddress(),
-      version: await this.getVersion(),
+      domainSeparator: await this.getDomainSeparator(),
       chainId: await this.getChainId()
     });
 

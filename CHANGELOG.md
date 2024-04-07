@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.6.0 (2024-04-07)
+
+- Automatically derive the EIP712 version via the domain separator
+
 ## 1.5.0 (2024-02-16)
 
 - Introduce framework-agnostic `TransactionSigner` and `TypeDataSigner` interfaces which replace the previous usage of the signer/provider
