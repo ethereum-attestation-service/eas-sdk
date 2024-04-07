@@ -1,5 +1,10 @@
-import { EAS__factory, EAS as EASContract } from '@ethereum-attestation-service/eas-contracts';
-import { Overrides, TransactionReceipt } from 'ethers';
+import { EAS as EASContract, EAS__factory as EASFactory } from '@ethereum-attestation-service/eas-contracts';
+import {
+  EAS as EASLegacyContract,
+  EAS__factory as EASLegacyFactory
+} from '@ethereum-attestation-service/eas-contracts-legacy';
+import { ContractTransactionResponse, Overrides, TransactionReceipt } from 'ethers';
+import semver from 'semver';
 import { EIP712Proxy } from './eip712-proxy';
 import { legacyVersion } from './legacy/version';
 import { Delegated, Offchain, OffchainAttestationVersion } from './offchain';
@@ -27,6 +32,8 @@ import {
   ZERO_BYTES32
 } from './utils';
 
+const LEGACY_VERSION = '1.1.0';
+
 export { Overrides } from 'ethers';
 export * from './request';
 
@@ -52,11 +59,13 @@ export class EAS extends Base<EASContract> {
   private proxy?: EIP712Proxy;
   private delegated?: Delegated;
   private offchain?: Offchain;
+  private version?: string;
+  private legacyEAS: Base<EASLegacyContract>;
 
   constructor(address: string, options?: EASOptions) {
     const { signer, proxy } = options || {};
 
-    super(new EAS__factory(), address, signer);
+    super(new EASFactory(), address, signer);
 
     // Check for ethers v6 compatibility
     if (!this.contract.getAddress) {
@@ -66,6 +75,8 @@ export class EAS extends Base<EASContract> {
     if (proxy) {
       this.proxy = proxy;
     }
+
+    this.legacyEAS = new Base<EASLegacyContract>(new EASLegacyFactory(), address, signer);
   }
 
   // Connects the API to a specific signer
@@ -75,12 +86,20 @@ export class EAS extends Base<EASContract> {
 
     super.connect(signer);
 
+    if (this.legacyEAS) {
+      this.legacyEAS.connect(signer);
+    }
+
     return this;
   }
 
   // Returns the version of the contract
   public async getVersion(): Promise<string> {
-    return (await legacyVersion(this.contract)) ?? this.contract.version();
+    if (this.version) {
+      return this.version;
+    }
+
+    return (this.version = (await legacyVersion(this.contract)) ?? (await this.contract.version()));
   }
 
   // Returns an existing schema by attestation UID
@@ -173,27 +192,49 @@ export class EAS extends Base<EASContract> {
         value = 0n
       },
       signature,
-      attester
+      attester,
+      deadline = NO_EXPIRATION
     }: DelegatedAttestationRequest,
     overrides?: Overrides
   ): Promise<Transaction<string>> {
-    const tx = await this.contract.attestByDelegation(
-      {
-        schema,
-        data: {
-          recipient,
-          expirationTime,
-          revocable,
-          refUID,
-          data,
-          value
+    let tx: ContractTransactionResponse;
+
+    if (await this.isLegacyContract()) {
+      tx = await this.legacyEAS.contract.attestByDelegation(
+        {
+          schema,
+          data: {
+            recipient,
+            expirationTime,
+            revocable,
+            refUID,
+            data,
+            value
+          },
+          signature,
+          attester
         },
-        signature,
-        attester
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any,
-      { value, ...overrides }
-    );
+        { value, ...overrides }
+      );
+    } else {
+      tx = await this.contract.attestByDelegation(
+        {
+          schema,
+          data: {
+            recipient,
+            expirationTime,
+            revocable,
+            refUID,
+            data,
+            value
+          },
+          signature,
+          attester,
+          deadline
+        },
+        { value, ...overrides }
+      );
+    }
 
     // eslint-disable-next-line require-await
     return new Transaction(tx, async (receipt: TransactionReceipt) => getUIDsFromAttestReceipt(receipt)[0]);
@@ -232,30 +273,58 @@ export class EAS extends Base<EASContract> {
     requests: MultiDelegatedAttestationRequest[],
     overrides?: Overrides
   ): Promise<Transaction<string[]>> {
-    const multiAttestationRequests = requests.map((r) => ({
-      schema: r.schema,
-      data: r.data.map((d) => ({
-        recipient: d.recipient ?? ZERO_ADDRESS,
-        expirationTime: d.expirationTime ?? NO_EXPIRATION,
-        revocable: d.revocable ?? true,
-        refUID: d.refUID ?? ZERO_BYTES32,
-        data: d.data ?? ZERO_BYTES32,
-        value: d.value ?? 0n
-      })),
-      signatures: r.signatures,
-      attester: r.attester,
-      deadline: r.deadline ?? NO_EXPIRATION
-    }));
+    let tx: ContractTransactionResponse;
 
-    const requestedValue = multiAttestationRequests.reduce((res, { data }) => {
-      const total = data.reduce((res, r) => res + r.value, 0n);
-      return res + total;
-    }, 0n);
+    if (await this.isLegacyContract()) {
+      const multiAttestationRequests = requests.map((r) => ({
+        schema: r.schema,
+        data: r.data.map((d) => ({
+          recipient: d.recipient ?? ZERO_ADDRESS,
+          expirationTime: d.expirationTime ?? NO_EXPIRATION,
+          revocable: d.revocable ?? true,
+          refUID: d.refUID ?? ZERO_BYTES32,
+          data: d.data ?? ZERO_BYTES32,
+          value: d.value ?? 0n
+        })),
+        signatures: r.signatures,
+        attester: r.attester
+      }));
 
-    const tx = await this.contract.multiAttestByDelegation(multiAttestationRequests, {
-      value: requestedValue,
-      ...overrides
-    });
+      const requestedValue = multiAttestationRequests.reduce((res, { data }) => {
+        const total = data.reduce((res, r) => res + r.value, 0n);
+        return res + total;
+      }, 0n);
+
+      tx = await this.legacyEAS.contract.multiAttestByDelegation(multiAttestationRequests, {
+        value: requestedValue,
+        ...overrides
+      });
+    } else {
+      const multiAttestationRequests = requests.map((r) => ({
+        schema: r.schema,
+        data: r.data.map((d) => ({
+          recipient: d.recipient ?? ZERO_ADDRESS,
+          expirationTime: d.expirationTime ?? NO_EXPIRATION,
+          revocable: d.revocable ?? true,
+          refUID: d.refUID ?? ZERO_BYTES32,
+          data: d.data ?? ZERO_BYTES32,
+          value: d.value ?? 0n
+        })),
+        signatures: r.signatures,
+        attester: r.attester,
+        deadline: r.deadline ?? NO_EXPIRATION
+      }));
+
+      const requestedValue = multiAttestationRequests.reduce((res, { data }) => {
+        const total = data.reduce((res, r) => res + r.value, 0n);
+        return res + total;
+      }, 0n);
+
+      tx = await this.contract.multiAttestByDelegation(multiAttestationRequests, {
+        value: requestedValue,
+        ...overrides
+      });
+    }
 
     // eslint-disable-next-line require-await
     return new Transaction(tx, async (receipt: TransactionReceipt) => getUIDsFromAttestReceipt(receipt));
@@ -276,19 +345,36 @@ export class EAS extends Base<EASContract> {
     { schema, data: { uid, value = 0n }, signature, revoker, deadline = NO_EXPIRATION }: DelegatedRevocationRequest,
     overrides?: Overrides
   ): Promise<Transaction<void>> {
-    const tx = await this.contract.revokeByDelegation(
-      {
-        schema,
-        data: {
-          uid,
-          value
+    let tx: ContractTransactionResponse;
+
+    if (await this.isLegacyContract()) {
+      tx = await this.legacyEAS.contract.revokeByDelegation(
+        {
+          schema,
+          data: {
+            uid,
+            value
+          },
+          signature,
+          revoker
         },
-        signature,
-        revoker,
-        deadline
-      },
-      { value, ...overrides }
-    );
+        { value, ...overrides }
+      );
+    } else {
+      tx = await this.contract.revokeByDelegation(
+        {
+          schema,
+          data: {
+            uid,
+            value
+          },
+          signature,
+          revoker,
+          deadline
+        },
+        { value, ...overrides }
+      );
+    }
 
     return new Transaction(tx, async () => {});
   }
@@ -321,26 +407,50 @@ export class EAS extends Base<EASContract> {
     requests: MultiDelegatedRevocationRequest[],
     overrides?: Overrides
   ): Promise<Transaction<void>> {
-    const multiRevocationRequests = requests.map((r) => ({
-      schema: r.schema,
-      data: r.data.map((d) => ({
-        uid: d.uid,
-        value: d.value ?? 0n
-      })),
-      signatures: r.signatures,
-      revoker: r.revoker,
-      deadline: r.deadline ?? NO_EXPIRATION
-    }));
+    let tx: ContractTransactionResponse;
 
-    const requestedValue = multiRevocationRequests.reduce((res, { data }) => {
-      const total = data.reduce((res, r) => res + r.value, 0n);
-      return res + total;
-    }, 0n);
+    if (await this.isLegacyContract()) {
+      const multiRevocationRequests = requests.map((r) => ({
+        schema: r.schema,
+        data: r.data.map((d) => ({
+          uid: d.uid,
+          value: d.value ?? 0n
+        })),
+        signatures: r.signatures,
+        revoker: r.revoker
+      }));
 
-    const tx = await this.contract.multiRevokeByDelegation(multiRevocationRequests, {
-      value: requestedValue,
-      ...overrides
-    });
+      const requestedValue = multiRevocationRequests.reduce((res, { data }) => {
+        const total = data.reduce((res, r) => res + r.value, 0n);
+        return res + total;
+      }, 0n);
+
+      tx = await this.legacyEAS.contract.multiRevokeByDelegation(multiRevocationRequests, {
+        value: requestedValue,
+        ...overrides
+      });
+    } else {
+      const multiRevocationRequests = requests.map((r) => ({
+        schema: r.schema,
+        data: r.data.map((d) => ({
+          uid: d.uid,
+          value: d.value ?? 0n
+        })),
+        signatures: r.signatures,
+        revoker: r.revoker,
+        deadline: r.deadline ?? NO_EXPIRATION
+      }));
+
+      const requestedValue = multiRevocationRequests.reduce((res, { data }) => {
+        const total = data.reduce((res, r) => res + r.value, 0n);
+        return res + total;
+      }, 0n);
+
+      tx = await this.contract.multiRevokeByDelegation(multiRevocationRequests, {
+        value: requestedValue,
+        ...overrides
+      });
+    }
 
     return new Transaction(tx, async () => {});
   }
@@ -474,5 +584,9 @@ export class EAS extends Base<EASContract> {
     );
 
     return this.offchain;
+  }
+
+  private async isLegacyContract() {
+    return semver.lte(await this.getVersion(), LEGACY_VERSION);
   }
 }

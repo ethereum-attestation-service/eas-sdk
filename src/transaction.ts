@@ -37,12 +37,14 @@ export class Transaction<T> {
 
 export class Base<C extends BaseContract> {
   public contract: C;
+  protected signer?: TransactionSigner;
 
   constructor(factory: ContractFactory, address: string, signer?: TransactionSigner) {
     this.contract = factory.attach(address) as C;
-
     if (signer) {
       this.connect(signer);
+
+      this.signer = signer;
     }
   }
 
@@ -50,7 +52,7 @@ export class Base<C extends BaseContract> {
   public connect(signer: TransactionSigner) {
     this.contract = this.contract.connect(signer as unknown as ContractRunner) as C;
 
-    this.connect(signer);
+    this.signer = signer;
 
     return this;
   }
