@@ -906,170 +906,168 @@ describe('EAS API', () => {
         });
       });
 
-      if (signatureTypes.includes(SignatureType.Delegated)) {
-        describe('delegated attestation handling/verification', () => {
-          let delegated: Delegated;
+      describe('delegated attestation handling/verification', () => {
+        let delegated: Delegated;
 
-          const schema = 'bool like';
-          const schemaId = getSchemaUID(schema, ZERO_ADDRESS, true);
+        const schema = 'bool like';
+        const schemaId = getSchemaUID(schema, ZERO_ADDRESS, true);
 
-          beforeEach(async () => {
-            await schemaRegistry.register({ schema, resolverAddress: ZERO_ADDRESS, revocable: false });
-          });
+        beforeEach(async () => {
+          await schemaRegistry.register({ schema, resolverAddress: ZERO_ADDRESS, revocable: false });
+        });
 
-          beforeEach(async () => {
-            delegated = await eas.getDelegated();
-          });
+        beforeEach(async () => {
+          delegated = await eas.getDelegated();
+        });
 
-          describe('verification', () => {
-            describe('attestation', () => {
-              it('should throw on offchain verification of invalid attestations', async () => {
-                const senderAddress = await sender.getAddress();
-                const params = {
-                  schema: schemaId,
-                  recipient: await recipient.getAddress(),
-                  expirationTime: NO_EXPIRATION,
-                  revocable: false,
-                  refUID: ZERO_BYTES32,
-                  data: ZERO_BYTES,
-                  value: 0n,
-                  nonce: await eas.getNonce(senderAddress),
-                  deadline: NO_EXPIRATION
-                };
+        describe('verification', () => {
+          describe('attestation', () => {
+            it('should throw on offchain verification of invalid attestations', async () => {
+              const senderAddress = await sender.getAddress();
+              const params = {
+                schema: schemaId,
+                recipient: await recipient.getAddress(),
+                expirationTime: NO_EXPIRATION,
+                revocable: false,
+                refUID: ZERO_BYTES32,
+                data: ZERO_BYTES,
+                value: 0n,
+                nonce: await eas.getNonce(senderAddress),
+                deadline: NO_EXPIRATION
+              };
 
-                const response = await delegated.signDelegatedAttestation(params, sender);
+              const response = await delegated.signDelegatedAttestation(params, sender);
 
-                // Invalid attester
-                expect(() => delegated.verifyDelegatedAttestationSignature(ZERO_ADDRESS, response)).to.throw(
-                  InvalidAddress
-                );
+              // Invalid attester
+              expect(() => delegated.verifyDelegatedAttestationSignature(ZERO_ADDRESS, response)).to.throw(
+                InvalidAddress
+              );
 
-                // Invalid domains
-                const { domain } = response;
+              // Invalid domains
+              const { domain } = response;
 
-                await expect(() =>
-                  delegated.verifyDelegatedAttestationSignature(senderAddress, {
-                    ...response,
-                    ...{ domain: { ...domain, chainId: domain.chainId + 100n } }
-                  })
-                ).to.throw(InvalidDomain);
+              await expect(() =>
+                delegated.verifyDelegatedAttestationSignature(senderAddress, {
+                  ...response,
+                  ...{ domain: { ...domain, chainId: domain.chainId + 100n } }
+                })
+              ).to.throw(InvalidDomain);
 
-                await expect(() =>
-                  delegated.verifyDelegatedAttestationSignature(senderAddress, {
-                    ...response,
-                    ...{ domain: { ...domain, name: `BAD${domain.name}BAD` } }
-                  })
-                ).to.throw(InvalidDomain);
+              await expect(() =>
+                delegated.verifyDelegatedAttestationSignature(senderAddress, {
+                  ...response,
+                  ...{ domain: { ...domain, name: `BAD${domain.name}BAD` } }
+                })
+              ).to.throw(InvalidDomain);
 
-                await expect(() =>
-                  delegated.verifyDelegatedAttestationSignature(senderAddress, {
-                    ...response,
-                    ...{ domain: { ...domain, verifyingContract: ZERO_ADDRESS } }
-                  })
-                ).to.throw(InvalidDomain);
+              await expect(() =>
+                delegated.verifyDelegatedAttestationSignature(senderAddress, {
+                  ...response,
+                  ...{ domain: { ...domain, verifyingContract: ZERO_ADDRESS } }
+                })
+              ).to.throw(InvalidDomain);
 
-                await expect(() =>
-                  delegated.verifyDelegatedAttestationSignature(senderAddress, {
-                    ...response,
-                    ...{ domain: { ...domain, version: '9999.9999.9999' } }
-                  })
-                ).to.throw(InvalidDomain);
+              await expect(() =>
+                delegated.verifyDelegatedAttestationSignature(senderAddress, {
+                  ...response,
+                  ...{ domain: { ...domain, version: '9999.9999.9999' } }
+                })
+              ).to.throw(InvalidDomain);
 
-                // Invalid types
-                await expect(() =>
-                  delegated.verifyDelegatedAttestationSignature(senderAddress, {
-                    ...response,
-                    ...{
-                      types: { [response.primaryType]: [{ name: 'schema', type: 'bytes32' }] }
-                    }
-                  })
-                ).to.throw(InvalidTypes);
+              // Invalid types
+              await expect(() =>
+                delegated.verifyDelegatedAttestationSignature(senderAddress, {
+                  ...response,
+                  ...{
+                    types: { [response.primaryType]: [{ name: 'schema', type: 'bytes32' }] }
+                  }
+                })
+              ).to.throw(InvalidTypes);
 
-                await expect(() =>
-                  delegated.verifyDelegatedAttestationSignature(senderAddress, {
-                    ...response,
-                    ...{
-                      types: { BAD: response.types.values }
-                    }
-                  })
-                ).to.throw(InvalidTypes);
-              });
+              await expect(() =>
+                delegated.verifyDelegatedAttestationSignature(senderAddress, {
+                  ...response,
+                  ...{
+                    types: { BAD: response.types.values }
+                  }
+                })
+              ).to.throw(InvalidTypes);
             });
+          });
 
-            describe('revocation', () => {
-              it('should throw on offchain verification of invalid revocations', async () => {
-                const senderAddress = await sender.getAddress();
-                const params = {
-                  schema: schemaId,
-                  uid: encodeBytes32String('123'),
-                  value: 0n,
-                  nonce: await eas.getNonce(senderAddress),
-                  deadline: NO_EXPIRATION
-                };
+          describe('revocation', () => {
+            it('should throw on offchain verification of invalid revocations', async () => {
+              const senderAddress = await sender.getAddress();
+              const params = {
+                schema: schemaId,
+                uid: encodeBytes32String('123'),
+                value: 0n,
+                nonce: await eas.getNonce(senderAddress),
+                deadline: NO_EXPIRATION
+              };
 
-                const response = await delegated.signDelegatedRevocation(params, sender);
+              const response = await delegated.signDelegatedRevocation(params, sender);
 
-                // Invalid attester
-                expect(() => delegated.verifyDelegatedRevocationSignature(ZERO_ADDRESS, response)).to.throw(
-                  InvalidAddress
-                );
+              // Invalid attester
+              expect(() => delegated.verifyDelegatedRevocationSignature(ZERO_ADDRESS, response)).to.throw(
+                InvalidAddress
+              );
 
-                // Invalid domains
-                const { domain } = response;
+              // Invalid domains
+              const { domain } = response;
 
-                await expect(() =>
-                  delegated.verifyDelegatedRevocationSignature(senderAddress, {
-                    ...response,
-                    ...{ domain: { ...domain, chainId: domain.chainId + 100n } }
-                  })
-                ).to.throw(InvalidDomain);
+              await expect(() =>
+                delegated.verifyDelegatedRevocationSignature(senderAddress, {
+                  ...response,
+                  ...{ domain: { ...domain, chainId: domain.chainId + 100n } }
+                })
+              ).to.throw(InvalidDomain);
 
-                await expect(() =>
-                  delegated.verifyDelegatedRevocationSignature(senderAddress, {
-                    ...response,
-                    ...{ domain: { ...domain, name: `BAD${domain.name}BAD` } }
-                  })
-                ).to.throw(InvalidDomain);
+              await expect(() =>
+                delegated.verifyDelegatedRevocationSignature(senderAddress, {
+                  ...response,
+                  ...{ domain: { ...domain, name: `BAD${domain.name}BAD` } }
+                })
+              ).to.throw(InvalidDomain);
 
-                await expect(() =>
-                  delegated.verifyDelegatedRevocationSignature(senderAddress, {
-                    ...response,
-                    ...{ domain: { ...domain, verifyingContract: ZERO_ADDRESS } }
-                  })
-                ).to.throw(InvalidDomain);
+              await expect(() =>
+                delegated.verifyDelegatedRevocationSignature(senderAddress, {
+                  ...response,
+                  ...{ domain: { ...domain, verifyingContract: ZERO_ADDRESS } }
+                })
+              ).to.throw(InvalidDomain);
 
-                await expect(() =>
-                  delegated.verifyDelegatedRevocationSignature(senderAddress, {
-                    ...response,
-                    ...{ domain: { ...domain, version: '9999.9999.9999' } }
-                  })
-                ).to.throw(InvalidDomain);
+              await expect(() =>
+                delegated.verifyDelegatedRevocationSignature(senderAddress, {
+                  ...response,
+                  ...{ domain: { ...domain, version: '9999.9999.9999' } }
+                })
+              ).to.throw(InvalidDomain);
 
-                // Invalid types
-                await expect(() =>
-                  delegated.verifyDelegatedRevocationSignature(senderAddress, {
-                    ...response,
-                    ...{
-                      types: { [response.primaryType]: [{ name: 'schema', type: 'bytes32' }] }
-                    }
-                  })
-                ).to.throw(InvalidTypes);
+              // Invalid types
+              await expect(() =>
+                delegated.verifyDelegatedRevocationSignature(senderAddress, {
+                  ...response,
+                  ...{
+                    types: { [response.primaryType]: [{ name: 'schema', type: 'bytes32' }] }
+                  }
+                })
+              ).to.throw(InvalidTypes);
 
-                await expect(() =>
-                  delegated.verifyDelegatedRevocationSignature(senderAddress, {
-                    ...response,
-                    ...{
-                      types: { BAD: response.types.values }
-                    }
-                  })
-                ).to.throw(InvalidTypes);
-              });
+              await expect(() =>
+                delegated.verifyDelegatedRevocationSignature(senderAddress, {
+                  ...response,
+                  ...{
+                    types: { BAD: response.types.values }
+                  }
+                })
+              ).to.throw(InvalidTypes);
             });
           });
         });
-      }
+      });
 
-      if (signatureTypes.includes(SignatureType.DelegatedProxy)) {
+      if (version !== EASVersion.Legacy) {
         describe('delegated proxy attestation handling/verification', () => {
           let delegatedProxy: DelegatedProxy;
 
