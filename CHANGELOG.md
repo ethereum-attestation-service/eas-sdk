@@ -5,6 +5,7 @@
 - Automatically derive the EIP712 version via the domain separator
 - Improve delegated attestation backward compatibility
 - Don't require the signer/provider to have the `getAddress` method
+- Allow offchain verification with refUID
 
 ## 2.0.1-beta.1
 
