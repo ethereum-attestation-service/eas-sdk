@@ -22,16 +22,6 @@ export interface TypeDataSigner extends Addressable {
   ): Promise<string>;
 }
 
-export interface PartialTypedDataConfig {
-  address: string;
-  version: string;
-  chainId: bigint;
-}
-
-export interface TypedDataConfig extends PartialTypedDataConfig {
-  name: string;
-}
-
 export interface DomainTypedData {
   chainId: bigint;
   name: string;
@@ -104,6 +94,13 @@ export class InvalidPrimaryType extends Error {}
 export class InvalidTypes extends Error {}
 export class InvalidAddress extends Error {}
 
+export interface TypedDataConfig {
+  address: string;
+  version: string;
+  chainId: bigint;
+  name: string;
+}
+
 export abstract class TypedDataHandler {
   public config: TypedDataConfig;
 
@@ -112,15 +109,19 @@ export abstract class TypedDataHandler {
   }
 
   public getDomainSeparator() {
+    return TypedDataHandler.getDomainSeparator(this.config);
+  }
+
+  public static getDomainSeparator(config: TypedDataConfig) {
     return keccak256(
       AbiCoder.defaultAbiCoder().encode(
         ['bytes32', 'bytes32', 'bytes32', 'uint256', 'address'],
         [
           keccak256(toUtf8Bytes(EIP712_DOMAIN)),
-          keccak256(toUtf8Bytes(this.config.name)),
-          keccak256(toUtf8Bytes(this.config.version)),
-          this.config.chainId,
-          this.config.address
+          keccak256(toUtf8Bytes(config.name)),
+          keccak256(toUtf8Bytes(config.version)),
+          config.chainId,
+          config.address
         ]
       )
     );

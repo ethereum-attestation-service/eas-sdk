@@ -4,6 +4,7 @@ import { EIP712Proxy } from './eip712-proxy';
 import { Delegated, Offchain } from './offchain';
 import { AttestationRequest, DelegatedAttestationRequest, DelegatedProxyAttestationRequest, DelegatedProxyRevocationRequest, DelegatedRevocationRequest, MultiAttestationRequest, MultiDelegatedAttestationRequest, MultiDelegatedProxyAttestationRequest, MultiDelegatedProxyRevocationRequest, MultiDelegatedRevocationRequest, MultiRevocationRequest, RevocationRequest } from './request';
 import { Base, Transaction, TransactionSigner } from './transaction';
+export { Overrides } from 'ethers';
 export * from './request';
 export interface Attestation {
     uid: string;
@@ -25,6 +26,8 @@ export declare class EAS extends Base<EASContract> {
     private proxy?;
     private delegated?;
     private offchain?;
+    private version?;
+    private legacyEAS;
     constructor(address: string, options?: EASOptions);
     connect(signer: TransactionSigner): this;
     getVersion(): Promise<string>;
@@ -58,4 +61,5 @@ export declare class EAS extends Base<EASContract> {
     getRevokeTypeHash(): Promise<string>;
     private setDelegated;
     private setOffchain;
+    private isLegacyContract;
 }

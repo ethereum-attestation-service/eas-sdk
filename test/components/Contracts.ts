@@ -1,12 +1,13 @@
 import {
-  EAS__factory,
-  EIP712Proxy__factory,
-  Indexer__factory,
-  SchemaRegistry__factory
+  EAS__factory as EASFactory,
+  EIP712Proxy__factory as EIP712ProxyFactory,
+  Indexer__factory as IndexerFactory,
+  SchemaRegistry__factory as SchemaRegistryFactory
 } from '@ethereum-attestation-service/eas-contracts';
+import { EAS__factory as EASLegacyFactory } from '@ethereum-attestation-service/eas-contracts-legacy';
 import { ContractFactory, Signer } from 'ethers';
 import { ethers } from 'hardhat';
-import { ETHResolver__factory } from '../typechain-types';
+import { ETHResolver__factory as ETHResolverFactory } from '../typechain-types';
 
 export * from '../typechain-types';
 
@@ -14,8 +15,8 @@ export * from '../typechain-types';
 type AsyncReturnType<T extends (...args: never) => any> = T extends (...args: any) => Promise<infer U>
   ? U
   : T extends (...args: any) => infer U
-  ? U
-  : any;
+    ? U
+    : any;
 /* eslint-enable @typescript-eslint/no-explicit-any */
 
 type Contract<F extends ContractFactory> = AsyncReturnType<F['deploy']>;
@@ -70,12 +71,13 @@ export const attachOnly = <F extends ContractFactory>(
 const getContracts = (signer?: Signer) => ({
   connect: (signer: Signer) => getContracts(signer),
 
-  EAS: deployOrAttach('EAS', EAS__factory, signer),
-  SchemaRegistry: deployOrAttach('SchemaRegistry', SchemaRegistry__factory, signer),
-  EIP712Proxy: deployOrAttach('EIP712Proxy', EIP712Proxy__factory, signer),
-  Indexer: deployOrAttach('Indexer', Indexer__factory, signer),
+  EAS: deployOrAttach('EAS', EASFactory, signer),
+  SchemaRegistry: deployOrAttach('SchemaRegistry', SchemaRegistryFactory, signer),
+  EIP712Proxy: deployOrAttach('EIP712Proxy', EIP712ProxyFactory, signer),
+  Indexer: deployOrAttach('Indexer', IndexerFactory, signer),
 
-  ETHResolver: deployOrAttach('ETHResolver', ETHResolver__factory, signer)
+  EASLegacy: deployOrAttach('EAS', EASLegacyFactory, signer),
+  ETHResolver: deployOrAttach('ETHResolver', ETHResolverFactory, signer)
 });
 /* eslint-enable camelcase */
 

@@ -2,14 +2,6 @@ import { Addressable, TypedDataDomain, TypedDataField } from 'ethers';
 export interface TypeDataSigner extends Addressable {
     signTypedData(domain: TypedDataDomain, types: Record<string, Array<TypedDataField>>, value: Record<string, any>): Promise<string>;
 }
-export interface PartialTypedDataConfig {
-    address: string;
-    version: string;
-    chainId: bigint;
-}
-export interface TypedDataConfig extends PartialTypedDataConfig {
-    name: string;
-}
 export interface DomainTypedData {
     chainId: bigint;
     name: string;
@@ -62,10 +54,17 @@ export declare class InvalidTypes extends Error {
 }
 export declare class InvalidAddress extends Error {
 }
+export interface TypedDataConfig {
+    address: string;
+    version: string;
+    chainId: bigint;
+    name: string;
+}
 export declare abstract class TypedDataHandler {
     config: TypedDataConfig;
     constructor(config: TypedDataConfig);
     getDomainSeparator(): string;
+    static getDomainSeparator(config: TypedDataConfig): string;
     getDomainTypedData(): DomainTypedData;
     signTypedDataRequest<T extends EIP712MessageTypes, P extends EIP712Params>(params: P, types: EIP712TypedData<T, P>, signer: TypeDataSigner): Promise<EIP712Response<T, P>>;
     verifyTypedDataRequestSignature<T extends EIP712MessageTypes, P extends EIP712Params>(attester: string, response: EIP712Response<T, P>, types: EIP712Types<T>, strict?: boolean): boolean;

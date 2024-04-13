@@ -3,8 +3,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Offchain = exports.SALT_SIZE = exports.OFFCHAIN_ATTESTATION_TYPES = exports.OffchainAttestationVersion = void 0;
 const ethers_1 = require("ethers");
 const utils_1 = require("../utils");
-const delegated_1 = require("./delegated");
 const typed_data_handler_1 = require("./typed-data-handler");
+const versions_1 = require("./versions");
 var OffchainAttestationVersion;
 (function (OffchainAttestationVersion) {
     OffchainAttestationVersion[OffchainAttestationVersion["Legacy"] = 0] = "Legacy";
@@ -110,7 +110,7 @@ class Offchain extends typed_data_handler_1.TypedDataHandler {
         if (version > OffchainAttestationVersion.Version2) {
             throw new Error('Unsupported version');
         }
-        super({ ...config, name: delegated_1.EIP712_NAME });
+        super({ ...config, name: versions_1.EIP712_NAME });
         this.version = version;
         this.verificationTypes = exports.OFFCHAIN_ATTESTATION_TYPES[this.version];
         this.signingType = this.verificationTypes[0];

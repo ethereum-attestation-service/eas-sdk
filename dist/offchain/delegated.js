@@ -1,17 +1,17 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Delegated = exports.DelegatedAttestationVersion = exports.EIP712_NAME = void 0;
+exports.Delegated = void 0;
 const tslib_1 = require("tslib");
 const omit_1 = tslib_1.__importDefault(require("lodash/omit"));
 const semver_1 = tslib_1.__importDefault(require("semver"));
 const typed_data_handler_1 = require("./typed-data-handler");
-exports.EIP712_NAME = 'EAS';
+const versions_1 = require("./versions");
 var DelegatedAttestationVersion;
 (function (DelegatedAttestationVersion) {
     DelegatedAttestationVersion[DelegatedAttestationVersion["Legacy"] = 0] = "Legacy";
     DelegatedAttestationVersion[DelegatedAttestationVersion["Version1"] = 1] = "Version1";
     DelegatedAttestationVersion[DelegatedAttestationVersion["Version2"] = 2] = "Version2";
-})(DelegatedAttestationVersion || (exports.DelegatedAttestationVersion = DelegatedAttestationVersion = {}));
+})(DelegatedAttestationVersion || (DelegatedAttestationVersion = {}));
 const DELEGATED_ATTESTATION_TYPES = {
     [DelegatedAttestationVersion.Legacy]: {
         typedSignature: 'Attest(bytes32 schema,address recipient,uint64 expirationTime,bool revocable,bytes32 refUID,bytes data,uint256 nonce)',
@@ -109,11 +109,34 @@ class Delegated extends typed_data_handler_1.TypedDataHandler {
     attestType;
     revokeType;
     constructor(config) {
-        super({ ...config, name: exports.EIP712_NAME });
-        if (semver_1.default.lt(config.version, '1.2.0')) {
+        let { version } = config;
+        if (!version) {
+            const { domainSeparator } = config;
+            if (!domainSeparator) {
+                throw new Error('Neither EIP712 version or domain separator were provided');
+            }
+            // If only the domain separator was provided, let's try to deduce the version accordingly.
+            for (const eip712Version of versions_1.EIP712_VERSIONS) {
+                if (domainSeparator ===
+                    typed_data_handler_1.TypedDataHandler.getDomainSeparator({
+                        address: config.address,
+                        name: versions_1.EIP712_NAME,
+                        version: eip712Version,
+                        chainId: config.chainId
+                    })) {
+                    version = eip712Version;
+                    break;
+                }
+            }
+            if (!version) {
+                throw new Error(`Unable to find version for domain separator: ${domainSeparator}`);
+            }
+        }
+        super({ ...config, version, name: versions_1.EIP712_NAME });
+        if (semver_1.default.lt(version, '1.2.0')) {
             this.version = DelegatedAttestationVersion.Legacy;
         }
-        else if (semver_1.default.lt(config.version, '1.3.0')) {
+        else if (semver_1.default.lt(version, '1.3.0')) {
             this.version = DelegatedAttestationVersion.Version1;
         }
         else {
@@ -127,9 +150,10 @@ class Delegated extends typed_data_handler_1.TypedDataHandler {
             attester: await signer.getAddress(),
             ...params
         };
-        if (this.version === DelegatedAttestationVersion.Legacy) {
-            // Committing to a value or to a deadline isn't supported for legacy attestations, therefore they will be ignored
-            effectiveParams = (0, omit_1.default)(params, ['value', 'deadline']);
+        switch (this.version) {
+            case DelegatedAttestationVersion.Legacy:
+                effectiveParams = (0, omit_1.default)(params, ['value', 'deadline']);
+                break;
         }
         return this.signTypedDataRequest(effectiveParams, {
             domain: this.getDomainTypedData(),
@@ -149,9 +173,10 @@ class Delegated extends typed_data_handler_1.TypedDataHandler {
             revoker: await signer.getAddress(),
             ...params
         };
-        if (this.version === DelegatedAttestationVersion.Legacy) {
-            // Committing to a value or to a deadline isn't supported for legacy revocations, therefore they will be ignored
-            effectiveParams = (0, omit_1.default)(params, ['value', 'deadline']);
+        switch (this.version) {
+            case DelegatedAttestationVersion.Legacy:
+                effectiveParams = (0, omit_1.default)(params, ['value', 'deadline']);
+                break;
         }
         return this.signTypedDataRequest(effectiveParams, {
             domain: this.getDomainTypedData(),
