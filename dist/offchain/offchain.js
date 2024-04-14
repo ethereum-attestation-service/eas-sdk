@@ -150,7 +150,10 @@ class Offchain extends typed_data_handler_1.TypedDataHandler {
                 const { schema, recipient, expirationTime, revocable, data } = params;
                 // Verify the offchain attestation onchain by simulating a contract call to attest. Since onchain verification
                 // makes sure that any referenced attestations exist, we will set refUID to ZERO_BYTES32.
-                await this.eas.contract.attest.staticCall({ schema, data: { recipient, expirationTime, revocable, refUID: utils_1.ZERO_BYTES32, data, value: 0 } }, { from: signer });
+                await this.eas.contract.attest.staticCall({
+                    schema,
+                    data: { recipient, expirationTime, revocable, refUID: params.refUID || utils_1.ZERO_BYTES32, data, value: 0 }
+                }, { from: signer });
             }
             catch (e) {
                 throw new Error(`Unable to verify offchain attestation with: ${e}`);

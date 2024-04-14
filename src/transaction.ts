@@ -1,5 +1,4 @@
 import {
-  Addressable,
   BaseContract,
   ContractFactory,
   ContractRunner,
@@ -8,7 +7,7 @@ import {
   TransactionRequest
 } from 'ethers';
 
-export interface TransactionSigner extends Addressable {
+export interface TransactionSigner {
   estimateGas: (tx: TransactionRequest) => Promise<bigint>;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   sendTransaction: (tx: TransactionRequest) => Promise<any>;
