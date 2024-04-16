@@ -1,11 +1,8 @@
 import { EAS as EASContract, EAS__factory as EASFactory } from '@ethereum-attestation-service/eas-contracts';
-import {
-  EAS as EASLegacyContract,
-  EAS__factory as EASLegacyFactory
-} from '@ethereum-attestation-service/eas-contracts-legacy';
 import { ContractTransaction, Overrides, TransactionReceipt } from 'ethers';
 import semver from 'semver';
 import { EIP712Proxy } from './eip712-proxy';
+import { EAS as EASLegacyContract, EAS__factory as EASLegacyFactory } from './legacy/typechain';
 import { legacyVersion } from './legacy/version';
 import { Delegated, Offchain, OffchainAttestationVersion } from './offchain';
 import {

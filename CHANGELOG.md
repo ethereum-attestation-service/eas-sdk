@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.1.2-beta.1
+
+- Avoid using @ethereum-attestation-service/eas-contracts-legacy in production
+
 ## 2.1.1-beta.1
 
 - Automatically derive the EIP712 version via the domain separator

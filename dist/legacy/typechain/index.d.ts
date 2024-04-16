@@ -1,0 +1,5 @@
+import type * as contracts from "./contracts";
+export type { contracts };
+export * as factories from "./factories";
+export type { EAS } from "./contracts/EAS";
+export { EAS__factory } from "./factories/contracts/EAS__factory";
