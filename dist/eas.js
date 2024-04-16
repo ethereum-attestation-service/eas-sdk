@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.EAS = void 0;
 const tslib_1 = require("tslib");
 const eas_contracts_1 = require("@ethereum-attestation-service/eas-contracts");
-const eas_contracts_legacy_1 = require("@ethereum-attestation-service/eas-contracts-legacy");
+const typechain_1 = require("./legacy/typechain");
 const semver_1 = tslib_1.__importDefault(require("semver"));
 const version_1 = require("./legacy/version");
 const offchain_1 = require("./offchain");
@@ -28,7 +28,7 @@ class EAS extends transaction_1.Base {
         if (proxy) {
             this.proxy = proxy;
         }
-        this.legacyEAS = new transaction_1.Base(new eas_contracts_legacy_1.EAS__factory(), address, signer);
+        this.legacyEAS = new transaction_1.Base(new typechain_1.EAS__factory(), address, signer);
     }
     // Connects the API to a specific signer
     connect(signer) {

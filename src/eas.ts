@@ -2,7 +2,7 @@ import { EAS as EASContract, EAS__factory as EASFactory } from '@ethereum-attest
 import {
   EAS as EASLegacyContract,
   EAS__factory as EASLegacyFactory
-} from '@ethereum-attestation-service/eas-contracts-legacy';
+} from './legacy/typechain';
 import { ContractTransactionResponse, Overrides, TransactionReceipt } from 'ethers';
 import semver from 'semver';
 import { EIP712Proxy } from './eip712-proxy';
