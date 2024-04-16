@@ -292,22 +292,22 @@ describe('SchemaEncoder', () => {
         inputs: [
           {
             in: [
-              { type: 'uint8', name: 'voteIndex', value: 123 },
+              { type: 'uint8', name: 'voteIndex', value: '123' },
               {
                 type: '(string,uint8)[]',
                 name: 'map',
-                value: [{ key: 'voter1', value: 1 }]
+                value: [{ key: 'voter1', value: 1n }]
               }
             ],
             out: [
-              { type: 'uint8', name: 'voteIndex', value: 123 },
+              { type: 'uint8', name: 'voteIndex', value: '123' },
               {
                 type: '(string,uint8)[]',
                 name: 'map',
                 value: [
                   [
                     { name: 'key', type: 'string', value: 'voter1' },
-                    { name: 'value', type: 'uint8', value: 1 }
+                    { name: 'value', type: 'uint8', value: 1n }
                   ]
                 ]
               }
@@ -320,9 +320,9 @@ describe('SchemaEncoder', () => {
                 type: '(string,uint8)[]',
                 name: 'map',
                 value: [
-                  { key: 'voter1', value: 1 },
-                  { key: 'voter2', value: 2 },
-                  { key: 'voter3', value: 3 }
+                  { key: 'voter1', value: 1n },
+                  { key: 'voter2', value: 2n },
+                  { key: 'voter3', value: 3n }
                 ]
               }
             ],
@@ -334,15 +334,15 @@ describe('SchemaEncoder', () => {
                 value: [
                   [
                     { name: 'key', type: 'string', value: 'voter1' },
-                    { name: 'value', type: 'uint8', value: 1 }
+                    { name: 'value', type: 'uint8', value: 1n }
                   ],
                   [
                     { name: 'key', type: 'string', value: 'voter2' },
-                    { name: 'value', type: 'uint8', value: 2 }
+                    { name: 'value', type: 'uint8', value: 2n }
                   ],
                   [
                     { name: 'key', type: 'string', value: 'voter3' },
-                    { name: 'value', type: 'uint8', value: 3 }
+                    { name: 'value', type: 'uint8', value: 3n }
                   ]
                 ]
               }
@@ -355,9 +355,9 @@ describe('SchemaEncoder', () => {
                 type: '(string,uint8)[]',
                 name: 'map',
                 value: [
-                  ['voter1', 10],
-                  ['voter2', 20],
-                  ['voter3', 30]
+                  ['voter1', 10n],
+                  ['voter2', 20n],
+                  ['voter3', 30n]
                 ]
               }
             ],
@@ -369,15 +369,15 @@ describe('SchemaEncoder', () => {
                 value: [
                   [
                     { name: 'key', type: 'string', value: 'voter1' },
-                    { name: 'value', type: 'uint8', value: 10 }
+                    { name: 'value', type: 'uint8', value: 10n }
                   ],
                   [
                     { name: 'key', type: 'string', value: 'voter2' },
-                    { name: 'value', type: 'uint8', value: 20 }
+                    { name: 'value', type: 'uint8', value: 20n }
                   ],
                   [
                     { name: 'key', type: 'string', value: 'voter3' },
-                    { name: 'value', type: 'uint8', value: 30 }
+                    { name: 'value', type: 'uint8', value: 30n }
                   ]
                 ]
               }

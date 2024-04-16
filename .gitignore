@@ -1,19 +1,20 @@
-# Dependencies.
+# Dependencies
 /node_modules
 /.pnp
 .pnp.js
 
-# Testing.
+# Testing
 /coverage
+.hardhat-dependency-compiler
 
-# Production.
+# Production
 /build
 
-# Ignore all .env files.
+# Ignore all .env files
 .env*
 !.env
 !.env.template
 
-# Misc.
+# Misc
 .DS_Store
 .vscode/
