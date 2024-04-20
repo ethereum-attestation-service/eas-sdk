@@ -276,7 +276,7 @@ await transaction.wait();
 To verify an offchain attestation, you can use the `verifyOffchainAttestationSignature` function provided by the EAS SDK. Here's an example:
 
 ```javascript
-import { OffchainAttestationVersion, Offchain, PartialTypedDataConfig } from "@ethereum-attestation-service/eas-sdk";
+import { OffchainAttestationVersion, Offchain, OffchainConfig } from "@ethereum-attestation-service/eas-sdk";
 
 const attestation = {
   // your offchain attestation
@@ -312,7 +312,7 @@ const attestation = {
   signer: "0x1e3de6aE412cA218FD2ae3379750388D414532dc",
 };
 
-const EAS_CONFIG: PartialTypedDataConfig = {
+const EAS_CONFIG: OffchainConfig = {
   address: attestation.sig.domain.verifyingContract,
   version: attestation.sig.domain.version,
   chainId: attestation.sig.domain.chainId,
