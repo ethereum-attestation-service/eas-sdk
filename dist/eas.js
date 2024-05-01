@@ -433,7 +433,12 @@ class EAS extends transaction_1.Base {
         return this.offchain;
     }
     async isLegacyContract() {
-        return semver_1.default.lte(await this.getVersion(), LEGACY_VERSION);
+        const version = await this.getVersion();
+        const fullVersion = semver_1.default.coerce(version);
+        if (!fullVersion) {
+            throw new Error(`Invalid version: ${version}`);
+        }
+        return semver_1.default.lte(fullVersion, LEGACY_VERSION);
     }
 }
 exports.EAS = EAS;

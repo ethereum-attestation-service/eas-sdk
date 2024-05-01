@@ -658,6 +658,11 @@ export class EAS extends Base<EASContract> {
   }
 
   private async isLegacyContract() {
-    return semver.lte(await this.getVersion(), LEGACY_VERSION);
+    const version = await this.getVersion();
+    const fullVersion = semver.coerce(version);
+    if (!fullVersion) {
+      throw new Error(`Invalid version: ${version}`);
+    }
+    return semver.lte(fullVersion, LEGACY_VERSION);
   }
 }

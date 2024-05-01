@@ -1,6 +1,6 @@
 # Changelog
 
-## 2.1.3
+## 2.1.4
 
 - Support legacy versions by coercing them to full semver
 
