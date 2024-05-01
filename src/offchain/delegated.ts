@@ -190,9 +190,13 @@ export class Delegated extends TypedDataHandler {
 
     super({ ...config, version, name: EIP712_NAME });
 
-    if (semver.lt(version, '1.2.0')) {
+    const fullVersion = semver.coerce(version);
+    if (!fullVersion) {
+      throw new Error(`Invalid version: ${version}`);
+    }
+    if (semver.lt(fullVersion, '1.2.0')) {
       this.version = DelegatedAttestationVersion.Legacy;
-    } else if (semver.lt(version, '1.3.0')) {
+    } else if (semver.lt(fullVersion, '1.3.0')) {
       this.version = DelegatedAttestationVersion.Version1;
     } else {
       this.version = DelegatedAttestationVersion.Version2;

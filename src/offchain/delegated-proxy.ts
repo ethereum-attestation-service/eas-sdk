@@ -145,9 +145,14 @@ export class DelegatedProxy extends TypedDataHandler {
   constructor(config: TypedDataConfig) {
     super(config);
 
-    if (semver.lt(config.version, '1.2.0')) {
+    const fullVersion = semver.coerce(config.version);
+    if (!fullVersion) {
+      throw new Error(`Invalid version: ${config.version}`);
+    }
+
+    if (semver.lt(fullVersion, '1.2.0')) {
       this.version = DelegatedProxyAttestationVersion.Legacy;
-    } else if (semver.lt(config.version, '1.3.0')) {
+    } else if (semver.lt(fullVersion, '1.3.0')) {
       this.version = DelegatedProxyAttestationVersion.Version1;
     } else {
       this.version = DelegatedProxyAttestationVersion.Version2;

@@ -133,10 +133,14 @@ class Delegated extends typed_data_handler_1.TypedDataHandler {
             }
         }
         super({ ...config, version, name: versions_1.EIP712_NAME });
-        if (semver_1.default.lt(version, '1.2.0')) {
+        const fullVersion = semver_1.default.coerce(version);
+        if (!fullVersion) {
+            throw new Error(`Invalid version: ${version}`);
+        }
+        if (semver_1.default.lt(fullVersion, '1.2.0')) {
             this.version = DelegatedAttestationVersion.Legacy;
         }
-        else if (semver_1.default.lt(version, '1.3.0')) {
+        else if (semver_1.default.lt(fullVersion, '1.3.0')) {
             this.version = DelegatedAttestationVersion.Version1;
         }
         else {

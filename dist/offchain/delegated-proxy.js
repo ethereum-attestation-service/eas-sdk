@@ -105,10 +105,14 @@ class DelegatedProxy extends typed_data_handler_1.TypedDataHandler {
     revokeType;
     constructor(config) {
         super(config);
-        if (semver_1.default.lt(config.version, '1.2.0')) {
+        const fullVersion = semver_1.default.coerce(config.version);
+        if (!fullVersion) {
+            throw new Error(`Invalid version: ${config.version}`);
+        }
+        if (semver_1.default.lt(fullVersion, '1.2.0')) {
             this.version = DelegatedProxyAttestationVersion.Legacy;
         }
-        else if (semver_1.default.lt(config.version, '1.3.0')) {
+        else if (semver_1.default.lt(fullVersion, '1.3.0')) {
             this.version = DelegatedProxyAttestationVersion.Version1;
         }
         else {
