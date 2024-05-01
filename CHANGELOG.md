@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.1.3
+
+- Support legacy versions by coercing them to full semver
+
 ## 2.1.2
 
 - Avoid using @ethereum-attestation-service/eas-contracts-legacy in production
