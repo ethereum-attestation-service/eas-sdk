@@ -7,6 +7,7 @@ export interface TransactionSigner {
 }
 export declare class Transaction<T> {
     readonly data: ContractTransaction;
+    receipt?: TransactionReceipt;
     private readonly signer;
     private readonly waitCallback;
     constructor(data: ContractTransaction, signer: TransactionSigner, waitCallback: (receipt: TransactionReceipt) => Promise<T>);

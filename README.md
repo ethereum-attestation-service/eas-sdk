@@ -144,6 +144,8 @@ const tx = await eas.attest({
 const newAttestationUID = await tx.wait();
 
 console.log("New attestation UID:", newAttestationUID);
+
+console.log("Transaction receipt:", tx.receipt);
 ```
 
 ### Creating Offchain Attestations
