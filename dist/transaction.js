@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Base = exports.Transaction = void 0;
 class Transaction {
     data;
+    receipt;
     signer;
     waitCallback;
     constructor(data, signer, waitCallback) {
@@ -11,12 +12,15 @@ class Transaction {
         this.waitCallback = waitCallback;
     }
     async wait(confirmations) {
+        if (this.receipt) {
+            throw new Error(`Transaction already broadcast: ${this.receipt}`);
+        }
         const tx = await this.signer.sendTransaction(this.data);
-        const receipt = await tx.wait(confirmations);
-        if (!receipt) {
+        this.receipt = await tx.wait(confirmations);
+        if (!this.receipt) {
             throw new Error(`Unable to confirm: ${tx}`);
         }
-        return this.waitCallback(receipt);
+        return this.waitCallback(this.receipt);
     }
 }
 exports.Transaction = Transaction;

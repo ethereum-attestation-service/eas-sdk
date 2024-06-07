@@ -17,6 +17,7 @@ export interface TransactionSigner {
 
 export class Transaction<T> {
   public readonly data: ContractTransaction;
+  public receipt?: TransactionReceipt;
   private readonly signer: TransactionSigner;
   private readonly waitCallback: (receipt: TransactionReceipt) => Promise<T>;
 
@@ -31,13 +32,17 @@ export class Transaction<T> {
   }
 
   public async wait(confirmations?: number): Promise<T> {
+    if (this.receipt) {
+      throw new Error(`Transaction already broadcast: ${this.receipt}`);
+    }
+
     const tx = await this.signer.sendTransaction(this.data);
-    const receipt = await tx.wait(confirmations);
-    if (!receipt) {
+    this.receipt = await tx.wait(confirmations);
+    if (!this.receipt) {
       throw new Error(`Unable to confirm: ${tx}`);
     }
 
-    return this.waitCallback(receipt);
+    return this.waitCallback(this.receipt);
   }
 }
 

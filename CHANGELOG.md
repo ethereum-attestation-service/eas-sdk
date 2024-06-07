@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.2.0
+
+- Add a method to receive the tx receipt to the Transaction object
+
 ## 2.1.4
 
 - Support legacy versions by coercing them to full semver
