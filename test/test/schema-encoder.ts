@@ -474,6 +474,45 @@ describe('SchemaEncoder', () => {
             ]
           }
         ]
+      },
+      {
+        schema: '(uint256 badgeId,uint256 level)[] badges',
+        types: ['(uint256 badgeId,uint256 level)[]'],
+        inputs: [
+          {
+            in: [
+              {
+                type: '(uint256,uint256)[]',
+                name: 'badges',
+                value: [
+                  { badgeId: 1n, level: 10n },
+                  { badgeId: 2n, level: 20n },
+                  { badgeId: 3n, level: 30n }
+                ]
+              }
+            ],
+            out: [
+              {
+                type: '(uint256,uint256)[]',
+                name: 'badges',
+                value: [
+                  [
+                    { name: 'badgeId', type: 'uint256', value: 1n },
+                    { name: 'level', type: 'uint256', value: 10n }
+                  ],
+                  [
+                    { name: 'badgeId', type: 'uint256', value: 2n },
+                    { name: 'level', type: 'uint256', value: 20n }
+                  ],
+                  [
+                    { name: 'badgeId', type: 'uint256', value: 3n },
+                    { name: 'level', type: 'uint256', value: 30n }
+                  ]
+                ]
+              }
+            ]
+          }
+        ]
       }
     ]) {
       for (const params of inputs) {
