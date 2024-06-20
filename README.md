@@ -213,11 +213,11 @@ import { EAS } from "@ethereum-attestation-service/eas-sdk";
 const eas = new EAS(EASContractAddress);
 eas.connect(provider);
 
-const data = ethers.encodeBytes32String('0x1234');
+const uid = "0x6776de8122c352b4d671003e58ca112aedb99f34c629a1d1fe3b332504e2943a";
 
-const transaction = await eas.timestamp(data);
+const transaction = await eas.timestamp(uid);
 
-// Optional: Wait for transaction to be validated
+// Optional: Wait for the transaction to be validated
 await transaction.wait();
 ```
 
@@ -229,10 +229,12 @@ import { EAS } from "@ethereum-attestation-service/eas-sdk";
 const eas = new EAS(EASContractAddress);
 eas.connect(provider);
 
-const data1 = ethers.encodeBytes32String('0x3e23b395b2bd2d37dd0f6e4148ac6b9e7ed22f2215107958f95cc1489e4e6289');
-const data2 = ethers.encodeBytes32String('0x6776de8122c352b4d671003e58ca112aedb99f34c629a1d1fe3b332504e2943a');
+const uids = [
+  "0x6776de8122c352b4d671003e58ca112aedb99f34c629a1d1fe3b332504e2943a",
+  "0x3e23b395b2bd2d37dd0f6e4148ac6b9e7ed22f2215107958f95cc1489e4e6289"
+];
 
-const transaction = await eas.multiTimestamp([data1, data2]);
+const transaction = await eas.multiTimestamp(uids);
 
 // Optional: Wait for transaction to be validated
 await transaction.wait();
