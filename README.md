@@ -205,7 +205,23 @@ await transaction.wait();
 
 ### Creating Timestamps
 
-To create a timestamp for a single piece of data, you can use the `timestamp` function provided by the EAS SDK. Here's an example:
+To timestamp an off-chain attestation UID on-chain, you can use the timestamp function provided by the EAS SDK. Here's an example:
+
+```javascript
+import { EAS } from "@ethereum-attestation-service/eas-sdk";
+
+const eas = new EAS(EASContractAddress);
+eas.connect(provider);
+
+const uid = "0x6776de8122c352b4d671003e58ca112aedb99f34c629a1d1fe3b332504e2943a";
+
+const transaction = await eas.timestamp(uid);
+
+// Optional: Wait for the transaction to be validated
+await transaction.wait();
+```
+
+To create a timestamp for a any piece of data, you can use the `timestamp` function provided by the EAS SDK. Here's an example:
 
 ```javascript
 import { EAS } from "@ethereum-attestation-service/eas-sdk";
