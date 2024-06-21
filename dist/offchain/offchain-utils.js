@@ -47,7 +47,7 @@ const compactOffchainAttestationPackage = (pkg) => {
         sig.message.refUID === ethers_1.ZeroHash ? '0' : sig.message.refUID,
         sig.message.revocable,
         sig.message.data,
-        Number(sig.message.nonce),
+        0,
         sig.message.version,
         sig.message.salt
     ];
@@ -141,7 +141,6 @@ const uncompactOffchainAttestationPackage = (compacted) => {
                 refUID: compacted[12] === '0' ? ethers_1.ZeroHash : compacted[12],
                 revocable: compacted[13],
                 data: compacted[14],
-                nonce: BigInt(compacted[15]),
                 salt: compacted[17]
             }
         },
@@ -153,7 +152,7 @@ const isSignedOffchainAttestationV1 = (attestation) => {
     return 'v' in attestation && 'r' in attestation && 's' in attestation;
 };
 exports.isSignedOffchainAttestationV1 = isSignedOffchainAttestationV1;
-function convertV1AttestationToV2(attestation) {
+const convertV1AttestationToV2 = (attestation) => {
     const { v, r, s, ...rest } = attestation;
     return {
         ...rest,
@@ -164,5 +163,5 @@ function convertV1AttestationToV2(attestation) {
             s
         }
     };
-}
+};
 //# sourceMappingURL=offchain-utils.js.map

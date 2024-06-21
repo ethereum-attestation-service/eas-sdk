@@ -1,7 +1,6 @@
-import { AbiCoder, hexlify, keccak256, randomBytes, Signer, toUtf8Bytes } from 'ethers';
+import { AbiCoder, hexlify, keccak256, randomBytes, toUtf8Bytes } from 'ethers';
 import { EAS } from '../eas';
 import { getOffchainUID, ZERO_BYTES32 } from '../utils';
-import { EIP712_NAME } from './delegated';
 import {
   DomainTypedData,
   EIP712MessageTypes,
@@ -10,11 +9,12 @@ import {
   EIP712Types,
   InvalidPrimaryType,
   InvalidTypes,
-  PartialTypedDataConfig,
+  TypeDataSigner,
   TypedDataHandler
 } from './typed-data-handler';
+import { EIP712_NAME } from './versions';
 
-export { EIP712Request, PartialTypedDataConfig, EIP712MessageTypes } from './typed-data-handler';
+export { EIP712Request, EIP712MessageTypes } from './typed-data-handler';
 
 export interface OffchainAttestationType extends EIP712Types<EIP712MessageTypes> {
   domain: string;
@@ -142,13 +142,19 @@ export interface SignedOffchainAttestation extends EIP712Response<EIP712MessageT
 
 export const SALT_SIZE = 32;
 
+export interface OffchainConfig {
+  address: string;
+  version: string;
+  chainId: bigint;
+}
+
 export class Offchain extends TypedDataHandler {
   public readonly version: OffchainAttestationVersion;
   protected signingType: OffchainAttestationType;
   protected readonly verificationTypes: OffchainAttestationType[];
   private readonly eas: EAS;
 
-  constructor(config: PartialTypedDataConfig, version: OffchainAttestationVersion, eas: EAS) {
+  constructor(config: OffchainConfig, version: OffchainAttestationVersion, eas: EAS) {
     if (version > OffchainAttestationVersion.Version2) {
       throw new Error('Unsupported version');
     }
@@ -187,7 +193,7 @@ export class Offchain extends TypedDataHandler {
 
   public async signOffchainAttestation(
     params: OffchainAttestationParams,
-    signer: Signer,
+    signer: TypeDataSigner,
     options?: OffchainAttestationOptions
   ): Promise<SignedOffchainAttestation> {
     const typedData = { version: this.version, ...params };
@@ -216,7 +222,10 @@ export class Offchain extends TypedDataHandler {
         // Verify the offchain attestation onchain by simulating a contract call to attest. Since onchain verification
         // makes sure that any referenced attestations exist, we will set refUID to ZERO_BYTES32.
         await this.eas.contract.attest.staticCall(
-          { schema, data: { recipient, expirationTime, revocable, refUID: ZERO_BYTES32, data, value: 0 } },
+          {
+            schema,
+            data: { recipient, expirationTime, revocable, refUID: params.refUID || ZERO_BYTES32, data, value: 0 }
+          },
           { from: signer }
         );
       } catch (e: unknown) {

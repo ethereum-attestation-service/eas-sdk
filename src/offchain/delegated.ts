@@ -1,4 +1,3 @@
-import { Signer } from 'ethers';
 import omit from 'lodash/omit';
 import semver from 'semver';
 import {
@@ -6,22 +5,14 @@ import {
   EIP712Params,
   EIP712Response,
   EIP712Types,
-  PartialTypedDataConfig,
+  TypeDataSigner,
   TypedDataHandler
 } from './typed-data-handler';
+import { EIP712_NAME, EIP712_VERSIONS } from './versions';
 
-export {
-  EIP712MessageTypes,
-  EIP712TypedData,
-  EIP712Request,
-  EIP712Response,
-  PartialTypedDataConfig,
-  Signature
-} from './typed-data-handler';
+export { EIP712MessageTypes, EIP712TypedData, EIP712Request, EIP712Response, Signature } from './typed-data-handler';
 
-export const EIP712_NAME = 'EAS';
-
-export enum DelegatedAttestationVersion {
+enum DelegatedAttestationVersion {
   Legacy = 0,
   Version1 = 1,
   Version2 = 2
@@ -154,17 +145,58 @@ interface EIP712FullRevocationParams extends EIP712RevocationParams {
   revoker: string;
 }
 
+interface DelegatedConfig {
+  address: string;
+  chainId: bigint;
+  version?: string;
+  domainSeparator?: string;
+}
+
 export class Delegated extends TypedDataHandler {
   public readonly version: DelegatedAttestationVersion;
   private readonly attestType: DelegatedAttestationType;
   private readonly revokeType: DelegatedAttestationType;
 
-  constructor(config: PartialTypedDataConfig) {
-    super({ ...config, name: EIP712_NAME });
+  constructor(config: DelegatedConfig) {
+    let { version } = config;
+    if (!version) {
+      const { domainSeparator } = config;
 
-    if (semver.lt(config.version, '1.2.0')) {
+      if (!domainSeparator) {
+        throw new Error('Neither EIP712 version or domain separator were provided');
+      }
+
+      // If only the domain separator was provided, let's try to deduce the version accordingly.
+      for (const eip712Version of EIP712_VERSIONS) {
+        if (
+          domainSeparator ===
+          TypedDataHandler.getDomainSeparator({
+            address: config.address,
+            name: EIP712_NAME,
+            version: eip712Version,
+            chainId: config.chainId
+          })
+        ) {
+          version = eip712Version;
+
+          break;
+        }
+      }
+
+      if (!version) {
+        throw new Error(`Unable to find version for domain separator: ${domainSeparator}`);
+      }
+    }
+
+    super({ ...config, version, name: EIP712_NAME });
+
+    const fullVersion = semver.coerce(version);
+    if (!fullVersion) {
+      throw new Error(`Invalid version: ${version}`);
+    }
+    if (semver.lt(fullVersion, '1.2.0')) {
       this.version = DelegatedAttestationVersion.Legacy;
-    } else if (semver.lt(config.version, '1.3.0')) {
+    } else if (semver.lt(fullVersion, '1.3.0')) {
       this.version = DelegatedAttestationVersion.Version1;
     } else {
       this.version = DelegatedAttestationVersion.Version2;
@@ -176,16 +208,18 @@ export class Delegated extends TypedDataHandler {
 
   public async signDelegatedAttestation(
     params: EIP712AttestationParams,
-    signer: Signer
+    signer: TypeDataSigner
   ): Promise<EIP712Response<EIP712MessageTypes, EIP712AttestationParams>> {
     let effectiveParams: EIP712FullAttestationParams = {
       attester: await signer.getAddress(),
       ...params
     };
 
-    if (this.version === DelegatedAttestationVersion.Legacy) {
-      // Committing to a value or to a deadline isn't supported for legacy attestations, therefore they will be ignored
-      effectiveParams = omit(params, ['value', 'deadline']) as EIP712FullAttestationParams;
+    switch (this.version) {
+      case DelegatedAttestationVersion.Legacy:
+        effectiveParams = omit(params, ['value', 'deadline']) as EIP712FullAttestationParams;
+
+        break;
     }
 
     return this.signTypedDataRequest<EIP712MessageTypes, EIP712FullAttestationParams>(
@@ -216,16 +250,18 @@ export class Delegated extends TypedDataHandler {
 
   public async signDelegatedRevocation(
     params: EIP712RevocationParams,
-    signer: Signer
+    signer: TypeDataSigner
   ): Promise<EIP712Response<EIP712MessageTypes, EIP712RevocationParams>> {
     let effectiveParams: EIP712FullRevocationParams = {
       revoker: await signer.getAddress(),
       ...params
     };
 
-    if (this.version === DelegatedAttestationVersion.Legacy) {
-      // Committing to a value or to a deadline isn't supported for legacy revocations, therefore they will be ignored
-      effectiveParams = omit(params, ['value', 'deadline']) as EIP712FullRevocationParams;
+    switch (this.version) {
+      case DelegatedAttestationVersion.Legacy:
+        effectiveParams = omit(params, ['value', 'deadline']) as EIP712FullRevocationParams;
+
+        break;
     }
 
     return this.signTypedDataRequest<EIP712MessageTypes, EIP712RevocationParams>(

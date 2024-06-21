@@ -36,7 +36,9 @@ const config: HardhatUserConfig = {
   dependencyCompiler: {
     paths: [
       '@ethereum-attestation-service/eas-contracts/contracts/EAS.sol',
-      '@ethereum-attestation-service/eas-contracts/contracts/SchemaRegistry.sol'
+      '@ethereum-attestation-service/eas-contracts/contracts/SchemaRegistry.sol',
+      '@ethereum-attestation-service/eas-contracts-legacy/contracts/EAS.sol',
+      '@ethereum-attestation-service/eas-contracts-legacy/contracts/SchemaRegistry.sol'
     ]
   },
 

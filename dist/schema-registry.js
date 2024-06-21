@@ -7,8 +7,8 @@ const transaction_1 = require("./transaction");
 const utils_1 = require("./utils");
 class SchemaRegistry extends transaction_1.Base {
     constructor(address, options) {
-        const { signerOrProvider } = options || {};
-        super(new eas_contracts_1.SchemaRegistry__factory(), address, signerOrProvider);
+        const { signer } = options || {};
+        super(new eas_contracts_1.SchemaRegistry__factory(), address, signer);
     }
     // Returns the version of the contract
     async getVersion() {
@@ -16,9 +16,12 @@ class SchemaRegistry extends transaction_1.Base {
     }
     // Registers a new schema and returns its UID
     async register({ schema, resolverAddress = utils_1.ZERO_ADDRESS, revocable = true }, overrides) {
-        const tx = await this.contract.register(schema, resolverAddress, revocable, overrides ?? {});
+        if (!this.signer) {
+            throw new Error('Invalid signer');
+        }
+        return new transaction_1.Transaction(await this.contract.register.populateTransaction(schema, resolverAddress, revocable, overrides ?? {}), this.signer, 
         // eslint-disable-next-line require-await
-        return new transaction_1.Transaction(tx, async (_receipt) => (0, utils_1.getSchemaUID)(schema, resolverAddress, revocable));
+        async (_receipt) => (0, utils_1.getSchemaUID)(schema, resolverAddress, revocable));
     }
     // Returns an existing schema by a schema UID
     async getSchema({ uid }) {

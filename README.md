@@ -144,6 +144,8 @@ const tx = await eas.attest({
 const newAttestationUID = await tx.wait();
 
 console.log("New attestation UID:", newAttestationUID);
+
+console.log("Transaction receipt:", tx.receipt);
 ```
 
 ### Creating Offchain Attestations
@@ -172,12 +174,9 @@ const signer = new ethers.Wallet(privateKey, provider);
 
 const offchainAttestation = await offchain.signOffchainAttestation({
   recipient: '0xFD50b031E778fAb33DfD2Fc3Ca66a1EeF0652165',
-  // Unix timestamp of when attestation expires. (0 for no expiration)
-  expirationTime: 0n,
-  // Unix timestamp of current time
-  time: BigInt(Math.floor(Date.now() / 1000)),
+  expirationTime: 0n, // Unix timestamp of when attestation expires. (0 for no expiration)
+  time: BigInt(Math.floor(Date.now() / 1000)), // Unix timestamp of current time
   revocable: true, // Be aware that if your schema is not revocable, this MUST be false
-  nonce: 0n, // This variable is optional
   schema: "0xb16fa048b0d597f5a821747eba64efa4762ee5143e9a80600d0005386edfc995",
   refUID: '0x0000000000000000000000000000000000000000000000000000000000000000',
   data: encodedData,
@@ -206,7 +205,23 @@ await transaction.wait();
 
 ### Creating Timestamps
 
-To create a timestamp for a single piece of data, you can use the `timestamp` function provided by the EAS SDK. Here's an example:
+To timestamp an off-chain attestation UID on-chain, you can use the timestamp function provided by the EAS SDK. Here's an example:
+
+```javascript
+import { EAS } from "@ethereum-attestation-service/eas-sdk";
+
+const eas = new EAS(EASContractAddress);
+eas.connect(provider);
+
+const uid = "0x6776de8122c352b4d671003e58ca112aedb99f34c629a1d1fe3b332504e2943a";
+
+const transaction = await eas.timestamp(uid);
+
+// Optional: Wait for the transaction to be validated
+await transaction.wait();
+```
+
+To create a timestamp for a any piece of data, you can use the `timestamp` function provided by the EAS SDK. Here's an example:
 
 ```javascript
 import { EAS } from "@ethereum-attestation-service/eas-sdk";
@@ -279,7 +294,7 @@ await transaction.wait();
 To verify an offchain attestation, you can use the `verifyOffchainAttestationSignature` function provided by the EAS SDK. Here's an example:
 
 ```javascript
-import { OffchainAttestationVersion, Offchain, PartialTypedDataConfig } from "@ethereum-attestation-service/eas-sdk";
+import { OffchainAttestationVersion, Offchain, OffchainConfig } from "@ethereum-attestation-service/eas-sdk";
 
 const attestation = {
   // your offchain attestation
@@ -315,7 +330,7 @@ const attestation = {
   signer: "0x1e3de6aE412cA218FD2ae3379750388D414532dc",
 };
 
-const EAS_CONFIG: PartialTypedDataConfig = {
+const EAS_CONFIG: OffchainConfig = {
   address: attestation.sig.domain.verifyingContract,
   version: attestation.sig.domain.version,
   chainId: attestation.sig.domain.chainId,

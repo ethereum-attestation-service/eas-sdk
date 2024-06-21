@@ -24,7 +24,7 @@ export type CompactAttestationShareablePackageObject = [
     refUID: string,
     revocable: boolean,
     data: string,
-    nonce: number,
+    reserved: number,
     offchainVersion?: number,
     salt?: string
 ];

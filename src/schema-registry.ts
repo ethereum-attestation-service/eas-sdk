@@ -4,7 +4,7 @@ import {
 } from '@ethereum-attestation-service/eas-contracts';
 import { Overrides, TransactionReceipt } from 'ethers';
 import { legacyVersion } from './legacy/version';
-import { Base, SignerOrProvider, Transaction } from './transaction';
+import { Base, Transaction, TransactionSigner } from './transaction';
 import { getSchemaUID, ZERO_ADDRESS, ZERO_BYTES32 } from './utils';
 
 export declare type SchemaRecord = {
@@ -25,14 +25,14 @@ export interface GetSchemaParams {
 }
 
 export interface SchemaRegistryOptions {
-  signerOrProvider?: SignerOrProvider;
+  signer?: TransactionSigner;
 }
 
 export class SchemaRegistry extends Base<SchemaRegistryContract> {
   constructor(address: string, options?: SchemaRegistryOptions) {
-    const { signerOrProvider } = options || {};
+    const { signer } = options || {};
 
-    super(new SchemaRegistry__factory(), address, signerOrProvider);
+    super(new SchemaRegistry__factory(), address, signer);
   }
 
   // Returns the version of the contract
@@ -45,11 +45,15 @@ export class SchemaRegistry extends Base<SchemaRegistryContract> {
     { schema, resolverAddress = ZERO_ADDRESS, revocable = true }: RegisterSchemaParams,
     overrides?: Overrides
   ): Promise<Transaction<string>> {
-    const tx = await this.contract.register(schema, resolverAddress, revocable, overrides ?? {});
+    if (!this.signer) {
+      throw new Error('Invalid signer');
+    }
 
-    // eslint-disable-next-line require-await
-    return new Transaction(tx, async (_receipt: TransactionReceipt) =>
-      getSchemaUID(schema, resolverAddress, revocable)
+    return new Transaction(
+      await this.contract.register.populateTransaction(schema, resolverAddress, revocable, overrides ?? {}),
+      this.signer,
+      // eslint-disable-next-line require-await
+      async (_receipt: TransactionReceipt) => getSchemaUID(schema, resolverAddress, revocable)
     );
   }
 

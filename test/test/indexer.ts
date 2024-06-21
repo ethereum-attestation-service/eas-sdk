@@ -32,9 +32,9 @@ describe('Indexer API', () => {
     registry = await Contracts.SchemaRegistry.deploy();
     easContract = await Contracts.EAS.deploy(await registry.getAddress());
 
-    eas = new EAS(await easContract.getAddress(), { signerOrProvider: sender });
+    eas = new EAS(await easContract.getAddress(), { signer: sender });
     indexerContract = await Contracts.Indexer.deploy(await easContract.getAddress());
-    indexer = new Indexer(await indexerContract.getAddress(), { signerOrProvider: sender });
+    indexer = new Indexer(await indexerContract.getAddress(), { signer: sender });
   });
 
   describe('construction', () => {
@@ -160,9 +160,11 @@ describe('Indexer API', () => {
           infos[uid] = info;
         }
 
-        uids.length === 1
-          ? await indexer.indexAttestation({ uid: uids[0] })
-          : await indexer.indexAttestations({ uids });
+        const tx =
+          uids.length === 1
+            ? await indexer.indexAttestation({ uid: uids[0] })
+            : await indexer.indexAttestations({ uids });
+        await tx.wait();
 
         for (const uid of uids) {
           const info = infos[uid];

@@ -2,32 +2,42 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Base = exports.Transaction = void 0;
 class Transaction {
-    tx;
+    data;
+    receipt;
+    signer;
     waitCallback;
-    constructor(tx, waitCallback) {
-        this.tx = tx;
+    constructor(data, signer, waitCallback) {
+        this.data = data;
+        this.signer = signer;
         this.waitCallback = waitCallback;
     }
     async wait(confirmations) {
-        const receipt = await this.tx.wait(confirmations);
-        if (!receipt) {
-            throw new Error(`Unable to confirm: ${this.tx}`);
+        if (this.receipt) {
+            throw new Error(`Transaction already broadcast: ${this.receipt}`);
         }
-        return this.waitCallback(receipt);
+        const tx = await this.signer.sendTransaction(this.data);
+        this.receipt = await tx.wait(confirmations);
+        if (!this.receipt) {
+            throw new Error(`Unable to confirm: ${tx}`);
+        }
+        return this.waitCallback(this.receipt);
     }
 }
 exports.Transaction = Transaction;
 class Base {
     contract;
-    constructor(factory, address, signerOrProvider) {
+    signer;
+    constructor(factory, address, signer) {
         this.contract = factory.attach(address);
-        if (signerOrProvider) {
-            this.connect(signerOrProvider);
+        if (signer) {
+            this.connect(signer);
+            this.signer = signer;
         }
     }
     // Connects the API to a specific signer
-    connect(signerOrProvider) {
-        this.contract = this.contract.connect(signerOrProvider);
+    connect(signer) {
+        this.contract = this.contract.connect(signer);
+        this.signer = signer;
         return this;
     }
     // Gets the chain ID

@@ -1,39 +1,69 @@
-import { BaseContract, ContractFactory, Provider, Signer, TransactionReceipt, TransactionResponse } from 'ethers';
+import {
+  BaseContract,
+  ContractFactory,
+  ContractRunner,
+  ContractTransaction,
+  TransactionReceipt,
+  TransactionRequest
+} from 'ethers';
 
-export declare type SignerOrProvider = Signer | Provider;
+export interface TransactionSigner {
+  estimateGas: (tx: TransactionRequest) => Promise<bigint>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  sendTransaction: (tx: TransactionRequest) => Promise<any>;
+  call: (tx: TransactionRequest) => Promise<string>;
+  resolveName: (name: string) => Promise<null | string>;
+}
 
 export class Transaction<T> {
-  public readonly tx: TransactionResponse;
+  public readonly data: ContractTransaction;
+  public receipt?: TransactionReceipt;
+  private readonly signer: TransactionSigner;
   private readonly waitCallback: (receipt: TransactionReceipt) => Promise<T>;
 
-  constructor(tx: TransactionResponse, waitCallback: (receipt: TransactionReceipt) => Promise<T>) {
-    this.tx = tx;
+  constructor(
+    data: ContractTransaction,
+    signer: TransactionSigner,
+    waitCallback: (receipt: TransactionReceipt) => Promise<T>
+  ) {
+    this.data = data;
+    this.signer = signer;
     this.waitCallback = waitCallback;
   }
 
   public async wait(confirmations?: number): Promise<T> {
-    const receipt = await this.tx.wait(confirmations);
-    if (!receipt) {
-      throw new Error(`Unable to confirm: ${this.tx}`);
+    if (this.receipt) {
+      throw new Error(`Transaction already broadcast: ${this.receipt}`);
     }
 
-    return this.waitCallback(receipt);
+    const tx = await this.signer.sendTransaction(this.data);
+    this.receipt = await tx.wait(confirmations);
+    if (!this.receipt) {
+      throw new Error(`Unable to confirm: ${tx}`);
+    }
+
+    return this.waitCallback(this.receipt);
   }
 }
 
 export class Base<C extends BaseContract> {
   public contract: C;
+  protected signer?: TransactionSigner;
 
-  constructor(factory: ContractFactory, address: string, signerOrProvider?: SignerOrProvider) {
+  constructor(factory: ContractFactory, address: string, signer?: TransactionSigner) {
     this.contract = factory.attach(address) as C;
-    if (signerOrProvider) {
-      this.connect(signerOrProvider);
+    if (signer) {
+      this.connect(signer);
+
+      this.signer = signer;
     }
   }
 
   // Connects the API to a specific signer
-  public connect(signerOrProvider: SignerOrProvider) {
-    this.contract = this.contract.connect(signerOrProvider) as C;
+  public connect(signer: TransactionSigner) {
+    this.contract = this.contract.connect(signer as unknown as ContractRunner) as C;
+
+    this.signer = signer;
 
     return this;
   }

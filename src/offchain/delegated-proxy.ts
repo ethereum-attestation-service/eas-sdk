@@ -1,4 +1,3 @@
-import { Signer } from 'ethers';
 import omit from 'lodash/omit';
 import semver from 'semver';
 import { EIP712AttestationParams, EIP712RevocationParams } from './delegated';
@@ -6,6 +5,7 @@ import {
   EIP712MessageTypes,
   EIP712Response,
   EIP712Types,
+  TypeDataSigner,
   TypedDataConfig,
   TypedDataHandler
 } from './typed-data-handler';
@@ -145,9 +145,14 @@ export class DelegatedProxy extends TypedDataHandler {
   constructor(config: TypedDataConfig) {
     super(config);
 
-    if (semver.lt(config.version, '1.2.0')) {
+    const fullVersion = semver.coerce(config.version);
+    if (!fullVersion) {
+      throw new Error(`Invalid version: ${config.version}`);
+    }
+
+    if (semver.lt(fullVersion, '1.2.0')) {
       this.version = DelegatedProxyAttestationVersion.Legacy;
-    } else if (semver.lt(config.version, '1.3.0')) {
+    } else if (semver.lt(fullVersion, '1.3.0')) {
       this.version = DelegatedProxyAttestationVersion.Version1;
     } else {
       this.version = DelegatedProxyAttestationVersion.Version2;
@@ -159,7 +164,7 @@ export class DelegatedProxy extends TypedDataHandler {
 
   public async signDelegatedProxyAttestation(
     params: EIP712AttestationProxyParams,
-    signer: Signer
+    signer: TypeDataSigner
   ): Promise<EIP712Response<EIP712MessageTypes, EIP712AttestationProxyParams>> {
     let effectiveParams: EIP712FullAttestationProxyParams = {
       attester: await signer.getAddress(),
@@ -199,7 +204,7 @@ export class DelegatedProxy extends TypedDataHandler {
 
   public async signDelegatedProxyRevocation(
     params: EIP712RevocationProxyParams,
-    signer: Signer
+    signer: TypeDataSigner
   ): Promise<EIP712Response<EIP712MessageTypes, EIP712RevocationProxyParams>> {
     let effectiveParams: EIP712FullRevocationProxyParams = {
       revoker: await signer.getAddress(),

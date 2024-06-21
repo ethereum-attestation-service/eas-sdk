@@ -1,24 +1,25 @@
 import {
   AbiCoder,
+  Addressable,
   getAddress,
   hexlify,
   keccak256,
   Signature as Sig,
-  Signer,
   toUtf8Bytes,
+  TypedDataDomain,
+  TypedDataField,
   verifyTypedData
 } from 'ethers';
 import isEqual from 'lodash/isEqual';
 import { ZERO_ADDRESS } from '../utils';
 
-export interface PartialTypedDataConfig {
-  address: string;
-  version: string;
-  chainId: bigint;
-}
-
-export interface TypedDataConfig extends PartialTypedDataConfig {
-  name: string;
+export interface TypeDataSigner extends Addressable {
+  signTypedData(
+    domain: TypedDataDomain,
+    types: Record<string, Array<TypedDataField>>,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    value: Record<string, any>
+  ): Promise<string>;
 }
 
 export interface DomainTypedData {
@@ -93,6 +94,13 @@ export class InvalidPrimaryType extends Error {}
 export class InvalidTypes extends Error {}
 export class InvalidAddress extends Error {}
 
+export interface TypedDataConfig {
+  address: string;
+  version: string;
+  chainId: bigint;
+  name: string;
+}
+
 export abstract class TypedDataHandler {
   public config: TypedDataConfig;
 
@@ -101,15 +109,19 @@ export abstract class TypedDataHandler {
   }
 
   public getDomainSeparator() {
+    return TypedDataHandler.getDomainSeparator(this.config);
+  }
+
+  public static getDomainSeparator(config: TypedDataConfig) {
     return keccak256(
       AbiCoder.defaultAbiCoder().encode(
         ['bytes32', 'bytes32', 'bytes32', 'uint256', 'address'],
         [
           keccak256(toUtf8Bytes(EIP712_DOMAIN)),
-          keccak256(toUtf8Bytes(this.config.name)),
-          keccak256(toUtf8Bytes(this.config.version)),
-          this.config.chainId,
-          this.config.address
+          keccak256(toUtf8Bytes(config.name)),
+          keccak256(toUtf8Bytes(config.version)),
+          config.chainId,
+          config.address
         ]
       )
     );
@@ -127,7 +139,7 @@ export abstract class TypedDataHandler {
   public async signTypedDataRequest<T extends EIP712MessageTypes, P extends EIP712Params>(
     params: P,
     types: EIP712TypedData<T, P>,
-    signer: Signer
+    signer: TypeDataSigner
   ): Promise<EIP712Response<T, P>> {
     const rawSignature = await signer.signTypedData(types.domain, types.types, params);
     const signature = Sig.from(rawSignature);

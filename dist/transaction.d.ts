@@ -1,14 +1,22 @@
-import { BaseContract, ContractFactory, Provider, Signer, TransactionReceipt, TransactionResponse } from 'ethers';
-export declare type SignerOrProvider = Signer | Provider;
+import { BaseContract, ContractFactory, ContractTransaction, TransactionReceipt, TransactionRequest } from 'ethers';
+export interface TransactionSigner {
+    estimateGas: (tx: TransactionRequest) => Promise<bigint>;
+    sendTransaction: (tx: TransactionRequest) => Promise<any>;
+    call: (tx: TransactionRequest) => Promise<string>;
+    resolveName: (name: string) => Promise<null | string>;
+}
 export declare class Transaction<T> {
-    readonly tx: TransactionResponse;
+    readonly data: ContractTransaction;
+    receipt?: TransactionReceipt;
+    private readonly signer;
     private readonly waitCallback;
-    constructor(tx: TransactionResponse, waitCallback: (receipt: TransactionReceipt) => Promise<T>);
+    constructor(data: ContractTransaction, signer: TransactionSigner, waitCallback: (receipt: TransactionReceipt) => Promise<T>);
     wait(confirmations?: number): Promise<T>;
 }
 export declare class Base<C extends BaseContract> {
     contract: C;
-    constructor(factory: ContractFactory, address: string, signerOrProvider?: SignerOrProvider);
-    connect(signerOrProvider: SignerOrProvider): this;
+    protected signer?: TransactionSigner;
+    constructor(factory: ContractFactory, address: string, signer?: TransactionSigner);
+    connect(signer: TransactionSigner): this;
     getChainId(): Promise<bigint>;
 }
