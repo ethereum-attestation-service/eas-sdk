@@ -1,5 +1,5 @@
-import { ethers } from "ethers";
-import { StandardMerkleTree } from "@openzeppelin/merkle-tree";
+import {ethers} from 'ethers';
+import {StandardMerkleTree} from '@openzeppelin/merkle-tree';
 
 export type FullMerkleDataTree = {
   root: string;
@@ -30,10 +30,10 @@ export type MerkleValueWithSalt = MerkleValue & { salt: string };
 export type EncodedMerkleValue = [string, string, string, string];
 
 const merkleValueAbiEncoding: EncodedMerkleValue = [
-  "string",
-  "string",
-  "bytes",
-  "bytes32",
+  'string',
+  'string',
+  'bytes',
+  'bytes32',
 ];
 
 export class PrivateData {
@@ -41,7 +41,7 @@ export class PrivateData {
   private values: MerkleValueWithSalt[];
 
   constructor(values: MerkleValue[] | MerkleValueWithSalt[]) {
-    if (values.some((v) => v.hasOwnProperty("salt"))) {
+    if (values.some((v) => Object.prototype.hasOwnProperty.call(v, 'salt'))) {
       this.values = values as MerkleValueWithSalt[];
     } else {
       this.values = values.map((v) => ({
