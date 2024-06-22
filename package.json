@@ -1,6 +1,6 @@
 {
   "name": "@ethereum-attestation-service/eas-sdk",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "description": "Ethereum Attestation Service - TypeScript/JavaScript SDK",
   "repository": "git@github.com:ethereum-attestation-service/eas-sdk.git",
   "author": "Leonid Beder <leonid@lbeder.com>",
@@ -15,7 +15,7 @@
     "test": "cd test && pnpm test",
     "lint": "eslint -c .eslintrc --ext .ts src test",
     "format": "prettier --check --write . --config .prettierrc",
-    "prepare:release": "pnpm lint && pnpm test && pnpm build"
+    "prepare:release": "pnpm lint && pnpm format && pnpm test && pnpm build"
   },
   "dependencies": {
     "@ethereum-attestation-service/eas-contracts": "1.4.1",
