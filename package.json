@@ -14,11 +14,12 @@
     "build": "rm -rf dist && tsc --build tsconfig.json",
     "test": "cd test && pnpm test",
     "lint": "eslint -c .eslintrc --ext .ts src test",
-    "format": "prettier --check --write src/**/*.ts test/test/**/*.ts  --config .prettierrc",
+    "format": "prettier --check --write . --config .prettierrc",
     "prepare:release": "pnpm lint && pnpm test && pnpm build"
   },
   "dependencies": {
     "@ethereum-attestation-service/eas-contracts": "1.4.1",
+    "@openzeppelin/merkle-tree": "^1.0.6",
     "ethers": "^6.11.1",
     "js-base64": "^3.7.7",
     "lodash": "^4.17.21",

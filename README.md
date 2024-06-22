@@ -31,18 +31,16 @@ pnpm add @ethereum-attestation-service/eas-sdk
 Import and initialize the library
 
 ```javascript
-import { EAS, Offchain, SchemaEncoder, SchemaRegistry } from "@ethereum-attestation-service/eas-sdk";
+import { EAS, Offchain, SchemaEncoder, SchemaRegistry } from '@ethereum-attestation-service/eas-sdk';
 import { ethers } from 'ethers';
 
-export const EASContractAddress = "0xC2679fBD37d54388Ce493F1DB75320D236e1815e"; // Sepolia v0.26
+export const EASContractAddress = '0xC2679fBD37d54388Ce493F1DB75320D236e1815e'; // Sepolia v0.26
 
 // Initialize the sdk with the address of the EAS Schema contract address
 const eas = new EAS(EASContractAddress);
 
 // Gets a default provider (in production use something else like infura/alchemy)
-const provider = ethers.getDefaultProvider(
-  "sepolia"
-);
+const provider = ethers.getDefaultProvider('sepolia');
 
 // Connects an ethers style provider/signingProvider to perform read/write functions.
 // MUST be a signer to do write operations!
@@ -56,12 +54,12 @@ The `getAttestation` function allows you to retrieve an on-chain attestation for
 #### Usage
 
 ```javascript
-import { EAS } from "@ethereum-attestation-service/eas-sdk";
+import { EAS } from '@ethereum-attestation-service/eas-sdk';
 
 const eas = new EAS(EASContractAddress);
 eas.connect(provider);
 
-const uid = "0xff08bbf3d3e6e0992fc70ab9b9370416be59e87897c3d42b20549901d2cccc3e";
+const uid = '0xff08bbf3d3e6e0992fc70ab9b9370416be59e87897c3d42b20549901d2cccc3e';
 
 const attestation = await eas.getAttestation(uid);
 
@@ -117,35 +115,35 @@ The function returns a Promise that resolves to the UID of the newly created att
 ### Example
 
 ```javascript
-import { EAS, SchemaEncoder } from "@ethereum-attestation-service/eas-sdk";
+import { EAS, SchemaEncoder } from '@ethereum-attestation-service/eas-sdk';
 
 const eas = new EAS(EASContractAddress);
 eas.connect(signer);
 
 // Initialize SchemaEncoder with the schema string
-const schemaEncoder = new SchemaEncoder("uint256 eventId, uint8 voteIndex");
+const schemaEncoder = new SchemaEncoder('uint256 eventId, uint8 voteIndex');
 const encodedData = schemaEncoder.encodeData([
-  { name: "eventId", value: 1, type: "uint256" },
-  { name: "voteIndex", value: 1, type: "uint8" },
+  { name: 'eventId', value: 1, type: 'uint256' },
+  { name: 'voteIndex', value: 1, type: 'uint8' }
 ]);
 
-const schemaUID = "0xb16fa048b0d597f5a821747eba64efa4762ee5143e9a80600d0005386edfc995";
+const schemaUID = '0xb16fa048b0d597f5a821747eba64efa4762ee5143e9a80600d0005386edfc995';
 
 const tx = await eas.attest({
   schema: schemaUID,
   data: {
-    recipient: "0xFD50b031E778fAb33DfD2Fc3Ca66a1EeF0652165",
+    recipient: '0xFD50b031E778fAb33DfD2Fc3Ca66a1EeF0652165',
     expirationTime: 0,
     revocable: true, // Be aware that if your schema is not revocable, this MUST be false
-    data: encodedData,
-  },
+    data: encodedData
+  }
 });
 
 const newAttestationUID = await tx.wait();
 
-console.log("New attestation UID:", newAttestationUID);
+console.log('New attestation UID:', newAttestationUID);
 
-console.log("Transaction receipt:", tx.receipt);
+console.log('Transaction receipt:', tx.receipt);
 ```
 
 ### Creating Offchain Attestations
@@ -153,7 +151,7 @@ console.log("Transaction receipt:", tx.receipt);
 To create an offchain attestation, you can use the `signOffchainAttestation` function provided by the Offchain class in the EAS SDK. Here's an example:
 
 ```javascript
-import { EAS, SchemaEncoder } from "@ethereum-attestation-service/eas-sdk";
+import { EAS, SchemaEncoder } from '@ethereum-attestation-service/eas-sdk';
 
 // Initialize EAS with the EAS contract address on whichever chain where your schema is defined
 const eas = new EAS(EASContractAddress);
@@ -163,24 +161,27 @@ const offchain = await eas.getOffchain();
 // Initialize SchemaEncoder with the schema string
 // Note these values are sample values and should be filled with actual values
 // Code samples can be found when viewing each schema on easscan.org
-const schemaEncoder = new SchemaEncoder("uint256 eventId, uint8 voteIndex");
+const schemaEncoder = new SchemaEncoder('uint256 eventId, uint8 voteIndex');
 const encodedData = schemaEncoder.encodeData([
-  { name: "eventId", value: 1, type: "uint256" },
-  { name: "voteIndex", value: 1, type: "uint8" },
+  { name: 'eventId', value: 1, type: 'uint256' },
+  { name: 'voteIndex', value: 1, type: 'uint8' }
 ]);
 
 // Signer is an ethers.js Signer instance
 const signer = new ethers.Wallet(privateKey, provider);
 
-const offchainAttestation = await offchain.signOffchainAttestation({
-  recipient: '0xFD50b031E778fAb33DfD2Fc3Ca66a1EeF0652165',
-  expirationTime: 0n, // Unix timestamp of when attestation expires. (0 for no expiration)
-  time: BigInt(Math.floor(Date.now() / 1000)), // Unix timestamp of current time
-  revocable: true, // Be aware that if your schema is not revocable, this MUST be false
-  schema: "0xb16fa048b0d597f5a821747eba64efa4762ee5143e9a80600d0005386edfc995",
-  refUID: '0x0000000000000000000000000000000000000000000000000000000000000000',
-  data: encodedData,
-}, signer);
+const offchainAttestation = await offchain.signOffchainAttestation(
+  {
+    recipient: '0xFD50b031E778fAb33DfD2Fc3Ca66a1EeF0652165',
+    expirationTime: 0n, // Unix timestamp of when attestation expires. (0 for no expiration)
+    time: BigInt(Math.floor(Date.now() / 1000)), // Unix timestamp of current time
+    revocable: true, // Be aware that if your schema is not revocable, this MUST be false
+    schema: '0xb16fa048b0d597f5a821747eba64efa4762ee5143e9a80600d0005386edfc995',
+    refUID: '0x0000000000000000000000000000000000000000000000000000000000000000',
+    data: encodedData
+  },
+  signer
+);
 ```
 
 This function will return a signed offchain attestation object containing the UID, signature, and attestation data. You can then share this object with the intended recipient or store it for future use.
@@ -195,8 +196,8 @@ Please note that using the `getOffchainUID` function for the previous legacy ver
 
 ```javascript
 const transaction = await eas.revoke({
-  schema: "0x85500e806cf1e74844d51a20a6d893fe1ed6f6b0738b50e43d774827d08eca61",
-  data: { uid: "0x6776de8122c352b4d671003e58ca112aedb99f34c629a1d1fe3b332504e2943a" }
+  schema: '0x85500e806cf1e74844d51a20a6d893fe1ed6f6b0738b50e43d774827d08eca61',
+  data: { uid: '0x6776de8122c352b4d671003e58ca112aedb99f34c629a1d1fe3b332504e2943a' }
 });
 
 // Optional: Wait for transaction to be validated
@@ -208,12 +209,12 @@ await transaction.wait();
 To timestamp an off-chain attestation UID on-chain, you can use the timestamp function provided by the EAS SDK. Here's an example:
 
 ```javascript
-import { EAS } from "@ethereum-attestation-service/eas-sdk";
+import { EAS } from '@ethereum-attestation-service/eas-sdk';
 
 const eas = new EAS(EASContractAddress);
 eas.connect(provider);
 
-const uid = "0x6776de8122c352b4d671003e58ca112aedb99f34c629a1d1fe3b332504e2943a";
+const uid = '0x6776de8122c352b4d671003e58ca112aedb99f34c629a1d1fe3b332504e2943a';
 
 const transaction = await eas.timestamp(uid);
 
@@ -224,7 +225,7 @@ await transaction.wait();
 To create a timestamp for a any piece of data, you can use the `timestamp` function provided by the EAS SDK. Here's an example:
 
 ```javascript
-import { EAS } from "@ethereum-attestation-service/eas-sdk";
+import { EAS } from '@ethereum-attestation-service/eas-sdk';
 
 const eas = new EAS(EASContractAddress);
 eas.connect(provider);
@@ -240,7 +241,7 @@ await transaction.wait();
 To create timestamps for multiple pieces of data, you can use the `multiTimestamp` function:
 
 ```javascript
-import { EAS } from "@ethereum-attestation-service/eas-sdk";
+import { EAS } from '@ethereum-attestation-service/eas-sdk';
 
 const eas = new EAS(EASContractAddress);
 eas.connect(provider);
@@ -259,7 +260,7 @@ await transaction.wait();
 To revoke an offchain attestation, you can use the `revokeOffchain` function provided by the EAS SDK. Here's an example:
 
 ```javascript
-import { EAS } from "@ethereum-attestation-service/eas-sdk";
+import { EAS } from '@ethereum-attestation-service/eas-sdk';
 
 const eas = new EAS(EASContractAddress);
 eas.connect(provider);
@@ -275,7 +276,7 @@ await transaction.wait();
 To revoke multiple offchain attestations, you can use the `multiRevokeOffchain` function:
 
 ```javascript
-import { EAS } from "@ethereum-attestation-service/eas-sdk";
+import { EAS } from '@ethereum-attestation-service/eas-sdk';
 
 const eas = new EAS(EASContractAddress);
 eas.connect(provider);
@@ -353,22 +354,22 @@ To register a new schema, you can use the `register` function provided by the EA
 Here's an example of how to register a new schema:
 
 ```javascript
-import { SchemaRegistry } from "@ethereum-attestation-service/eas-sdk";
+import { SchemaRegistry } from '@ethereum-attestation-service/eas-sdk';
 import { ethers } from 'ethers';
 
-const schemaRegistryContractAddress = "0xYourSchemaRegistryContractAddress";
+const schemaRegistryContractAddress = '0xYourSchemaRegistryContractAddress';
 const schemaRegistry = new SchemaRegistry(schemaRegistryContractAddress);
 
 schemaRegistry.connect(signer);
 
-const schema = "uint256 eventId, uint8 voteIndex";
-const resolverAddress = "0x0a7E2Ff54e76B8E6659aedc9103FB21c038050D0"; // Sepolia 0.26
+const schema = 'uint256 eventId, uint8 voteIndex';
+const resolverAddress = '0x0a7E2Ff54e76B8E6659aedc9103FB21c038050D0'; // Sepolia 0.26
 const revocable = true;
 
 const transaction = await schemaRegistry.register({
   schema,
   resolverAddress,
-  revocable,
+  revocable
 });
 
 // Optional: Wait for transaction to be validated
