@@ -1,5 +1,5 @@
 import { ethers } from 'ethers';
-import { PrivateData, MerkleValue } from '../../src/private-data';
+import { MerkleValue, PrivateData } from '../../src/private-data';
 import chai from './helpers/chai';
 
 const { expect } = chai;
@@ -9,7 +9,7 @@ describe('PrivateData', () => {
     it('should properly construct a PrivateData instance', () => {
       const values: MerkleValue[] = [
         { type: 'string', name: 'name', value: 'John Doe' },
-        { type: 'uint256', name: 'age', value: 30 },
+        { type: 'uint256', name: 'age', value: 30 }
       ];
       const privateData = new PrivateData(values);
       expect(privateData).to.be.instanceOf(PrivateData);
@@ -18,7 +18,7 @@ describe('PrivateData', () => {
     it('should throw an error for invalid input types', () => {
       const invalidValues = [
         { type: 'invalid', name: 'name', value: 'John Doe' },
-        { type: 'uint256', name: 'age', value: 30 },
+        { type: 'uint256', name: 'age', value: 30 }
       ];
       expect(() => new PrivateData(invalidValues)).to.throw();
     });
@@ -28,7 +28,7 @@ describe('PrivateData', () => {
     it('should return a valid FullMerkleDataTree', () => {
       const values: MerkleValue[] = [
         { type: 'string', name: 'name', value: 'John Doe' },
-        { type: 'uint256', name: 'age', value: 30 },
+        { type: 'uint256', name: 'age', value: 30 }
       ];
       const privateData = new PrivateData(values);
       const fullTree = privateData.getFullTree();
@@ -48,7 +48,7 @@ describe('PrivateData', () => {
       const values: MerkleValue[] = [
         { type: 'string', name: 'name', value: 'John Doe' },
         { type: 'uint256', name: 'age', value: 30 },
-        { type: 'bool', name: 'isStudent', value: true },
+        { type: 'bool', name: 'isStudent', value: true }
       ];
       const privateData = new PrivateData(values);
       const proof = privateData.generateMultiProof([0, 2]);
@@ -65,7 +65,7 @@ describe('PrivateData', () => {
     it('should throw an error for invalid indexes', () => {
       const values: MerkleValue[] = [
         { type: 'string', name: 'name', value: 'John Doe' },
-        { type: 'uint256', name: 'age', value: 30 },
+        { type: 'uint256', name: 'age', value: 30 }
       ];
       const privateData = new PrivateData(values);
       expect(() => privateData.generateMultiProof([0, 2])).to.throw();
@@ -77,7 +77,7 @@ describe('PrivateData', () => {
       const values: MerkleValue[] = [
         { type: 'string', name: 'name', value: 'John Doe' },
         { type: 'uint256', name: 'age', value: 30 },
-        { type: 'bool', name: 'isStudent', value: true },
+        { type: 'bool', name: 'isStudent', value: true }
       ];
       const privateData = new PrivateData(values);
       const fullTree = privateData.getFullTree();
@@ -91,14 +91,14 @@ describe('PrivateData', () => {
       const values: MerkleValue[] = [
         { type: 'string', name: 'name', value: 'John Doe' },
         { type: 'uint256', name: 'age', value: 30 },
-        { type: 'bool', name: 'isStudent', value: true },
+        { type: 'bool', name: 'isStudent', value: true }
       ];
       const privateData = new PrivateData(values);
       const fullTree = privateData.getFullTree();
       const proof = privateData.generateMultiProof([0, 2]);
 
       // find the leaf in which the name exists and change its name
-      const leafIndex = proof.leaves.findIndex(leaf => leaf.name === 'name');
+      const leafIndex = proof.leaves.findIndex((leaf) => leaf.name === 'name');
       proof.leaves[leafIndex].name = 'invalid';
 
       const isValid = PrivateData.verifyMultiProof(fullTree.root, proof);
@@ -110,7 +110,7 @@ describe('PrivateData', () => {
     it('should verify a valid full tree', () => {
       const values: MerkleValue[] = [
         { type: 'string', name: 'name', value: 'John Doe' },
-        { type: 'uint256', name: 'age', value: 30 },
+        { type: 'uint256', name: 'age', value: 30 }
       ];
       const privateData = new PrivateData(values);
       const fullTree = privateData.getFullTree();
@@ -122,13 +122,13 @@ describe('PrivateData', () => {
     it('should reject an invalid full tree', () => {
       const values: MerkleValue[] = [
         { type: 'string', name: 'name', value: 'John Doe' },
-        { type: 'uint256', name: 'age', value: 30 },
+        { type: 'uint256', name: 'age', value: 30 }
       ];
       const privateData = new PrivateData(values);
       const fullTree = privateData.getFullTree();
 
       // find the leaf in which the name exists and change its name
-      const leafIndex = fullTree.values.findIndex(leaf => leaf.name === 'name');
+      const leafIndex = fullTree.values.findIndex((leaf) => leaf.name === 'name');
       fullTree.values[leafIndex].name = 'invalid';
 
       const calculatedRoot = PrivateData.verifyFullTree(fullTree);
@@ -143,7 +143,7 @@ describe('PrivateData', () => {
         { type: 'uint256', name: 'age', value: 30 },
         { type: 'bool', name: 'isStudent', value: true },
         { type: 'address', name: 'wallet', value: '0x1234567890123456789012345678901234567890' },
-        { type: 'bytes32', name: 'dataHash', value: ethers.id('some data') },
+        { type: 'bytes32', name: 'dataHash', value: ethers.id('some data') }
       ];
 
       const privateData = new PrivateData(values);

@@ -14,7 +14,7 @@
     "build": "rm -rf dist && tsc --build tsconfig.json",
     "test": "cd test && pnpm test",
     "lint": "eslint -c .eslintrc --ext .ts src test",
-    "format": "prettier --check --write src/**/*.ts test/test/**/*.ts  --config .prettierrc",
+    "format": "prettier --check --write . --config .prettierrc",
     "prepare:release": "pnpm lint && pnpm test && pnpm build"
   },
   "dependencies": {

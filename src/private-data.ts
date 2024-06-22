@@ -1,5 +1,5 @@
-import {ethers} from 'ethers';
-import {StandardMerkleTree} from '@openzeppelin/merkle-tree';
+import { StandardMerkleTree } from '@openzeppelin/merkle-tree';
+import { ethers } from 'ethers';
 
 export type FullMerkleDataTree = {
   root: string;
@@ -29,12 +29,7 @@ export type MerkleValueWithSalt = MerkleValue & { salt: string };
 
 export type EncodedMerkleValue = [string, string, string, string];
 
-const merkleValueAbiEncoding: EncodedMerkleValue = [
-  'string',
-  'string',
-  'bytes',
-  'bytes32',
-];
+const merkleValueAbiEncoding: EncodedMerkleValue = ['string', 'string', 'bytes', 'bytes32'];
 
 export class PrivateData {
   private tree: StandardMerkleTree<EncodedMerkleValue>;
@@ -46,46 +41,35 @@ export class PrivateData {
     } else {
       this.values = values.map((v) => ({
         ...v,
-        salt: ethers.hexlify(ethers.randomBytes(32)),
+        salt: ethers.hexlify(ethers.randomBytes(32))
       }));
     }
 
     this.tree = this.encodeValuesToMerkleTree(this.values);
   }
 
-  private encodeValuesToMerkleTree(
-    values: MerkleValueWithSalt[]
-  ): StandardMerkleTree<EncodedMerkleValue> {
+  private encodeValuesToMerkleTree(values: MerkleValueWithSalt[]): StandardMerkleTree<EncodedMerkleValue> {
     const encodedValues = this.encodeMerkleValues(values);
     return StandardMerkleTree.of(encodedValues, merkleValueAbiEncoding);
   }
 
-  private encodeMerkleValues(
-    values: MerkleValueWithSalt[]
-  ): EncodedMerkleValue[] {
-    return values.map((v) => [
-      v.type,
-      v.name,
-      ethers.AbiCoder.defaultAbiCoder().encode([v.type], [v.value]),
-      v.salt,
-    ]);
+  private encodeMerkleValues(values: MerkleValueWithSalt[]): EncodedMerkleValue[] {
+    return values.map((v) => [v.type, v.name, ethers.AbiCoder.defaultAbiCoder().encode([v.type], [v.value]), v.salt]);
   }
 
-  private decodeMerkleValues(
-    values: EncodedMerkleValue[]
-  ): MerkleValueWithSalt[] {
+  private decodeMerkleValues(values: EncodedMerkleValue[]): MerkleValueWithSalt[] {
     return values.map((v) => ({
       type: v[0],
       name: v[1],
       value: ethers.AbiCoder.defaultAbiCoder().decode([v[0]], v[2])[0],
-      salt: v[3],
+      salt: v[3]
     }));
   }
 
   public getFullTree(): FullMerkleDataTree {
     return {
       root: this.tree.root,
-      values: this.values,
+      values: this.values
     };
   }
 
@@ -93,40 +77,25 @@ export class PrivateData {
     const multiProof = this.tree.getMultiProof(indexes);
     return {
       ...multiProof,
-      leaves: this.decodeMerkleValues(multiProof.leaves),
+      leaves: this.decodeMerkleValues(multiProof.leaves)
     };
   }
 
-  public static verifyMultiProof(
-    root: string,
-    proof: MerkleMultiProof
-  ): boolean {
+  public static verifyMultiProof(root: string, proof: MerkleMultiProof): boolean {
     const encodedProof = {
       ...proof,
-      leaves: this.encodeMerkleValues(proof.leaves),
+      leaves: this.encodeMerkleValues(proof.leaves)
     };
-    return StandardMerkleTree.verifyMultiProof(
-      root,
-      merkleValueAbiEncoding,
-      encodedProof
-    );
+    return StandardMerkleTree.verifyMultiProof(root, merkleValueAbiEncoding, encodedProof);
   }
 
   private static encodeMerkleValues(values: Leaf[]): EncodedMerkleValue[] {
-    return values.map((v) => [
-      v.type,
-      v.name,
-      ethers.AbiCoder.defaultAbiCoder().encode([v.type], [v.value]),
-      v.salt,
-    ]);
+    return values.map((v) => [v.type, v.name, ethers.AbiCoder.defaultAbiCoder().encode([v.type], [v.value]), v.salt]);
   }
 
   public static verifyFullTree(tree: FullMerkleDataTree): string {
     const encodedValues = this.encodeMerkleValues(tree.values);
-    const merkleTree = StandardMerkleTree.of(
-      encodedValues,
-      merkleValueAbiEncoding
-    );
+    const merkleTree = StandardMerkleTree.of(encodedValues, merkleValueAbiEncoding);
     return merkleTree.root;
   }
 }
