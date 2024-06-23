@@ -6,6 +6,32 @@
 
 This repository contains the Ethereum Attestation Service SDK, used to interact with the Ethereum Attestation Service Protocol.
 
+Table of Contents
+=================
+  * [Installing the EAS SDK](#installing-the-eas-sdk)
+  * [Using the EAS SDK](#using-the-eas-sdk)
+  * [Getting Started](#getting-started)
+  * [Getting an Attestation](#getting-an-attestation)
+  * [Creating Onchain Attestations](#creating-onchain-attestations)
+    * [Example](#example)
+  * [Creating Offchain Attestations](#creating-offchain-attestations)
+    * [Example](#example-1)
+  * [Revoking Onchain Attestations](#revoking-onchain-attestations)
+  * [Creating Timestamps](#creating-timestamps)
+  * [Revoking Offchain Attestations](#revoking-offchain-attestations)
+  * [Verify an Offchain Attestation](#verify-an-offchain-attestation)
+  * [Registering a Schema](#registering-a-schema)
+  * [Getting Schema Information](#getting-schema-information)
+  * [Using the PrivateData Class](#using-the-privatedata-class)
+    * [Creating Private Data](#creating-private-data)
+    * [Getting the Full Merkle Tree](#getting-the-full-merkle-tree)
+    * [Generating a Multi-Proof](#generating-a-multi-proof)
+    * [Verifying a Multi-Proof](#verifying-a-multi-proof)
+    * [Verifying the Full Tree](#verifying-the-full-tree)
+  * [Example: Creating an Attestation with Private Data](#example-creating-an-attestation-with-private-data)
+
+
+
 ## Installing the EAS SDK
 
 To install the EAS SDK, run the following command within your project directory:
@@ -405,3 +431,117 @@ console.log(schemaRecord);
 ```
 
 In the output, you will receive an object containing the schema UID, the schema string, the resolver address, and a boolean indicating whether the schema is revocable or not.
+
+### Using the PrivateData Class
+
+The `PrivateData` class allows you to create, prove, and verify private data using Merkle trees. This is useful for creating attestations where you want to selectively reveal only certain pieces of information while keeping the rest private.
+
+#### Creating Private Data
+
+To create private data, you need to initialize a `PrivateData` instance with an array of `MerkleValue` objects:
+
+```typescript
+import { PrivateData, MerkleValue } from "@ethereum-attestation-service/eas-sdk";
+
+const values: MerkleValue[] = [
+  { type: 'string', name: 'name', value: 'Alice Johnson' },
+  { type: 'uint256', name: 'age', value: 28 },
+  { type: 'bool', name: 'isStudent', value: false },
+  { type: 'address', name: 'wallet', value: '0x742d35Cc6634C0532925a3b844Bc454e4438f44e' },
+  { type: 'bytes32', name: 'dataHash', value: ethers.id('confidential information') },
+];
+
+const privateData = new PrivateData(values);
+```
+
+#### Getting the Full Merkle Tree
+
+You can retrieve the full Merkle tree, which includes the root and all values with their salts:
+
+```typescript
+const fullTree = privateData.getFullTree();
+console.log('Merkle Root:', fullTree.root);
+```
+
+#### Generating a Multi-Proof
+
+To selectively reveal only certain pieces of information, you can generate a multi-proof:
+
+```typescript
+const proofIndexes = [0, 2, 4]; // Proving name, isStudent, and dataHash
+const multiProof = privateData.generateMultiProof(proofIndexes);
+```
+
+#### Verifying a Multi-Proof
+
+To verify a multi-proof against a known Merkle root:
+
+```typescript
+const isValid = PrivateData.verifyMultiProof(fullTree.root, multiProof);
+console.log('Is Multi-Proof Valid?', isValid);
+```
+
+#### Verifying the Full Tree
+
+You can also verify the integrity of the full Merkle tree:
+
+```typescript
+const calculatedRoot = PrivateData.verifyFullTree(fullTree);
+console.log('Is Full Tree Valid?', calculatedRoot === fullTree.root);
+```
+
+### Example: Creating an Attestation with Private Data
+
+Here's an example of how you might use the `PrivateData` class in conjunction with the EAS SDK to create an attestation with private data:
+
+```typescript
+import { EAS, SchemaEncoder, PrivateData, MerkleValue } from "@ethereum-attestation-service/eas-sdk";
+import { ethers } from 'ethers';
+
+// Initialize EAS
+const eas = new EAS(EASContractAddress);
+eas.connect(signer);
+
+// Create private data
+const values: MerkleValue[] = [
+  { type: 'string', name: 'name', value: 'Alice Johnson' },
+  { type: 'uint256', name: 'age', value: 28 },
+  { type: 'bool', name: 'isStudent', value: false },
+  { type: 'address', name: 'wallet', value: '0x742d35Cc6634C0532925a3b844Bc454e4438f44e' },
+  { type: 'bytes32', name: 'dataHash', value: ethers.id('confidential information') },
+];
+
+const privateData = new PrivateData(values);
+const fullTree = privateData.getFullTree();
+
+// Create an attestation with the Merkle root
+const schemaEncoder = new SchemaEncoder("bytes32 privateData");
+const encodedData = schemaEncoder.encodeData([
+  { name: "dataRoot", value: fullTree.root, type: "bytes32" },
+]);
+
+// Private data schema
+const schemaUID = "0x20351f973fdec1478924c89dfa533d8f872defa108d9c3c6512267d7e7e5dbc2";
+
+const tx = await eas.attest({
+  schema: schemaUID,
+  data: {
+    recipient: "0xFD50b031E778fAb33DfD2Fc3Ca66a1EeF0652165",
+    expirationTime: 0,
+    revocable: true,
+    data: encodedData,
+  },
+});
+
+const newAttestationUID = await tx.wait();
+
+console.log("New attestation UID:", newAttestationUID);
+
+// Generate a multi-proof to selectively reveal some data
+const proofIndexes = [0, 2]; // Revealing only name and isStudent
+const multiProof = privateData.generateMultiProof(proofIndexes);
+
+console.log("Multi-proof for selective reveal:", multiProof);
+```
+
+In this example, we create an attestation that includes only the Merkle root of the private data. The actual data remains private, but we can selectively reveal parts of it using the multi-proof. The recipient of this attestation can verify the multi-proof against the attested Merkle root to confirm the validity of the revealed data without seeing the entire dataset.
