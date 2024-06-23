@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.3.0
+
+- Add utilities to handle private data
+
 ## 2.2.0
 
 - Add a method to receive the tx receipt to the Transaction object

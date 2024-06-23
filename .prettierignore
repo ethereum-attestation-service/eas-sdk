@@ -1,0 +1,22 @@
+# Dependencies
+/node_modules
+pnpm-lock.yaml
+
+# Testing
+/coverage
+.hardhat-dependency-compiler
+
+# Production
+/build
+/dist
+typechain-types
+typechain
+
+# Ignore all .env files
+.env*
+!.env
+!.env.template
+
+# Misc
+.DS_Store
+.vscode/
