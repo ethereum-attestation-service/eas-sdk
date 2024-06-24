@@ -6,31 +6,28 @@
 
 This repository contains the Ethereum Attestation Service SDK, used to interact with the Ethereum Attestation Service Protocol.
 
-Table of Contents
-=================
-  * [Installing the EAS SDK](#installing-the-eas-sdk)
-  * [Using the EAS SDK](#using-the-eas-sdk)
-  * [Getting Started](#getting-started)
-  * [Getting an Attestation](#getting-an-attestation)
-  * [Creating Onchain Attestations](#creating-onchain-attestations)
-    * [Example](#example)
-  * [Creating Offchain Attestations](#creating-offchain-attestations)
-    * [Example](#example-1)
-  * [Revoking Onchain Attestations](#revoking-onchain-attestations)
-  * [Creating Timestamps](#creating-timestamps)
-  * [Revoking Offchain Attestations](#revoking-offchain-attestations)
-  * [Verify an Offchain Attestation](#verify-an-offchain-attestation)
-  * [Registering a Schema](#registering-a-schema)
-  * [Getting Schema Information](#getting-schema-information)
-  * [Using the PrivateData Class](#using-the-privatedata-class)
-    * [Creating Private Data](#creating-private-data)
-    * [Getting the Full Merkle Tree](#getting-the-full-merkle-tree)
-    * [Generating a Multi-Proof](#generating-a-multi-proof)
-    * [Verifying a Multi-Proof](#verifying-a-multi-proof)
-    * [Verifying the Full Tree](#verifying-the-full-tree)
-  * [Example: Creating an Attestation with Private Data](#example-creating-an-attestation-with-private-data)
+## Table of Contents
 
-
+* [Installing the EAS SDK](#installing-the-eas-sdk)
+* [Using the EAS SD÷K](#using-the-eas-sdk)
+* [Getting an Attestation](#getting-an-attestation)
+* [Creating Onchain Attestations](#creating-onchain-attestations)
+  * [Example: Creating Onchain Attestations](#example-creating-onchain-attestations)
+* [Creating Offchain Attestations](#creating-offchain-attestations)
+  * [Example: Creating Offchain Attestations](#example-creating-offchain-attestations)
+* [Revoking Onchain Attestations](#revoking-onchain-attestations)
+* [Creating Timestamps](#creating-timestamps)
+* [Revoking Offchain Attestations](#revoking-offchain-attestations)
+* [Verifying an Offchain Attestation](#verifying-an-offchain-attestation)
+* [Registering a Schema](#registering-a-schema)
+* [Getting Schema Information](#getting-schema-information)
+* [Using the PrivateData Class](#using-the-privatedata-class)
+  * [Creating Private Data](#creating-private-data)
+  * [Getting the Full Merkle Tree](#getting-the-full-merkle-tree)
+  * [Generating a Multi-Proof](#generating-a-multi-proof)÷
+  * [Verifying a Multi-Proof](#verifying-a-multi-proof)
+  * [Verifying the Full Tree](#verifying-the-full-tree)
+* [Example: Creating an Attestation with Private Data](#example-creating-an-attestation-with-private-data)
 
 ## Installing the EAS SDK
 
@@ -96,16 +93,16 @@ console.log(attestation);
 
 The `getAttestation` function returns an attestation object with the following properties:
 
-- `uid`: The unique identifier of the attestation.
-- `schema`: The schema identifier associated with the attestation.
-- `refUID`: The reference UID of the attestation, if any.
-- `time`: The Unix timestamp when the attestation was created.
-- `expirationTime`: The Unix timestamp when the attestation expires (0 for no expiration).
-- `revocationTime`: The Unix timestamp when the attestation was revoked, if applicable.
-- `recipient`: The Ethereum address of the recipient of the attestation.
-- `attester`: The Ethereum address of the attester who created the attestation.
-- `revocable`: A boolean indicating whether the attestation is revocable or not.
-- `data`: The attestation data in bytes format.
+* `uid`: The unique identifier of the attestation.
+* `schema`: The schema identifier associated with the attestation.
+* `refUID`: The reference UID of the attestation, if any.
+* `time`: The Unix timestamp when the attestation was created.
+* `expirationTime`: The Unix timestamp when the attestation expires (0 for no expiration).
+* `revocationTime`: The Unix timestamp when the attestation was revoked, if applicable.
+* `recipient`: The Ethereum address of the recipient of the attestation.
+* `attester`: The Ethereum address of the attester who created the attestation.
+* `revocable`: A boolean indicating whether the attestation is revocable or not.
+* `data`: The attestation data in bytes format.
 
 Example output:
 
@@ -128,17 +125,17 @@ Example output:
 
 The `attest` function allows you to create an on-chain attestation for a specific schema. This function takes an object with the following properties:
 
-- `schema`: The UID of the schema for which the attestation is being created.
-- `data`: An object containing the following properties:
-  - `recipient`: The Ethereum address of the recipient of the attestation.
-  - `expirationTime`: A Unix timestamp representing the expiration time of the attestation. Use `0` for no expiration.
-  - `revocable`: A boolean indicating whether the attestation is revocable or not.
-  - `refUID`: (Optional) The UID of a referenced attestation. Use `ZERO_BYTES32` if there is no reference.
-  - `data`: The encoded data for the attestation, which should be generated using the `SchemaEncoder` class.
+* `schema`: The UID of the schema for which the attestation is being created.
+* `data`: An object containing the following properties:
+  * `recipient`: The Ethereum address of the recipient of the attestation.
+  * `expirationTime`: A Unix timestamp representing the expiration time of the attestation. Use `0` for no expiration.
+  * `revocable`: A boolean indicating whether the attestation is revocable or not.
+  * `refUID`: (Optional) The UID of a referenced attestation. Use `ZERO_BYTES32` if there is no reference.
+  * `data`: The encoded data for the attestation, which should be generated using the `SchemaEncoder` class.
 
 The function returns a Promise that resolves to the UID of the newly created attestation.
 
-### Example
+#### Example: Creating Onchain Attestations
 
 ```javascript
 import { EAS, SchemaEncoder } from '@ethereum-attestation-service/eas-sdk';
@@ -175,6 +172,8 @@ console.log('Transaction receipt:', tx.receipt);
 ### Creating Offchain Attestations
 
 To create an offchain attestation, you can use the `signOffchainAttestation` function provided by the Offchain class in the EAS SDK. Here's an example:
+
+#### Example: Creating Offchain Attestations
 
 ```javascript
 import { EAS, SchemaEncoder } from '@ethereum-attestation-service/eas-sdk';
@@ -316,7 +315,7 @@ const transaction = await eas.multiRevokeOffchain([data1, data2]);
 await transaction.wait();
 ```
 
-### Verify an Offchain Attestation
+### Verifying an Offchain Attestation
 
 To verify an offchain attestation, you can use the `verifyOffchainAttestationSignature` function provided by the EAS SDK. Here's an example:
 
@@ -373,9 +372,9 @@ const isValidAttestation = offchain.verifyOffchainAttestationSignature(
 
 To register a new schema, you can use the `register` function provided by the EAS SDK. This function takes an object with the following properties:
 
-- `schema`: The schema string that defines the structure of the data to be attested.
-- `resolverAddress`: The Ethereum address of the resolver responsible for managing the schema.
-- `revocable`: A boolean value indicating whether attestations created with this schema can be revoked.
+* `schema`: The schema string that defines the structure of the data to be attested.
+* `resolverAddress`: The Ethereum address of the resolver responsible for managing the schema.
+* `revocable`: A boolean value indicating whether attestations created with this schema can be revoked.
 
 Here's an example of how to register a new schema:
 
