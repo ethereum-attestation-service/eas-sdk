@@ -8,26 +8,29 @@ This repository contains the Ethereum Attestation Service SDK, used to interact 
 
 ## Table of Contents
 
-* [Installing the EAS SDK](#installing-the-eas-sdk)
-* [Using the EAS SD÷K](#using-the-eas-sdk)
-* [Getting an Attestation](#getting-an-attestation)
-* [Creating Onchain Attestations](#creating-onchain-attestations)
-  * [Example: Creating Onchain Attestations](#example-creating-onchain-attestations)
-* [Creating Offchain Attestations](#creating-offchain-attestations)
-  * [Example: Creating Offchain Attestations](#example-creating-offchain-attestations)
-* [Revoking Onchain Attestations](#revoking-onchain-attestations)
-* [Creating Timestamps](#creating-timestamps)
-* [Revoking Offchain Attestations](#revoking-offchain-attestations)
-* [Verifying an Offchain Attestation](#verifying-an-offchain-attestation)
-* [Registering a Schema](#registering-a-schema)
-* [Getting Schema Information](#getting-schema-information)
-* [Using the PrivateData Class](#using-the-privatedata-class)
-  * [Creating Private Data](#creating-private-data)
-  * [Getting the Full Merkle Tree](#getting-the-full-merkle-tree)
-  * [Generating a Multi-Proof](#generating-a-multi-proof)÷
-  * [Verifying a Multi-Proof](#verifying-a-multi-proof)
-  * [Verifying the Full Tree](#verifying-the-full-tree)
-* [Example: Creating an Attestation with Private Data](#example-creating-an-attestation-with-private-data)
+- [Installing the EAS SDK](#installing-the-eas-sdk)
+- [Using the EAS SD÷K](#using-the-eas-sdk)
+- [Getting an Attestation](#getting-an-attestation)
+- [Creating Onchain Attestations](#creating-onchain-attestations)
+  - [Example: Creating Onchain Attestations](#example-creating-onchain-attestations)
+- [Creating Offchain Attestations](#creating-offchain-attestations)
+  - [Example: Creating Offchain Attestations](#example-creating-offchain-attestations)
+- [Creating Delegated Onchain Attestations](#creating-delegated-onchain-attestations)
+  - [Example: Creating Delegated Onchain Attestations](#example-creating-delegated-onchain-attestations)
+- [Revoking Onchain Attestations](#revoking-onchain-attestations)
+  - [Example: Revoking Onchain Attestations](#example-revoking-onchain-attestations)
+- [Creating Timestamps](#creating-timestamps)
+- [Revoking Offchain Attestations](#revoking-offchain-attestations)
+- [Verifying an Offchain Attestation](#verifying-an-offchain-attestation)
+- [Registering a Schema](#registering-a-schema)
+- [Getting Schema Information](#getting-schema-information)
+- [Using the PrivateData Class](#using-the-privatedata-class)
+  - [Creating Private Data](#creating-private-data)
+  - [Getting the Full Merkle Tree](#getting-the-full-merkle-tree)
+  - [Generating a Multi-Proof](#generating-a-multi-proof)÷
+  - [Verifying a Multi-Proof](#verifying-a-multi-proof)
+  - [Verifying the Full Tree](#verifying-the-full-tree)
+- [Example: Creating an Attestation with Private Data](#example-creating-an-attestation-with-private-data)
 
 ## Installing the EAS SDK
 
@@ -93,16 +96,16 @@ console.log(attestation);
 
 The `getAttestation` function returns an attestation object with the following properties:
 
-* `uid`: The unique identifier of the attestation.
-* `schema`: The schema identifier associated with the attestation.
-* `refUID`: The reference UID of the attestation, if any.
-* `time`: The Unix timestamp when the attestation was created.
-* `expirationTime`: The Unix timestamp when the attestation expires (0 for no expiration).
-* `revocationTime`: The Unix timestamp when the attestation was revoked, if applicable.
-* `recipient`: The Ethereum address of the recipient of the attestation.
-* `attester`: The Ethereum address of the attester who created the attestation.
-* `revocable`: A boolean indicating whether the attestation is revocable or not.
-* `data`: The attestation data in bytes format.
+- `uid`: The unique identifier of the attestation.
+- `schema`: The schema identifier associated with the attestation.
+- `refUID`: The reference UID of the attestation, if any.
+- `time`: The Unix timestamp when the attestation was created.
+- `expirationTime`: The Unix timestamp when the attestation expires (0 for no expiration).
+- `revocationTime`: The Unix timestamp when the attestation was revoked, if applicable.
+- `recipient`: The Ethereum address of the recipient of the attestation.
+- `attester`: The Ethereum address of the attester who created the attestation.
+- `revocable`: A boolean indicating whether the attestation is revocable or not.
+- `data`: The attestation data in bytes format.
 
 Example output:
 
@@ -125,15 +128,16 @@ Example output:
 
 The `attest` function allows you to create an on-chain attestation for a specific schema. This function takes an object with the following properties:
 
-* `schema`: The UID of the schema for which the attestation is being created.
-* `data`: An object containing the following properties:
-  * `recipient`: The Ethereum address of the recipient of the attestation.
-  * `expirationTime`: A Unix timestamp representing the expiration time of the attestation. Use `0` for no expiration.
-  * `revocable`: A boolean indicating whether the attestation is revocable or not.
-  * `refUID`: (Optional) The UID of a referenced attestation. Use `ZERO_BYTES32` if there is no reference.
-  * `data`: The encoded data for the attestation, which should be generated using the `SchemaEncoder` class.
+- `schema`: The UID of the schema for which the attestation is being created.
+- `data`: An object containing the following properties:
+  - `recipient`: The Ethereum address of the recipient of the attestation.
+  - `expirationTime`: A Unix timestamp representing the expiration time of the attestation. Use `0` for no expiration.
+  - `revocable`: A boolean indicating whether the attestation is revocable or not.
+  - `refUID`: (Optional) The UID of a referenced attestation. Use `ZERO_BYTES32` if there is no reference.
+  - `data`: The encoded data for the attestation, which should be generated using the `SchemaEncoder` class.
+  - `value`: (Optional) The ETH value that is being sent with the attestation.
 
-The function returns a Promise that resolves to the UID of the newly created attestation.
+The function returns a `Promise` that resolves to the UID of the newly created attestation.
 
 #### Example: Creating Onchain Attestations
 
@@ -198,7 +202,7 @@ const signer = new ethers.Wallet(privateKey, provider);
 const offchainAttestation = await offchain.signOffchainAttestation(
   {
     recipient: '0xFD50b031E778fAb33DfD2Fc3Ca66a1EeF0652165',
-    expirationTime: 0n, // Unix timestamp of when attestation expires. (0 for no expiration)
+    expirationTime: 0n, // Unix timestamp of when attestation expires (0 for no expiration)
     time: BigInt(Math.floor(Date.now() / 1000)), // Unix timestamp of current time
     revocable: true, // Be aware that if your schema is not revocable, this MUST be false
     schema: '0xb16fa048b0d597f5a821747eba64efa4762ee5143e9a80600d0005386edfc995',
@@ -217,7 +221,93 @@ Since the offchain attestation protocol is being constantly evolved and improved
 
 Please note that using the `getOffchainUID` function for the previous legacy version, requires passing `{ version: 0 }` explicitly.
 
+### Creating Delegated Onchain Attestations
+
+The `attestByDelegation` function allows you to create a delegated on-chain attestation for a specific schema. This function takes an object with the following properties:
+
+- `schema`: The UID of the schema for which the attestation is being created.
+- `data`: An object containing the following properties:
+  - `recipient`: The Ethereum address of the recipient of the attestation.
+  - `expirationTime`: A Unix timestamp representing the expiration time of the attestation. Use `0` for no expiration.
+  - `revocable`: A boolean indicating whether the attestation is revocable or not.
+  - `refUID`: (Optional) The UID of a referenced attestation. Use `ZERO_BYTES32` if there is no reference.
+  - `data`: The encoded data for the attestation, which should be generated using the `SchemaEncoder` class.
+  - `value`: (Optional) The ETH value that is being sent with the attestation.
+- `attester`: The address of the tester.
+- `signature`: A EIP712 typed-signature (`r`, `s`, and `v`) over the message (using the `signDelegatedAttestation` function).
+- `deadline`: A Unix representing the expiration time of the signature.
+
+The function returns a `Promise` that resolves to the UID of the newly created attestation.
+
+#### Example: Creating Delegated Onchain Attestations
+
+```javascript
+import { EAS, SchemaEncoder } from '@ethereum-attestation-service/eas-sdk';
+
+const eas = new EAS(EASContractAddress);
+
+// Use a different account to send and pay for the attestation.
+eas.connect(sender);
+
+const delegated = await eas.getDelegated();
+
+// Initialize SchemaEncoder with the schema string
+// Note these values are sample values and should be filled with actual values
+// Code samples can be found when viewing each schema on easscan.org
+const schemaEncoder = new SchemaEncoder('uint256 eventId, uint8 voteIndex');
+const encodedData = schemaEncoder.encodeData([
+  { name: 'eventId', value: 1, type: 'uint256' },
+  { name: 'voteIndex', value: 1, type: 'uint8' }
+]);
+
+const signer = new ethers.Wallet(privateKey, provider);
+
+const response = await delegated.signDelegatedAttestation(
+  {
+    schema: '0xb16fa048b0d597f5a821747eba64efa4762ee5143e9a80600d0005386edfc995',
+    recipient: '0xFD50b031E778fAb33DfD2Fc3Ca66a1EeF0652165',
+    expirationTime: 0n, // Unix timestamp of when attestation expires (0 for no expiration)
+    revocable: true,
+    refUID: '0x0000000000000000000000000000000000000000000000000000000000000000',
+    data: encodedData,
+    nonce: await eas.getNonce(await signer.getAddress()),
+    deadline: 0n, // Unix timestamp of when signature expires (0 for no expiration)
+    value: 0n
+  },
+  signer
+);
+
+const tx = await eas.attestByDelegation({
+  schema: '0xb16fa048b0d597f5a821747eba64efa4762ee5143e9a80600d0005386edfc995',
+  data: {
+    recipient: '0xFD50b031E778fAb33DfD2Fc3Ca66a1EeF0652165',
+    expirationTime: 0n, // Unix timestamp of when attestation expires (0 for no expiration),
+    revocable: true,
+    refUID: '0x0000000000000000000000000000000000000000000000000000000000000000',
+    data: encodedData
+  },
+  signature: response.signature,
+  attester: await signer.getAddress(),
+  deadline: 0n // Unix timestamp of when signature expires (0 for no expiration)
+});
+
+const newAttestationUID = await tx.wait();
+
+console.log('New attestation UID:', newAttestationUID);
+
+console.log('Transaction receipt:', tx.receipt);
+```
+
 ### Revoking Onchain Attestations
+
+The `revoke` function allows you to revoke an on-chain attestation. This function takes an object with the following properties:
+
+- `schema`: The UID of the schema for which the attestation is being revoke.
+- `data`: An object containing the following properties:
+  - `uid`: The UID of the attestation to revoke.
+  - `value`: (Optional) The ETH value that is being sent with the revocation.
+
+### Example: Revoking Onchain Attestations
 
 ```javascript
 const transaction = await eas.revoke({
@@ -372,9 +462,9 @@ const isValidAttestation = offchain.verifyOffchainAttestationSignature(
 
 To register a new schema, you can use the `register` function provided by the EAS SDK. This function takes an object with the following properties:
 
-* `schema`: The schema string that defines the structure of the data to be attested.
-* `resolverAddress`: The Ethereum address of the resolver responsible for managing the schema.
-* `revocable`: A boolean value indicating whether attestations created with this schema can be revoked.
+- `schema`: The schema string that defines the structure of the data to be attested.
+- `resolverAddress`: The Ethereum address of the resolver responsible for managing the schema.
+- `revocable`: A boolean value indicating whether attestations created with this schema can be revoked.
 
 Here's an example of how to register a new schema:
 
@@ -440,14 +530,14 @@ The `PrivateData` class allows you to create, prove, and verify private data usi
 To create private data, you need to initialize a `PrivateData` instance with an array of `MerkleValue` objects:
 
 ```typescript
-import { PrivateData, MerkleValue } from "@ethereum-attestation-service/eas-sdk";
+import { MerkleValue, PrivateData } from '@ethereum-attestation-service/eas-sdk';
 
 const values: MerkleValue[] = [
   { type: 'string', name: 'name', value: 'Alice Johnson' },
   { type: 'uint256', name: 'age', value: 28 },
   { type: 'bool', name: 'isStudent', value: false },
   { type: 'address', name: 'wallet', value: '0x742d35Cc6634C0532925a3b844Bc454e4438f44e' },
-  { type: 'bytes32', name: 'dataHash', value: ethers.id('confidential information') },
+  { type: 'bytes32', name: 'dataHash', value: ethers.id('confidential information') }
 ];
 
 const privateData = new PrivateData(values);
@@ -494,7 +584,7 @@ console.log('Is Full Tree Valid?', calculatedRoot === fullTree.root);
 Here's an example of how you might use the `PrivateData` class in conjunction with the EAS SDK to create an attestation with private data:
 
 ```typescript
-import { EAS, SchemaEncoder, PrivateData, MerkleValue } from "@ethereum-attestation-service/eas-sdk";
+import { EAS, MerkleValue, PrivateData, SchemaEncoder } from '@ethereum-attestation-service/eas-sdk';
 import { ethers } from 'ethers';
 
 // Initialize EAS
@@ -507,40 +597,38 @@ const values: MerkleValue[] = [
   { type: 'uint256', name: 'age', value: 28 },
   { type: 'bool', name: 'isStudent', value: false },
   { type: 'address', name: 'wallet', value: '0x742d35Cc6634C0532925a3b844Bc454e4438f44e' },
-  { type: 'bytes32', name: 'dataHash', value: ethers.id('confidential information') },
+  { type: 'bytes32', name: 'dataHash', value: ethers.id('confidential information') }
 ];
 
 const privateData = new PrivateData(values);
 const fullTree = privateData.getFullTree();
 
 // Create an attestation with the Merkle root
-const schemaEncoder = new SchemaEncoder("bytes32 privateData");
-const encodedData = schemaEncoder.encodeData([
-  { name: "dataRoot", value: fullTree.root, type: "bytes32" },
-]);
+const schemaEncoder = new SchemaEncoder('bytes32 privateData');
+const encodedData = schemaEncoder.encodeData([{ name: 'dataRoot', value: fullTree.root, type: 'bytes32' }]);
 
 // Private data schema
-const schemaUID = "0x20351f973fdec1478924c89dfa533d8f872defa108d9c3c6512267d7e7e5dbc2";
+const schemaUID = '0x20351f973fdec1478924c89dfa533d8f872defa108d9c3c6512267d7e7e5dbc2';
 
 const tx = await eas.attest({
   schema: schemaUID,
   data: {
-    recipient: "0xFD50b031E778fAb33DfD2Fc3Ca66a1EeF0652165",
+    recipient: '0xFD50b031E778fAb33DfD2Fc3Ca66a1EeF0652165',
     expirationTime: 0,
     revocable: true,
-    data: encodedData,
-  },
+    data: encodedData
+  }
 });
 
 const newAttestationUID = await tx.wait();
 
-console.log("New attestation UID:", newAttestationUID);
+console.log('New attestation UID:', newAttestationUID);
 
 // Generate a multi-proof to selectively reveal some data
 const proofIndexes = [0, 2]; // Revealing only name and isStudent
 const multiProof = privateData.generateMultiProof(proofIndexes);
 
-console.log("Multi-proof for selective reveal:", multiProof);
+console.log('Multi-proof for selective reveal:', multiProof);
 ```
 
 In this example, we create an attestation that includes only the Merkle root of the private data. The actual data remains private, but we can selectively reveal parts of it using the multi-proof. The recipient of this attestation can verify the multi-proof against the attested Merkle root to confirm the validity of the revealed data without seeing the entire dataset.
