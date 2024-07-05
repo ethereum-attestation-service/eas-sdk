@@ -101,7 +101,6 @@ export const expectAttestation = async (
           refUID,
           data,
           value,
-          nonce: await eas.getNonce(await txSender.getAddress()),
           deadline
         },
         txSender
@@ -388,10 +387,7 @@ export const expectRevocation = async (
 
     case SignatureType.Delegated: {
       const delegated = await eas.getDelegated();
-      const response = await delegated.signDelegatedRevocation(
-        { schema, uid, value, deadline, nonce: await eas.getNonce(await txSender.getAddress()) },
-        txSender
-      );
+      const response = await delegated.signDelegatedRevocation({ schema, uid, value, deadline }, txSender);
 
       expect(await delegated.verifyDelegatedRevocationSignature(await txSender.getAddress(), response)).to.be.true;
 

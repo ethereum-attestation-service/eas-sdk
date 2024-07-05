@@ -633,11 +633,14 @@ export class EAS extends Base<EASContract> {
 
   // Sets the delegated attestations helper
   private async setDelegated(): Promise<Delegated> {
-    this.delegated = new Delegated({
-      address: await this.contract.getAddress(),
-      domainSeparator: await this.getDomainSeparator(),
-      chainId: await this.getChainId()
-    });
+    this.delegated = new Delegated(
+      {
+        address: await this.contract.getAddress(),
+        domainSeparator: await this.getDomainSeparator(),
+        chainId: await this.getChainId()
+      },
+      this
+    );
 
     return this.delegated;
   }
