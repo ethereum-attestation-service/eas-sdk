@@ -1,5 +1,6 @@
 import omit from 'lodash/omit';
 import semver from 'semver';
+import { EAS } from '../eas';
 import {
   EIP712MessageTypes,
   EIP712Params,
@@ -156,8 +157,9 @@ export class Delegated extends TypedDataHandler {
   public readonly version: DelegatedAttestationVersion;
   private readonly attestType: DelegatedAttestationType;
   private readonly revokeType: DelegatedAttestationType;
+  private readonly eas: EAS;
 
-  constructor(config: DelegatedConfig) {
+  constructor(config: DelegatedConfig, eas: EAS) {
     let { version } = config;
     if (!version) {
       const { domainSeparator } = config;
@@ -204,6 +206,8 @@ export class Delegated extends TypedDataHandler {
 
     this.attestType = DELEGATED_ATTESTATION_TYPES[this.version];
     this.revokeType = DELEGATED_REVOCATION_TYPES[this.version];
+
+    this.eas = eas;
   }
 
   public async signDelegatedAttestation(
@@ -215,9 +219,12 @@ export class Delegated extends TypedDataHandler {
       ...params
     };
 
+    // If nonce wasn't provided, try retrieving it onchain.
+    effectiveParams.nonce ??= await this.eas.contract.getNonce(effectiveParams.attester);
+
     switch (this.version) {
       case DelegatedAttestationVersion.Legacy:
-        effectiveParams = omit(params, ['value', 'deadline']) as EIP712FullAttestationParams;
+        effectiveParams = omit(effectiveParams, ['value', 'deadline']) as EIP712FullAttestationParams;
 
         break;
     }
@@ -257,9 +264,12 @@ export class Delegated extends TypedDataHandler {
       ...params
     };
 
+    // If nonce wasn't provided, try retrieving it onchain.
+    effectiveParams.nonce ??= await this.eas.contract.getNonce(effectiveParams.revoker);
+
     switch (this.version) {
       case DelegatedAttestationVersion.Legacy:
-        effectiveParams = omit(params, ['value', 'deadline']) as EIP712FullRevocationParams;
+        effectiveParams = omit(effectiveParams, ['value', 'deadline']) as EIP712FullRevocationParams;
 
         break;
     }

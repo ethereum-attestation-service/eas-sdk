@@ -108,7 +108,8 @@ class Delegated extends typed_data_handler_1.TypedDataHandler {
     version;
     attestType;
     revokeType;
-    constructor(config) {
+    eas;
+    constructor(config, eas) {
         let { version } = config;
         if (!version) {
             const { domainSeparator } = config;
@@ -148,15 +149,18 @@ class Delegated extends typed_data_handler_1.TypedDataHandler {
         }
         this.attestType = DELEGATED_ATTESTATION_TYPES[this.version];
         this.revokeType = DELEGATED_REVOCATION_TYPES[this.version];
+        this.eas = eas;
     }
     async signDelegatedAttestation(params, signer) {
         let effectiveParams = {
             attester: await signer.getAddress(),
             ...params
         };
+        // If nonce wasn't provided, try retrieving it onchain.
+        effectiveParams.nonce ??= await this.eas.contract.getNonce(effectiveParams.attester);
         switch (this.version) {
             case DelegatedAttestationVersion.Legacy:
-                effectiveParams = (0, omit_1.default)(params, ['value', 'deadline']);
+                effectiveParams = (0, omit_1.default)(effectiveParams, ['value', 'deadline']);
                 break;
         }
         return this.signTypedDataRequest(effectiveParams, {
@@ -177,9 +181,11 @@ class Delegated extends typed_data_handler_1.TypedDataHandler {
             revoker: await signer.getAddress(),
             ...params
         };
+        // If nonce wasn't provided, try retrieving it onchain.
+        effectiveParams.nonce ??= await this.eas.contract.getNonce(effectiveParams.revoker);
         switch (this.version) {
             case DelegatedAttestationVersion.Legacy:
-                effectiveParams = (0, omit_1.default)(params, ['value', 'deadline']);
+                effectiveParams = (0, omit_1.default)(effectiveParams, ['value', 'deadline']);
                 break;
         }
         return this.signTypedDataRequest(effectiveParams, {

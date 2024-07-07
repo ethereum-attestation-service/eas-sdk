@@ -13,12 +13,14 @@ This repository contains the Ethereum Attestation Service SDK, used to interact 
 - [Getting an Attestation](#getting-an-attestation)
 - [Creating Onchain Attestations](#creating-onchain-attestations)
   - [Example: Creating Onchain Attestations](#example-creating-onchain-attestations)
+- [Revoking Onchain Attestations](#revoking-onchain-attestations)
+  - [Example: Revoking Onchain Attestations](#example-revoking-onchain-attestations)
 - [Creating Offchain Attestations](#creating-offchain-attestations)
   - [Example: Creating Offchain Attestations](#example-creating-offchain-attestations)
 - [Creating Delegated Onchain Attestations](#creating-delegated-onchain-attestations)
   - [Example: Creating Delegated Onchain Attestations](#example-creating-delegated-onchain-attestations)
-- [Revoking Onchain Attestations](#revoking-onchain-attestations)
-  - [Example: Revoking Onchain Attestations](#example-revoking-onchain-attestations)
+- [Revoking Delegated Onchain Attestations](#revoking-delegated-onchain-attestations)
+  - [Example: Revoking Delegated Onchain Attestations](#example-revoking-delegated-onchain-attestations)
 - [Creating Timestamps](#creating-timestamps)
 - [Revoking Offchain Attestations](#revoking-offchain-attestations)
 - [Verifying an Offchain Attestation](#verifying-an-offchain-attestation)
@@ -156,7 +158,7 @@ const encodedData = schemaEncoder.encodeData([
 
 const schemaUID = '0xb16fa048b0d597f5a821747eba64efa4762ee5143e9a80600d0005386edfc995';
 
-const tx = await eas.attest({
+const transaction = await eas.attest({
   schema: schemaUID,
   data: {
     recipient: '0xFD50b031E778fAb33DfD2Fc3Ca66a1EeF0652165',
@@ -166,11 +168,32 @@ const tx = await eas.attest({
   }
 });
 
-const newAttestationUID = await tx.wait();
+const newAttestationUID = await transaction.wait();
 
 console.log('New attestation UID:', newAttestationUID);
 
-console.log('Transaction receipt:', tx.receipt);
+console.log('Transaction receipt:', transaction.receipt);
+```
+
+### Revoking Onchain Attestations
+
+The `revoke` function allows you to revoke an on-chain attestation. This function takes an object with the following properties:
+
+- `schema`: The UID of the schema for which the attestation is being revoke.
+- `data`: An object containing the following properties:
+  - `uid`: The UID of the attestation to revoke.
+  - `value`: (Optional) The ETH value that is being sent with the revocation.
+
+### Example: Revoking Onchain Attestations
+
+```javascript
+const transaction = await eas.revoke({
+  schema: '0x85500e806cf1e74844d51a20a6d893fe1ed6f6b0738b50e43d774827d08eca61',
+  data: { uid: '0x6776de8122c352b4d671003e58ca112aedb99f34c629a1d1fe3b332504e2943a' }
+});
+
+// Optional: Wait for transaction to be validated
+await transaction.wait();
 ```
 
 ### Creating Offchain Attestations
@@ -233,7 +256,7 @@ The `attestByDelegation` function allows you to create a delegated on-chain atte
   - `refUID`: (Optional) The UID of a referenced attestation. Use `ZERO_BYTES32` if there is no reference.
   - `data`: The encoded data for the attestation, which should be generated using the `SchemaEncoder` class.
   - `value`: (Optional) The ETH value that is being sent with the attestation.
-- `attester`: The address of the tester.
+- `attester`: The address of the attester.
 - `signature`: A EIP712 typed-signature (`r`, `s`, and `v`) over the message (using the `signDelegatedAttestation` function).
 - `deadline`: A Unix representing the expiration time of the signature.
 
@@ -262,6 +285,7 @@ const encodedData = schemaEncoder.encodeData([
 
 const signer = new ethers.Wallet(privateKey, provider);
 
+// Please note that if nonce isn't provided explicitly, we will try retrieving it onchain.
 const response = await delegated.signDelegatedAttestation(
   {
     schema: '0xb16fa048b0d597f5a821747eba64efa4762ee5143e9a80600d0005386edfc995',
@@ -270,14 +294,13 @@ const response = await delegated.signDelegatedAttestation(
     revocable: true,
     refUID: '0x0000000000000000000000000000000000000000000000000000000000000000',
     data: encodedData,
-    nonce: await eas.getNonce(await signer.getAddress()),
     deadline: 0n, // Unix timestamp of when signature expires (0 for no expiration)
     value: 0n
   },
   signer
 );
 
-const tx = await eas.attestByDelegation({
+const transaction = await eas.attestByDelegation({
   schema: '0xb16fa048b0d597f5a821747eba64efa4762ee5143e9a80600d0005386edfc995',
   data: {
     recipient: '0xFD50b031E778fAb33DfD2Fc3Ca66a1EeF0652165',
@@ -291,28 +314,65 @@ const tx = await eas.attestByDelegation({
   deadline: 0n // Unix timestamp of when signature expires (0 for no expiration)
 });
 
-const newAttestationUID = await tx.wait();
+const newAttestationUID = await transaction.wait();
 
 console.log('New attestation UID:', newAttestationUID);
 
-console.log('Transaction receipt:', tx.receipt);
+console.log('Transaction receipt:', transaction.receipt);
 ```
 
-### Revoking Onchain Attestations
+### Revoking Delegated Onchain Attestations
 
-The `revoke` function allows you to revoke an on-chain attestation. This function takes an object with the following properties:
+The `revokeByDelegation` function allows you to create a delegated on-chain revocation for a specific attestation. This function takes an object with the following properties:
 
 - `schema`: The UID of the schema for which the attestation is being revoke.
 - `data`: An object containing the following properties:
   - `uid`: The UID of the attestation to revoke.
   - `value`: (Optional) The ETH value that is being sent with the revocation.
+- `revoker`: The address of the revoker.
+- `signature`: A EIP712 typed-signature (`r`, `s`, and `v`) over the message (using the `signDelegatedRevocation` function).
+- `deadline`: A Unix representing the expiration time of the signature.
 
-### Example: Revoking Onchain Attestations
+The function returns a `Promise` that resolves to the UID of the newly created attestation.
+
+#### Example: Revoking Delegated Onchain Attestations
 
 ```javascript
+import { EAS, SchemaEncoder } from '@ethereum-attestation-service/eas-sdk';
+
+const eas = new EAS(EASContractAddress);
+
+// Use a different account to send and pay for the attestation.
+eas.connect(sender);
+
+const delegated = await eas.getDelegated();
+
+const signer = new ethers.Wallet(privateKey, provider);
+
 const transaction = await eas.revoke({
   schema: '0x85500e806cf1e74844d51a20a6d893fe1ed6f6b0738b50e43d774827d08eca61',
   data: { uid: '0x6776de8122c352b4d671003e58ca112aedb99f34c629a1d1fe3b332504e2943a' }
+});
+
+// Please note that if nonce isn't provided explicitly, we will try retrieving it onchain.
+const response = await delegated.signDelegatedRevocation(
+  {
+    schema: '0x85500e806cf1e74844d51a20a6d893fe1ed6f6b0738b50e43d774827d08eca61',
+    uid: '0x6776de8122c352b4d671003e58ca112aedb99f34c629a1d1fe3b332504e2943a',
+    deadline: 0n, // Unix timestamp of when signature expires (0 for no expiration)
+    value: 0n
+  },
+  signer
+);
+
+const transaction = await eas.revokeByDelegation({
+  schema: '0xb16fa048b0d597f5a821747eba64efa4762ee5143e9a80600d0005386edfc995',
+  data: {
+    uid: '0x6776de8122c352b4d671003e58ca112aedb99f34c629a1d1fe3b332504e2943a',
+  },
+  signature: response.signature,
+  revoker: await signer.getAddress(),
+  deadline: 0n // Unix timestamp of when signature expires (0 for no expiration)
 });
 
 // Optional: Wait for transaction to be validated
@@ -610,7 +670,7 @@ const encodedData = schemaEncoder.encodeData([{ name: 'dataRoot', value: fullTre
 // Private data schema
 const schemaUID = '0x20351f973fdec1478924c89dfa533d8f872defa108d9c3c6512267d7e7e5dbc2';
 
-const tx = await eas.attest({
+const transaction = await eas.attest({
   schema: schemaUID,
   data: {
     recipient: '0xFD50b031E778fAb33DfD2Fc3Ca66a1EeF0652165',
@@ -620,7 +680,7 @@ const tx = await eas.attest({
   }
 });
 
-const newAttestationUID = await tx.wait();
+const newAttestationUID = await transaction.wait();
 
 console.log('New attestation UID:', newAttestationUID);
 

@@ -420,7 +420,7 @@ class EAS extends transaction_1.Base {
             address: await this.contract.getAddress(),
             domainSeparator: await this.getDomainSeparator(),
             chainId: await this.getChainId()
-        });
+        }, this);
         return this.delegated;
     }
     // Sets the offchain attestations helper

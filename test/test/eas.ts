@@ -928,7 +928,6 @@ describe('EAS API', () => {
                 refUID: ZERO_BYTES32,
                 data: ZERO_BYTES,
                 value: 0n,
-                nonce: await eas.getNonce(senderAddress),
                 deadline: NO_EXPIRATION
               };
 
@@ -998,7 +997,6 @@ describe('EAS API', () => {
                 schema: schemaId,
                 uid: encodeBytes32String('123'),
                 value: 0n,
-                nonce: await eas.getNonce(senderAddress),
                 deadline: NO_EXPIRATION
               };
 
@@ -1096,7 +1094,6 @@ describe('EAS API', () => {
                   refUID: ZERO_BYTES32,
                   data: ZERO_BYTES,
                   value: 0n,
-                  nonce: await eas.getNonce(senderAddress),
                   deadline: NO_EXPIRATION
                 };
 
@@ -1167,7 +1164,6 @@ describe('EAS API', () => {
                 schema: schemaId,
                 uid: encodeBytes32String('123'),
                 value: 0n,
-                nonce: await eas.getNonce(senderAddress),
                 deadline: NO_EXPIRATION
               };
 

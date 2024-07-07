@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.4.0
+
+- Delegated Attestations: if nonce isn't provided, try retrieving it onchain
+
 ## 2.3.0
 
 - Add utilities to handle private data
