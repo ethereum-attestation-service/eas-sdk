@@ -10,4 +10,5 @@ tslib_1.__exportStar(require("./schema-encoder"), exports);
 tslib_1.__exportStar(require("./schema-registry"), exports);
 tslib_1.__exportStar(require("./transaction"), exports);
 tslib_1.__exportStar(require("./utils"), exports);
+tslib_1.__exportStar(require("./private-data"), exports);
 //# sourceMappingURL=index.js.map

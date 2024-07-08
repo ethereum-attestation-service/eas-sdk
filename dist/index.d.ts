@@ -6,3 +6,4 @@ export * from './schema-encoder';
 export * from './schema-registry';
 export * from './transaction';
 export * from './utils';
+export * from './private-data';

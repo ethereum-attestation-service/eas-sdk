@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.4.1
+
+- Export Private Data types
+
 ## 2.4.0
 
 - Delegated Attestations: if nonce isn't provided, try retrieving it onchain
