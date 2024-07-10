@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.5.0
+
+- Add schema verification function
+
 ## 2.4.1
 
 - Export Private Data types

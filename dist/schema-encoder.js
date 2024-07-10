@@ -121,6 +121,15 @@ class SchemaEncoder {
             };
         });
     }
+    static isSchemaValid(schema) {
+        try {
+            new SchemaEncoder(schema);
+            return true;
+        }
+        catch (e) {
+            return false;
+        }
+    }
     isEncodedDataValid(data) {
         try {
             this.decodeData(data);

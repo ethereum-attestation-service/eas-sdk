@@ -179,6 +179,16 @@ export class SchemaEncoder {
     });
   }
 
+  public static isSchemaValid(schema: string) {
+    try {
+      new SchemaEncoder(schema);
+
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
   public isEncodedDataValid(data: string) {
     try {
       this.decodeData(data);

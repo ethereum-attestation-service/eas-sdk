@@ -122,18 +122,9 @@ describe('SchemaEncoder', () => {
           const schemaEncoder = new SchemaEncoder(schema);
           expect(schemaEncoder.schema).to.deep.equal(decodedSchema);
         });
-      });
-    }
 
-    for (const schema of [
-      'boo like',
-      'adss contractAddress,bool trusted',
-      'bytes32 eventId,uint8 ticketType,uint10000 ticketNum',
-      'bytes32 eventId,uint8 ticketType,ticketNum'
-    ]) {
-      context(schema, () => {
-        it('should throw', () => {
-          expect(() => new SchemaEncoder(schema)).to.throw(Error);
+        it('should verify', () => {
+          expect(SchemaEncoder.isSchemaValid(schema)).to.be.true;
         });
       });
     }
@@ -675,6 +666,21 @@ describe('SchemaEncoder', () => {
           });
         });
       }
+    }
+  });
+
+  describe('verification', () => {
+    for (const schema of [
+      'boo like',
+      'adss contractAddress,bool trusted',
+      'bytes32 eventId,uint8 ticketType,uint10000 ticketNum',
+      'bytes32 eventId,uint8 ticketType,ticketNum'
+    ]) {
+      context(schema, () => {
+        it('should unable to verify', () => {
+          expect(SchemaEncoder.isSchemaValid(schema)).to.be.false;
+        });
+      });
     }
   });
 
