@@ -115,6 +115,54 @@ describe('SchemaEncoder', () => {
             value: []
           }
         ]
+      },
+      {
+        schema:
+          'string contractGroupName,string ipfsHash,string readmeIpfsHash,address[] contractAddresses,string[] contractNames,string[] contractNetworks,string[] contractIpfsHashes',
+        decodedSchema: [
+          {
+            name: 'contractGroupName',
+            type: 'string',
+            signature: 'string contractGroupName',
+            value: ''
+          },
+          {
+            name: 'ipfsHash',
+            type: 'string',
+            signature: 'string ipfsHash',
+            value: ''
+          },
+          {
+            name: 'readmeIpfsHash',
+            type: 'string',
+            signature: 'string readmeIpfsHash',
+            value: ''
+          },
+          {
+            name: 'contractAddresses',
+            type: 'address[]',
+            signature: 'address[] contractAddresses',
+            value: []
+          },
+          {
+            name: 'contractNames',
+            type: 'string[]',
+            signature: 'string[] contractNames',
+            value: []
+          },
+          {
+            name: 'contractNetworks',
+            type: 'string[]',
+            signature: 'string[] contractNetworks',
+            value: []
+          },
+          {
+            name: 'contractIpfsHashes',
+            type: 'string[]',
+            signature: 'string[] contractIpfsHashes',
+            value: []
+          }
+        ]
       }
     ]) {
       context(schema, () => {

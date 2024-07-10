@@ -30,6 +30,12 @@ export interface SchemaDecodedItem {
 
 const TUPLE_TYPE = 'tuple';
 const TUPLE_ARRAY_TYPE = 'tuple[]';
+const BYTES32 = 'bytes32';
+const STRING = 'string';
+const ADDRESS = 'address';
+const BOOL = 'bool';
+const UINT = 'uint';
+const IPFS_HASH = 'ipfsHash';
 
 export class SchemaEncoder {
   public schema: SchemaItemWithSignature[];
@@ -37,7 +43,7 @@ export class SchemaEncoder {
   constructor(schema: string) {
     this.schema = [];
 
-    const fixedSchema = schema.replace(/ipfsHash/g, 'bytes32');
+    const fixedSchema = schema.replace(new RegExp(`${IPFS_HASH} (\\S+)`, 'g'), `${BYTES32} $1`);
     const fragment = FunctionFragment.from(`func(${fixedSchema})`);
 
     // The following verification will throw in case of an incorrect schema
@@ -93,7 +99,7 @@ export class SchemaEncoder {
       if (
         sanitizedType !== schemaItem.type &&
         sanitizedType !== schemaItem.signature &&
-        !(sanitizedType === 'ipfsHash' && schemaItem.type === 'bytes32')
+        !(sanitizedType === IPFS_HASH && schemaItem.type === BYTES32)
       ) {
         throw new Error(`Incompatible param type: ${sanitizedType}`);
       }
@@ -103,9 +109,9 @@ export class SchemaEncoder {
       }
 
       data.push(
-        schemaItem.type === 'bytes32' && schemaItem.name === 'ipfsHash'
+        schemaItem.type === BYTES32 && schemaItem.name === IPFS_HASH
           ? SchemaEncoder.decodeIpfsValue(value as string)
-          : schemaItem.type === 'bytes32' && typeof value === 'string' && !isBytesLike(value)
+          : schemaItem.type === BYTES32 && typeof value === 'string' && !isBytesLike(value)
             ? encodeBytes32String(value)
             : value
       );
@@ -128,7 +134,7 @@ export class SchemaEncoder {
       const input = fragment.inputs[0];
       const components = input.components ?? input.arrayChildren?.components ?? [];
 
-      if (value.length > 0 && typeof value !== 'string' && components?.length > 0) {
+      if (value.length > 0 && typeof value !== STRING && components?.length > 0) {
         if (Array.isArray(value[0])) {
           const namedValues = [];
 
@@ -210,7 +216,7 @@ export class SchemaEncoder {
 
   public static encodeQmHash(hash: string): string {
     const a = CID.parse(hash);
-    return AbiCoder.defaultAbiCoder().encode(['bytes32'], [a.multihash.digest]);
+    return AbiCoder.defaultAbiCoder().encode([BYTES32], [a.multihash.digest]);
   }
 
   public static decodeQmHash(bytes32: string): string {
@@ -227,7 +233,7 @@ export class SchemaEncoder {
   }
 
   private static getDefaultValueForTypeName(typeName: string) {
-    return typeName === 'bool' ? false : typeName.includes('uint') ? '0' : typeName === 'address' ? ZERO_ADDRESS : '';
+    return typeName === BOOL ? false : typeName.includes(UINT) ? '0' : typeName === ADDRESS ? ZERO_ADDRESS : '';
   }
 
   private static decodeIpfsValue(val: string) {
@@ -237,7 +243,7 @@ export class SchemaEncoder {
 
     try {
       const decodedHash = CID.parse(val);
-      const encoded = AbiCoder.defaultAbiCoder().encode(['bytes32'], [decodedHash.multihash.digest]);
+      const encoded = AbiCoder.defaultAbiCoder().encode([BYTES32], [decodedHash.multihash.digest]);
 
       return encoded;
     } catch {
@@ -247,7 +253,7 @@ export class SchemaEncoder {
 
   private static encodeBytes32Value(value: string) {
     try {
-      AbiCoder.defaultAbiCoder().encode(['bytes32'], [value]);
+      AbiCoder.defaultAbiCoder().encode([BYTES32], [value]);
       return value;
     } catch (e) {
       return encodeBytes32String(value);

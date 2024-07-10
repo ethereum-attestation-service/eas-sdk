@@ -6,11 +6,17 @@ const multiformats_1 = require("multiformats");
 const utils_1 = require("./utils");
 const TUPLE_TYPE = 'tuple';
 const TUPLE_ARRAY_TYPE = 'tuple[]';
+const BYTES32 = 'bytes32';
+const STRING = 'string';
+const ADDRESS = 'address';
+const BOOL = 'bool';
+const UINT = 'uint';
+const IPFS_HASH = 'ipfsHash';
 class SchemaEncoder {
     schema;
     constructor(schema) {
         this.schema = [];
-        const fixedSchema = schema.replace(/ipfsHash/g, 'bytes32');
+        const fixedSchema = schema.replace(new RegExp(`${IPFS_HASH} (\\S+)`, 'g'), `${BYTES32} $1`);
         const fragment = ethers_1.FunctionFragment.from(`func(${fixedSchema})`);
         // The following verification will throw in case of an incorrect schema
         ethers_1.AbiCoder.defaultAbiCoder().getDefaultValue(fragment.inputs);
@@ -54,15 +60,15 @@ class SchemaEncoder {
             const sanitizedType = type.replace(/\s/g, '');
             if (sanitizedType !== schemaItem.type &&
                 sanitizedType !== schemaItem.signature &&
-                !(sanitizedType === 'ipfsHash' && schemaItem.type === 'bytes32')) {
+                !(sanitizedType === IPFS_HASH && schemaItem.type === BYTES32)) {
                 throw new Error(`Incompatible param type: ${sanitizedType}`);
             }
             if (name !== schemaItem.name) {
                 throw new Error(`Incompatible param name: ${name}`);
             }
-            data.push(schemaItem.type === 'bytes32' && schemaItem.name === 'ipfsHash'
+            data.push(schemaItem.type === BYTES32 && schemaItem.name === IPFS_HASH
                 ? SchemaEncoder.decodeIpfsValue(value)
-                : schemaItem.type === 'bytes32' && typeof value === 'string' && !(0, ethers_1.isBytesLike)(value)
+                : schemaItem.type === BYTES32 && typeof value === 'string' && !(0, ethers_1.isBytesLike)(value)
                     ? (0, ethers_1.encodeBytes32String)(value)
                     : value);
         }
@@ -78,7 +84,7 @@ class SchemaEncoder {
             let value = values[i];
             const input = fragment.inputs[0];
             const components = input.components ?? input.arrayChildren?.components ?? [];
-            if (value.length > 0 && typeof value !== 'string' && components?.length > 0) {
+            if (value.length > 0 && typeof value !== STRING && components?.length > 0) {
                 if (Array.isArray(value[0])) {
                     const namedValues = [];
                     for (const val of value) {
@@ -150,7 +156,7 @@ class SchemaEncoder {
     }
     static encodeQmHash(hash) {
         const a = multiformats_1.CID.parse(hash);
-        return ethers_1.AbiCoder.defaultAbiCoder().encode(['bytes32'], [a.multihash.digest]);
+        return ethers_1.AbiCoder.defaultAbiCoder().encode([BYTES32], [a.multihash.digest]);
     }
     static decodeQmHash(bytes32) {
         const digest = Uint8Array.from(Buffer.from(bytes32.slice(2), 'hex'));
@@ -164,7 +170,7 @@ class SchemaEncoder {
         return dCID.toString();
     }
     static getDefaultValueForTypeName(typeName) {
-        return typeName === 'bool' ? false : typeName.includes('uint') ? '0' : typeName === 'address' ? utils_1.ZERO_ADDRESS : '';
+        return typeName === BOOL ? false : typeName.includes(UINT) ? '0' : typeName === ADDRESS ? utils_1.ZERO_ADDRESS : '';
     }
     static decodeIpfsValue(val) {
         if ((0, ethers_1.isBytesLike)(val)) {
@@ -172,7 +178,7 @@ class SchemaEncoder {
         }
         try {
             const decodedHash = multiformats_1.CID.parse(val);
-            const encoded = ethers_1.AbiCoder.defaultAbiCoder().encode(['bytes32'], [decodedHash.multihash.digest]);
+            const encoded = ethers_1.AbiCoder.defaultAbiCoder().encode([BYTES32], [decodedHash.multihash.digest]);
             return encoded;
         }
         catch {
@@ -181,7 +187,7 @@ class SchemaEncoder {
     }
     static encodeBytes32Value(value) {
         try {
-            ethers_1.AbiCoder.defaultAbiCoder().encode(['bytes32'], [value]);
+            ethers_1.AbiCoder.defaultAbiCoder().encode([BYTES32], [value]);
             return value;
         }
         catch (e) {
