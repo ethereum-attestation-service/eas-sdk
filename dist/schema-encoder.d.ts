@@ -18,6 +18,7 @@ export declare class SchemaEncoder {
     constructor(schema: string);
     encodeData(params: SchemaItem[]): string;
     decodeData(data: string): SchemaDecodedItem[];
+    static isSchemaValid(schema: string): boolean;
     isEncodedDataValid(data: string): boolean;
     static isCID(cid: string): boolean;
     static encodeQmHash(hash: string): string;
