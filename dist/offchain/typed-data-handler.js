@@ -4,6 +4,7 @@ exports.TypedDataHandler = exports.InvalidAddress = exports.InvalidTypes = expor
 const tslib_1 = require("tslib");
 const ethers_1 = require("ethers");
 const isEqual_1 = tslib_1.__importDefault(require("lodash/isEqual"));
+const viem_1 = require("viem");
 const utils_1 = require("../utils");
 exports.EIP712_DOMAIN = 'EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)';
 class InvalidDomain extends Error {
@@ -45,7 +46,7 @@ class TypedDataHandler {
     }
     async signTypedDataRequest(params, types, signer) {
         const rawSignature = await signer.signTypedData(types.domain, types.types, params);
-        const signature = ethers_1.Signature.from(rawSignature);
+        const signature = ethers_1.Signature.from((0, viem_1.parseErc6492Signature)(rawSignature).signature);
         return { ...types, signature: { v: signature.v, r: signature.r, s: signature.s } };
     }
     verifyTypedDataRequestSignature(attester, response, types, strict = true) {
