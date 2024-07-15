@@ -11,6 +11,7 @@ import {
   verifyTypedData
 } from 'ethers';
 import isEqual from 'lodash/isEqual';
+import { parseErc6492Signature } from 'viem';
 import { ZERO_ADDRESS } from '../utils';
 
 export interface TypeDataSigner extends Addressable {
@@ -142,7 +143,7 @@ export abstract class TypedDataHandler {
     signer: TypeDataSigner
   ): Promise<EIP712Response<T, P>> {
     const rawSignature = await signer.signTypedData(types.domain, types.types, params);
-    const signature = Sig.from(rawSignature);
+    const signature = Sig.from(parseErc6492Signature(rawSignature as `0x${string}`).signature);
 
     return { ...types, signature: { v: signature.v, r: signature.r, s: signature.s } };
   }
