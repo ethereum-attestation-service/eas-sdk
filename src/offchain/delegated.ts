@@ -42,6 +42,7 @@ const DELEGATED_ATTESTATION_TYPES: Record<DelegatedAttestationVersion, Delegated
   },
   [DelegatedAttestationVersion.Version1]: {
     typedSignature:
+      // eslint-disable-next-line max-len
       'Attest(bytes32 schema,address recipient,uint64 expirationTime,bool revocable,bytes32 refUID,bytes data,uint256 value,uint256 nonce,uint64 deadline)',
     primaryType: 'Attest',
     types: {
@@ -60,6 +61,7 @@ const DELEGATED_ATTESTATION_TYPES: Record<DelegatedAttestationVersion, Delegated
   },
   [DelegatedAttestationVersion.Version2]: {
     typedSignature:
+      // eslint-disable-next-line max-len
       'Attest(address attester,bytes32 schema,address recipient,uint64 expirationTime,bool revocable,bytes32 refUID,bytes data,uint256 value,uint256 nonce,uint64 deadline)',
     primaryType: 'Attest',
     types: {

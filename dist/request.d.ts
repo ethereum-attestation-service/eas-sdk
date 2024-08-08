@@ -48,11 +48,7 @@ export interface MultiDelegatedRevocationRequest extends MultiRevocationRequest 
     revoker: string;
     deadline?: bigint;
 }
-export interface DelegatedProxyAttestationRequest extends DelegatedAttestationRequest {
-}
-export interface MultiDelegatedProxyAttestationRequest extends MultiDelegatedAttestationRequest {
-}
-export interface DelegatedProxyRevocationRequest extends DelegatedRevocationRequest {
-}
-export interface MultiDelegatedProxyRevocationRequest extends MultiDelegatedRevocationRequest {
-}
+export type DelegatedProxyAttestationRequest = DelegatedAttestationRequest;
+export type MultiDelegatedProxyAttestationRequest = MultiDelegatedAttestationRequest;
+export type DelegatedProxyRevocationRequest = DelegatedRevocationRequest;
+export type MultiDelegatedProxyRevocationRequest = MultiDelegatedRevocationRequest;

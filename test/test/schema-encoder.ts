@@ -118,6 +118,7 @@ describe('SchemaEncoder', () => {
       },
       {
         schema:
+          // eslint-disable-next-line max-len
           'string contractGroupName,string ipfsHash,string readmeIpfsHash,address[] contractAddresses,string[] contractNames,string[] contractNetworks,string[] contractIpfsHashes',
         decodedSchema: [
           {

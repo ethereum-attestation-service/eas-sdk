@@ -67,7 +67,6 @@ export const attachOnly = <F extends ContractFactory>(
   };
 };
 
-/* eslint-disable camelcase */
 const getContracts = (signer?: Signer) => ({
   connect: (signer: Signer) => getContracts(signer),
 
@@ -79,6 +78,5 @@ const getContracts = (signer?: Signer) => ({
   EASLegacy: deployOrAttach('EAS', EASLegacyFactory, signer),
   ETHResolver: deployOrAttach('ETHResolver', ETHResolverFactory, signer)
 });
-/* eslint-enable camelcase */
 
 export default getContracts();

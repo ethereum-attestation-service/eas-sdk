@@ -31,6 +31,7 @@ describe('utils', () => {
                   for (const data of [ZERO_BYTES32, '0x1234']) {
                     for (const bump of [0, 1, 2]) {
                       context(
+                        // eslint-disable-next-line max-len
                         `schema=${schema},recipient=${recipient},attester=${attester},time=${time},expirationTime=${expirationTime},revocable=${revocable},data=${data},bump=${bump}`,
                         () => {
                           it('should properly derive uid', () => {

@@ -13,36 +13,38 @@
   "scripts": {
     "build": "rm -rf dist && tsc --build tsconfig.json",
     "test": "cd test && pnpm test",
-    "lint": "eslint -c .eslintrc --ext .ts src test",
+    "lint": "eslint src test",
     "format": "prettier --check --write . --config .prettierrc",
     "prepare:release": "pnpm lint && pnpm format && pnpm test && pnpm build"
   },
   "dependencies": {
-    "@ethereum-attestation-service/eas-contracts": "1.4.1",
-    "@openzeppelin/merkle-tree": "^1.0.6",
-    "ethers": "^6.11.1",
+    "@ethereum-attestation-service/eas-contracts": "1.7.1",
+    "@openzeppelin/merkle-tree": "^1.0.7",
+    "ethers": "^6.13.2",
     "js-base64": "^3.7.7",
     "lodash": "^4.17.21",
     "multiformats": "9.9.0",
     "pako": "^2.1.0",
-    "semver": "^7.6.0"
+    "semver": "^7.6.3",
+    "viem": "^2.19.2"
   },
   "devDependencies": {
-    "@ianvs/prettier-plugin-sort-imports": "^4.2.1",
-    "@metamask/eth-sig-util": "^7.0.1",
-    "@types/lodash": "^4.17.0",
-    "@types/node": "^20.12.7",
+    "@ianvs/prettier-plugin-sort-imports": "^4.3.1",
+    "@metamask/eth-sig-util": "^7.0.3",
+    "@types/lodash": "^4.17.7",
+    "@types/node": "^22.1.0",
     "@types/pako": "^2.0.3",
     "@types/semver": "^7.5.8",
-    "@typescript-eslint/eslint-plugin": "^7.7.0",
-    "@typescript-eslint/parser": "^7.7.0",
-    "eslint": "^8.56.0",
+    "eslint": "^9.8.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-chai-friendly": "^1.0.1",
     "eslint-plugin-import": "^2.29.1",
     "eslint-plugin-prefer-arrow": "^1.2.3",
-    "prettier": "^3.2.5",
+    "prettier": "^3.3.3",
     "prettier-package-json": "^2.8.0",
     "ts-node": "^10.9.2",
-    "tslib": "^2.6.2",
-    "typescript": "^5.4.5"
+    "tslib": "^2.6.3",
+    "typescript": "^5.5.4",
+    "typescript-eslint": "^8.0.1"
   }
 }

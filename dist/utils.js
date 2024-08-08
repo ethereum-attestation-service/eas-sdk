@@ -59,6 +59,7 @@ const getOffchainUID = (version, schema, recipient, time, expirationTime, revoca
 };
 exports.getOffchainUID = getOffchainUID;
 const getDataFromReceipt = (receipt, event, attribute) => {
+    // eslint-disable-next-line camelcase
     const eas = new ethers_1.Interface(eas_contracts_1.EAS__factory.abi);
     const logs = [];
     for (const log of receipt.logs.filter((l) => l.topics[0] === TOPICS[event]) || []) {
