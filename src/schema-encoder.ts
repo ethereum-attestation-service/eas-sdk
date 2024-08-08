@@ -190,7 +190,7 @@ export class SchemaEncoder {
       new SchemaEncoder(schema);
 
       return true;
-    } catch (e) {
+    } catch (_e) {
       return false;
     }
   }
@@ -200,7 +200,7 @@ export class SchemaEncoder {
       this.decodeData(data);
 
       return true;
-    } catch (e) {
+    } catch (_e) {
       return false;
     }
   }
@@ -255,7 +255,7 @@ export class SchemaEncoder {
     try {
       AbiCoder.defaultAbiCoder().encode([BYTES32], [value]);
       return value;
-    } catch (e) {
+    } catch (_e) {
       return encodeBytes32String(value);
     }
   }

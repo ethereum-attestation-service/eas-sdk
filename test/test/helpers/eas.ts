@@ -46,8 +46,7 @@ export interface AttestationOptions extends RequestOptions {
   bump?: number;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface RevocationOptions extends RequestOptions {}
+export type RevocationOptions = RequestOptions;
 
 export const expectAttestation = async (
   eas: EAS,

@@ -5,7 +5,6 @@ import { ethers } from 'hardhat';
 export const getBalance = async (address: string) => ethers.provider.getBalance(address);
 
 export const createWallet = async () => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const wallet = Wallet.createRandom().connect(ethers.provider);
   const deployer = (await ethers.getSigners())[0];
   await deployer.sendTransaction({

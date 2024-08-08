@@ -132,7 +132,7 @@ class SchemaEncoder {
             new SchemaEncoder(schema);
             return true;
         }
-        catch (e) {
+        catch (_e) {
             return false;
         }
     }
@@ -141,7 +141,7 @@ class SchemaEncoder {
             this.decodeData(data);
             return true;
         }
-        catch (e) {
+        catch (_e) {
             return false;
         }
     }
@@ -190,7 +190,7 @@ class SchemaEncoder {
             ethers_1.AbiCoder.defaultAbiCoder().encode([BYTES32], [value]);
             return value;
         }
-        catch (e) {
+        catch (_e) {
             return (0, ethers_1.encodeBytes32String)(value);
         }
     }

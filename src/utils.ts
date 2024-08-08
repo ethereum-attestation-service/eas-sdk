@@ -105,6 +105,7 @@ export const getOffchainUID = (
 };
 
 const getDataFromReceipt = (receipt: TransactionReceipt, event: Event, attribute: string): string[] => {
+  // eslint-disable-next-line camelcase
   const eas = new Interface(EAS__factory.abi);
   const logs = [];
 

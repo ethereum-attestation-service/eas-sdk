@@ -7,13 +7,11 @@ export interface IndexerOptions {
 export interface UIDOptions {
     uid: string;
 }
-export interface IndexAttestationOptions extends UIDOptions {
-}
+export type IndexAttestationOptions = UIDOptions;
 export interface IndexAttestationsOptions {
     uids: string[];
 }
-export interface IsAttestationIndexedOptions extends UIDOptions {
-}
+export type IsAttestationIndexedOptions = UIDOptions;
 export interface PaginationOptions {
     start: bigint;
     length: bigint;

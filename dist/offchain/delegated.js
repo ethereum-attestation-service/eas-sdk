@@ -29,7 +29,9 @@ const DELEGATED_ATTESTATION_TYPES = {
         }
     },
     [DelegatedAttestationVersion.Version1]: {
-        typedSignature: 'Attest(bytes32 schema,address recipient,uint64 expirationTime,bool revocable,bytes32 refUID,bytes data,uint256 value,uint256 nonce,uint64 deadline)',
+        typedSignature: 
+        // eslint-disable-next-line max-len
+        'Attest(bytes32 schema,address recipient,uint64 expirationTime,bool revocable,bytes32 refUID,bytes data,uint256 value,uint256 nonce,uint64 deadline)',
         primaryType: 'Attest',
         types: {
             Attest: [
@@ -46,7 +48,9 @@ const DELEGATED_ATTESTATION_TYPES = {
         }
     },
     [DelegatedAttestationVersion.Version2]: {
-        typedSignature: 'Attest(address attester,bytes32 schema,address recipient,uint64 expirationTime,bool revocable,bytes32 refUID,bytes data,uint256 value,uint256 nonce,uint64 deadline)',
+        typedSignature: 
+        // eslint-disable-next-line max-len
+        'Attest(address attester,bytes32 schema,address recipient,uint64 expirationTime,bool revocable,bytes32 refUID,bytes data,uint256 value,uint256 nonce,uint64 deadline)',
         primaryType: 'Attest',
         types: {
             Attest: [

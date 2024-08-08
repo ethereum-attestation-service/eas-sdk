@@ -44,7 +44,9 @@ const DELEGATED_PROXY_ATTESTATION_TYPES = {
         }
     },
     [DelegatedProxyAttestationVersion.Version2]: {
-        typedSignature: 'Attest(address attester,bytes32 schema,address recipient,uint64 expirationTime,bool revocable,bytes32 refUID,bytes data,uint256 value,uint64 deadline)',
+        typedSignature: 
+        // eslint-disable-next-line max-len
+        'Attest(address attester,bytes32 schema,address recipient,uint64 expirationTime,bool revocable,bytes32 refUID,bytes data,uint256 value,uint64 deadline)',
         primaryType: 'Attest',
         types: {
             Attest: [
