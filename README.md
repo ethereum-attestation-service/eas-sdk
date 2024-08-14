@@ -665,7 +665,7 @@ const fullTree = privateData.getFullTree();
 
 // Create an attestation with the Merkle root
 const schemaEncoder = new SchemaEncoder('bytes32 privateData');
-const encodedData = schemaEncoder.encodeData([{ name: 'dataRoot', value: fullTree.root, type: 'bytes32' }]);
+const encodedData = schemaEncoder.encodeData([{ name: 'privateData', value: fullTree.root, type: 'bytes32' }]);
 
 // Private data schema
 const schemaUID = '0x20351f973fdec1478924c89dfa533d8f872defa108d9c3c6512267d7e7e5dbc2';
