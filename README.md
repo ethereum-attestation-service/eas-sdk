@@ -9,7 +9,7 @@ This repository contains the Ethereum Attestation Service SDK, used to interact 
 ## Table of Contents
 
 - [Installing the EAS SDK](#installing-the-eas-sdk)
-- [Using the EAS SD÷K](#using-the-eas-sdk)
+- [Using the EAS SDK](#using-the-eas-sdk)
 - [Getting an Attestation](#getting-an-attestation)
 - [Creating Onchain Attestations](#creating-onchain-attestations)
   - [Example: Creating Onchain Attestations](#example-creating-onchain-attestations)
@@ -29,7 +29,7 @@ This repository contains the Ethereum Attestation Service SDK, used to interact 
 - [Using the PrivateData Class](#using-the-privatedata-class)
   - [Creating Private Data](#creating-private-data)
   - [Getting the Full Merkle Tree](#getting-the-full-merkle-tree)
-  - [Generating a Multi-Proof](#generating-a-multi-proof)÷
+  - [Generating a Multi-Proof](#generating-a-multi-proof)
   - [Verifying a Multi-Proof](#verifying-a-multi-proof)
   - [Verifying the Full Tree](#verifying-the-full-tree)
 - [Example: Creating an Attestation with Private Data](#example-creating-an-attestation-with-private-data)
