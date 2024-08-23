@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SchemaRegistry = void 0;
+const tslib_1 = require("tslib");
 const eas_contracts_1 = require("@ethereum-attestation-service/eas-contracts");
 const version_1 = require("./legacy/version");
 const transaction_1 = require("./transaction");
@@ -16,9 +17,6 @@ class SchemaRegistry extends transaction_1.Base {
     }
     // Registers a new schema and returns its UID
     async register({ schema, resolverAddress = utils_1.ZERO_ADDRESS, revocable = true }, overrides) {
-        if (!this.signer) {
-            throw new Error('Invalid signer');
-        }
         return new transaction_1.Transaction(await this.contract.register.populateTransaction(schema, resolverAddress, revocable, overrides ?? {}), this.signer, 
         // eslint-disable-next-line require-await
         async (_receipt) => (0, utils_1.getSchemaUID)(schema, resolverAddress, revocable));
@@ -33,4 +31,10 @@ class SchemaRegistry extends transaction_1.Base {
     }
 }
 exports.SchemaRegistry = SchemaRegistry;
+tslib_1.__decorate([
+    transaction_1.RequireSigner,
+    tslib_1.__metadata("design:type", Function),
+    tslib_1.__metadata("design:paramtypes", [Object, Object]),
+    tslib_1.__metadata("design:returntype", Promise)
+], SchemaRegistry.prototype, "register", null);
 //# sourceMappingURL=schema-registry.js.map

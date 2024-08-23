@@ -1,6 +1,21 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Base = exports.Transaction = void 0;
+exports.Base = exports.Transaction = exports.RequireSigner = void 0;
+const tslib_1 = require("tslib");
+const RequireSigner = (_target, _propertyKey, descriptor) => {
+    const originalMethod = descriptor.value;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    descriptor.value = function (...args) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const signer = this.signer;
+        if (!signer || !signer.sendTransaction) {
+            throw new Error('Invalid signer');
+        }
+        return originalMethod.apply(this, args);
+    };
+    return descriptor;
+};
+exports.RequireSigner = RequireSigner;
 class Transaction {
     data;
     receipt;
@@ -24,6 +39,12 @@ class Transaction {
     }
 }
 exports.Transaction = Transaction;
+tslib_1.__decorate([
+    exports.RequireSigner,
+    tslib_1.__metadata("design:type", Function),
+    tslib_1.__metadata("design:paramtypes", [Number]),
+    tslib_1.__metadata("design:returntype", Promise)
+], Transaction.prototype, "wait", null);
 class Base {
     contract;
     signer;

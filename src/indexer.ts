@@ -2,10 +2,10 @@ import { Indexer__factory, Indexer as IndexerContract } from '@ethereum-attestat
 import { Overrides } from 'ethers';
 import { legacyVersion } from './legacy/version';
 import { DelegatedProxy } from './offchain';
-import { Base, Transaction, TransactionSigner } from './transaction';
+import { Base, RequireSigner, Transaction, TransactionProvider, TransactionSigner } from './transaction';
 
 export interface IndexerOptions {
-  signer?: TransactionSigner;
+  signer?: TransactionSigner | TransactionProvider;
 }
 
 export interface UIDOptions {
@@ -66,7 +66,7 @@ export class Indexer extends Base<IndexerContract> {
   }
 
   // Connects the API to a specific signer
-  public connect(signer: TransactionSigner) {
+  public connect(signer: TransactionSigner | TransactionProvider) {
     delete this.delegated;
 
     super.connect(signer);
@@ -85,30 +85,24 @@ export class Indexer extends Base<IndexerContract> {
   }
 
   // Indexes an existing attestation
+  @RequireSigner
   public async indexAttestation({ uid }: IndexAttestationOptions, overrides?: Overrides): Promise<Transaction<void>> {
-    if (!this.signer) {
-      throw new Error('Invalid signer');
-    }
-
     return new Transaction(
       await this.contract.indexAttestation.populateTransaction(uid, { ...overrides }),
-      this.signer,
+      this.signer!,
       async () => {}
     );
   }
 
   // Indexes multiple existing attestations
+  @RequireSigner
   public async indexAttestations(
     { uids }: IndexAttestationsOptions,
     overrides?: Overrides
   ): Promise<Transaction<void>> {
-    if (!this.signer) {
-      throw new Error('Invalid signer');
-    }
-
     return new Transaction(
       await this.contract.indexAttestations.populateTransaction(uids, { ...overrides }),
-      this.signer,
+      this.signer!,
       async () => {}
     );
   }

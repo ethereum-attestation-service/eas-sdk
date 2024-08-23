@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EIP712Proxy = void 0;
+const tslib_1 = require("tslib");
 const eas_contracts_1 = require("@ethereum-attestation-service/eas-contracts");
 const version_1 = require("./legacy/version");
 const offchain_1 = require("./offchain");
@@ -56,9 +57,6 @@ class EIP712Proxy extends transaction_1.Base {
     }
     // Attests to a specific schema via an EIP712 delegation request using an external EIP712 proxy
     async attestByDelegationProxy({ schema, data: { recipient, data, expirationTime = request_1.NO_EXPIRATION, revocable = true, refUID = utils_1.ZERO_BYTES32, value = 0n }, attester, signature, deadline = request_1.NO_EXPIRATION }, overrides) {
-        if (!this.signer) {
-            throw new Error('Invalid signer');
-        }
         return new transaction_1.Transaction(await this.contract.attestByDelegation.populateTransaction({
             schema,
             data: {
@@ -78,9 +76,6 @@ class EIP712Proxy extends transaction_1.Base {
     }
     // Multi-attests to multiple schemas via an EIP712 delegation requests using an external EIP712 proxy
     async multiAttestByDelegationProxy(requests, overrides) {
-        if (!this.signer) {
-            throw new Error('Invalid signer');
-        }
         const multiAttestationRequests = requests.map((r) => ({
             schema: r.schema,
             data: r.data.map((d) => ({
@@ -108,9 +103,6 @@ class EIP712Proxy extends transaction_1.Base {
     }
     // Revokes an existing attestation an EIP712 delegation request using an external EIP712 proxy
     async revokeByDelegationProxy({ schema, data: { uid, value = 0n }, signature, revoker, deadline = request_1.NO_EXPIRATION }, overrides) {
-        if (!this.signer) {
-            throw new Error('Invalid signer');
-        }
         return new transaction_1.Transaction(await this.contract.revokeByDelegation.populateTransaction({
             schema,
             data: {
@@ -124,9 +116,6 @@ class EIP712Proxy extends transaction_1.Base {
     }
     // Multi-revokes multiple attestations via an EIP712 delegation requests using an external EIP712 proxy
     async multiRevokeByDelegationProxy(requests, overrides) {
-        if (!this.signer) {
-            throw new Error('Invalid signer');
-        }
         const multiRevocationRequests = requests.map((r) => ({
             schema: r.schema,
             data: r.data.map((d) => ({
@@ -158,4 +147,28 @@ class EIP712Proxy extends transaction_1.Base {
     }
 }
 exports.EIP712Proxy = EIP712Proxy;
+tslib_1.__decorate([
+    transaction_1.RequireSigner,
+    tslib_1.__metadata("design:type", Function),
+    tslib_1.__metadata("design:paramtypes", [Object, Object]),
+    tslib_1.__metadata("design:returntype", Promise)
+], EIP712Proxy.prototype, "attestByDelegationProxy", null);
+tslib_1.__decorate([
+    transaction_1.RequireSigner,
+    tslib_1.__metadata("design:type", Function),
+    tslib_1.__metadata("design:paramtypes", [Array, Object]),
+    tslib_1.__metadata("design:returntype", Promise)
+], EIP712Proxy.prototype, "multiAttestByDelegationProxy", null);
+tslib_1.__decorate([
+    transaction_1.RequireSigner,
+    tslib_1.__metadata("design:type", Function),
+    tslib_1.__metadata("design:paramtypes", [Object, Object]),
+    tslib_1.__metadata("design:returntype", Promise)
+], EIP712Proxy.prototype, "revokeByDelegationProxy", null);
+tslib_1.__decorate([
+    transaction_1.RequireSigner,
+    tslib_1.__metadata("design:type", Function),
+    tslib_1.__metadata("design:paramtypes", [Array, Object]),
+    tslib_1.__metadata("design:returntype", Promise)
+], EIP712Proxy.prototype, "multiRevokeByDelegationProxy", null);
 //# sourceMappingURL=eip712-proxy.js.map
