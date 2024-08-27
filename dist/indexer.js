@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Indexer = void 0;
+const tslib_1 = require("tslib");
 const eas_contracts_1 = require("@ethereum-attestation-service/eas-contracts");
 const version_1 = require("./legacy/version");
 const transaction_1 = require("./transaction");
@@ -26,16 +27,10 @@ class Indexer extends transaction_1.Base {
     }
     // Indexes an existing attestation
     async indexAttestation({ uid }, overrides) {
-        if (!this.signer) {
-            throw new Error('Invalid signer');
-        }
         return new transaction_1.Transaction(await this.contract.indexAttestation.populateTransaction(uid, { ...overrides }), this.signer, async () => { });
     }
     // Indexes multiple existing attestations
     async indexAttestations({ uids }, overrides) {
-        if (!this.signer) {
-            throw new Error('Invalid signer');
-        }
         return new transaction_1.Transaction(await this.contract.indexAttestations.populateTransaction(uids, { ...overrides }), this.signer, async () => { });
     }
     isAttestationIndexed({ uid }, overrides) {
@@ -79,4 +74,16 @@ class Indexer extends transaction_1.Base {
     }
 }
 exports.Indexer = Indexer;
+tslib_1.__decorate([
+    transaction_1.RequireSigner,
+    tslib_1.__metadata("design:type", Function),
+    tslib_1.__metadata("design:paramtypes", [Object, Object]),
+    tslib_1.__metadata("design:returntype", Promise)
+], Indexer.prototype, "indexAttestation", null);
+tslib_1.__decorate([
+    transaction_1.RequireSigner,
+    tslib_1.__metadata("design:type", Function),
+    tslib_1.__metadata("design:paramtypes", [Object, Object]),
+    tslib_1.__metadata("design:returntype", Promise)
+], Indexer.prototype, "indexAttestations", null);
 //# sourceMappingURL=indexer.js.map

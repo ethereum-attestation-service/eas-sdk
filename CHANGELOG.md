@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.6.0
+
+- Support initializing/connecting SDK objects with/to non-signer providers
+
 ## 2.5.0
 
 - Add schema verification function

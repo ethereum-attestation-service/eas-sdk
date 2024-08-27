@@ -1,5 +1,6 @@
 import { encodeBytes32String, Signer } from 'ethers';
 import { ethers } from 'hardhat';
+import { getSchemaUID } from '../../src';
 import { EAS, NO_EXPIRATION } from '../../src/eas';
 import { EIP712Proxy } from '../../src/eip712-proxy';
 import {
@@ -56,6 +57,235 @@ describe('EAS API', () => {
     schemaRegistry = new SchemaRegistry(await schemaRegistryContract.getAddress(), {
       signer: sender
     });
+  });
+
+  describe('partial signer', () => {
+    const schemaId = getSchemaUID('bool like', ZERO_ADDRESS, true);
+    let recipient: string;
+    let attester: string;
+    const signature = { v: 1, s: ZERO_BYTES32, r: ZERO_BYTES32 };
+
+    beforeEach(async () => {
+      recipient: await sender.getAddress();
+      attester: await sender.getAddress();
+    });
+
+    enum PartialSignerType {
+      NoSigner = 'no signer',
+      Provider = 'provider'
+    }
+
+    for (const partialSignerType of [PartialSignerType.NoSigner, PartialSignerType.Provider]) {
+      context(partialSignerType, () => {
+        beforeEach(async () => {
+          const easContract = await Contracts.EAS.deploy(await schemaRegistry.contract.getAddress());
+          const proxyContract = await Contracts.EIP712Proxy.deploy(await easContract.getAddress(), EIP712_PROXY_NAME);
+
+          switch (partialSignerType) {
+            case PartialSignerType.NoSigner:
+              {
+                const proxy = new EIP712Proxy(await proxyContract.getAddress());
+                eas = new EAS(await easContract.getAddress(), { proxy });
+              }
+
+              break;
+
+            case PartialSignerType.Provider:
+              {
+                const proxy = new EIP712Proxy(await proxyContract.getAddress(), {
+                  signer: ethers.getDefaultProvider()
+                });
+                eas = new EAS(await easContract.getAddress(), { proxy, signer: ethers.getDefaultProvider() });
+              }
+
+              break;
+
+            default:
+              throw new Error(`Unsupported partial signer type: ${partialSignerType}`);
+          }
+        });
+
+        it('should throw an error on methods which require a signer', () => {
+          expect(() =>
+            eas.attest({
+              schema: schemaId,
+              data: {
+                recipient,
+                expirationTime: NO_EXPIRATION,
+                revocable: true,
+                data: ZERO_BYTES
+              }
+            })
+          ).to.throw('Invalid signer');
+
+          expect(() =>
+            eas.attestByDelegation({
+              schema: schemaId,
+              data: {
+                recipient,
+                expirationTime: NO_EXPIRATION,
+                revocable: true,
+                data: ZERO_BYTES
+              },
+              attester,
+              signature
+            })
+          ).to.throw('Invalid signer');
+
+          expect(() =>
+            eas.attestByDelegationProxy({
+              schema: schemaId,
+              data: {
+                recipient,
+                expirationTime: NO_EXPIRATION,
+                revocable: true,
+                data: ZERO_BYTES
+              },
+              attester,
+              signature
+            })
+          ).to.throw('Invalid signer');
+
+          expect(() =>
+            eas.multiAttest([
+              {
+                schema: schemaId,
+                data: [
+                  {
+                    recipient,
+                    expirationTime: NO_EXPIRATION,
+                    revocable: true,
+                    data: ZERO_BYTES
+                  }
+                ]
+              }
+            ])
+          ).to.throw('Invalid signer');
+
+          expect(() =>
+            eas.multiAttestByDelegation([
+              {
+                schema: schemaId,
+                data: [
+                  {
+                    recipient,
+                    expirationTime: NO_EXPIRATION,
+                    revocable: true,
+                    data: ZERO_BYTES
+                  }
+                ],
+                attester,
+                signatures: [signature]
+              }
+            ])
+          ).to.throw('Invalid signer');
+
+          expect(() =>
+            eas.multiAttestByDelegationProxy([
+              {
+                schema: schemaId,
+                data: [
+                  {
+                    recipient,
+                    expirationTime: NO_EXPIRATION,
+                    revocable: true,
+                    data: ZERO_BYTES
+                  }
+                ],
+                attester,
+                signatures: [signature]
+              }
+            ])
+          ).to.throw('Invalid signer');
+
+          const uid = ZERO_BYTES32;
+
+          expect(() =>
+            eas.revoke({
+              schema: schemaId,
+              data: {
+                uid
+              }
+            })
+          ).to.throw('Invalid signer');
+
+          expect(() =>
+            eas.revokeByDelegation({
+              schema: schemaId,
+              data: {
+                uid
+              },
+              revoker: attester,
+              signature
+            })
+          ).to.throw('Invalid signer');
+
+          expect(() =>
+            eas.revokeByDelegationProxy({
+              schema: schemaId,
+              data: {
+                uid
+              },
+              revoker: attester,
+              signature
+            })
+          ).to.throw('Invalid signer');
+
+          expect(() =>
+            eas.multiRevoke([
+              {
+                schema: schemaId,
+                data: [
+                  {
+                    uid
+                  }
+                ]
+              }
+            ])
+          ).to.throw('Invalid signer');
+
+          expect(() =>
+            eas.multiRevokeByDelegation([
+              {
+                schema: schemaId,
+                data: [
+                  {
+                    uid
+                  }
+                ],
+                revoker: attester,
+                signatures: [signature]
+              }
+            ])
+          ).to.throw('Invalid signer');
+
+          expect(() =>
+            eas.multiRevokeByDelegationProxy([
+              {
+                schema: schemaId,
+                data: [
+                  {
+                    uid
+                  }
+                ],
+                revoker: attester,
+                signatures: [signature]
+              }
+            ])
+          ).to.throw('Invalid signer');
+
+          expect(() => eas.revokeOffchain(uid)).to.throw('Invalid signer');
+
+          expect(() => eas.multiRevokeOffchain([uid])).to.throw('Invalid signer');
+
+          expect(() => eas.timestamp(uid)).to.throw('Invalid signer');
+
+          expect(() => eas.multiTimestamp([uid])).to.throw('Invalid signer');
+        });
+
+        context('with a provider', () => {});
+      });
+    }
   });
 
   for (const { version, signatureTypes } of [
@@ -132,7 +362,7 @@ describe('EAS API', () => {
                     ? `with maxPriorityFeePerGas=${maxPriorityFeePerGas.toString()}, maxFeePerGas=${maxFeePerGas.toString()} overrides`
                     : 'with default fees',
                   () => {
-                    context(`with ${revocable ? 'a revocable' : 'an irrevocable'} registered schema`, () => {
+                    context.only(`with ${revocable ? 'a revocable' : 'an irrevocable'} registered schema`, () => {
                       const schema1 = 'bool like';
                       const schema2 = 'bytes32 proposalId, bool vote';
                       let schema1Id: string;

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.EAS = void 0;
+exports.EAS = exports.RequireProxy = void 0;
 const tslib_1 = require("tslib");
 const eas_contracts_1 = require("@ethereum-attestation-service/eas-contracts");
 const semver_1 = tslib_1.__importDefault(require("semver"));
@@ -12,6 +12,19 @@ const transaction_1 = require("./transaction");
 const utils_1 = require("./utils");
 const LEGACY_VERSION = '1.1.0';
 tslib_1.__exportStar(require("./request"), exports);
+const RequireProxy = (_target, _propertyKey, descriptor) => {
+    const originalMethod = descriptor.value;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    descriptor.value = function (...args) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        if (!this.proxy) {
+            throw new Error('Invalid proxy');
+        }
+        return originalMethod.apply(this, args);
+    };
+    return descriptor;
+};
+exports.RequireProxy = RequireProxy;
 class EAS extends transaction_1.Base {
     proxy;
     delegated;
@@ -92,18 +105,12 @@ class EAS extends transaction_1.Base {
     }
     // Attests to a specific schema
     async attest({ schema, data: { recipient = utils_1.ZERO_ADDRESS, data, expirationTime = request_1.NO_EXPIRATION, revocable = true, refUID = utils_1.ZERO_BYTES32, value = 0n } }, overrides) {
-        if (!this.signer) {
-            throw new Error('Invalid signer');
-        }
         return new transaction_1.Transaction(await this.contract.attest.populateTransaction({ schema, data: { recipient, expirationTime, revocable, refUID, data, value } }, { value, ...overrides }), this.signer, 
         // eslint-disable-next-line require-await
         async (receipt) => (0, utils_1.getUIDsFromAttestReceipt)(receipt)[0]);
     }
     // Attests to a specific schema via an EIP712 delegation request
     async attestByDelegation({ schema, data: { recipient = utils_1.ZERO_ADDRESS, data, expirationTime = request_1.NO_EXPIRATION, revocable = true, refUID = utils_1.ZERO_BYTES32, value = 0n }, signature, attester, deadline = request_1.NO_EXPIRATION }, overrides) {
-        if (!this.signer) {
-            throw new Error('Invalid signer');
-        }
         let tx;
         if (await this.isLegacyContract()) {
             tx = await this.legacyEAS.contract.attestByDelegation.populateTransaction({
@@ -142,9 +149,6 @@ class EAS extends transaction_1.Base {
     }
     // Multi-attests to multiple schemas
     async multiAttest(requests, overrides) {
-        if (!this.signer) {
-            throw new Error('Invalid signer');
-        }
         const multiAttestationRequests = requests.map((r) => ({
             schema: r.schema,
             data: r.data.map((d) => ({
@@ -169,9 +173,6 @@ class EAS extends transaction_1.Base {
     }
     // Multi-attests to multiple schemas via an EIP712 delegation requests
     async multiAttestByDelegation(requests, overrides) {
-        if (!this.signer) {
-            throw new Error('Invalid signer');
-        }
         let tx;
         if (await this.isLegacyContract()) {
             const multiAttestationRequests = requests.map((r) => ({
@@ -227,16 +228,10 @@ class EAS extends transaction_1.Base {
     }
     // Revokes an existing attestation
     async revoke({ schema, data: { uid, value = 0n } }, overrides) {
-        if (!this.signer) {
-            throw new Error('Invalid signer');
-        }
         return new transaction_1.Transaction(await this.contract.revoke.populateTransaction({ schema, data: { uid, value } }, { value, ...overrides }), this.signer, async () => { });
     }
     // Revokes an existing attestation an EIP712 delegation request
     async revokeByDelegation({ schema, data: { uid, value = 0n }, signature, revoker, deadline = request_1.NO_EXPIRATION }, overrides) {
-        if (!this.signer) {
-            throw new Error('Invalid signer');
-        }
         let tx;
         if (await this.isLegacyContract()) {
             tx = await this.legacyEAS.contract.revokeByDelegation.populateTransaction({
@@ -265,9 +260,6 @@ class EAS extends transaction_1.Base {
     }
     // Multi-revokes multiple attestations
     async multiRevoke(requests, overrides) {
-        if (!this.signer) {
-            throw new Error('Invalid signer');
-        }
         const multiRevocationRequests = requests.map((r) => ({
             schema: r.schema,
             data: r.data.map((d) => ({
@@ -286,12 +278,6 @@ class EAS extends transaction_1.Base {
     }
     // Multi-revokes multiple attestations via an EIP712 delegation requests
     async multiRevokeByDelegation(requests, overrides) {
-        if (!this.signer) {
-            throw new Error('Invalid signer');
-        }
-        if (!this.signer) {
-            throw new Error('Invalid signer');
-        }
         let tx;
         if (await this.isLegacyContract()) {
             const multiRevocationRequests = requests.map((r) => ({
@@ -336,64 +322,40 @@ class EAS extends transaction_1.Base {
     }
     // Attests to a specific schema via an EIP712 delegation request using an external EIP712 proxy
     attestByDelegationProxy(request, overrides) {
-        if (!this.proxy) {
-            throw new Error("Proxy wasn't set");
-        }
         return this.proxy.attestByDelegationProxy(request, overrides);
     }
     // Multi-attests to multiple schemas via an EIP712 delegation requests using an external EIP712 proxy
     multiAttestByDelegationProxy(requests, overrides) {
-        if (!this.proxy) {
-            throw new Error("Proxy wasn't set");
-        }
         return this.proxy.multiAttestByDelegationProxy(requests, overrides);
     }
     // Revokes an existing attestation an EIP712 delegation request using an external EIP712 proxy
     revokeByDelegationProxy(request, overrides) {
-        if (!this.proxy) {
-            throw new Error("Proxy wasn't set");
-        }
         return this.proxy.revokeByDelegationProxy(request, overrides);
     }
     // Multi-revokes multiple attestations via an EIP712 delegation requests using an external EIP712 proxy
     multiRevokeByDelegationProxy(requests, overrides) {
-        if (!this.proxy) {
-            throw new Error("Proxy wasn't set");
-        }
         return this.proxy.multiRevokeByDelegationProxy(requests, overrides);
     }
     // Timestamps the specified bytes32 data
     async timestamp(data, overrides) {
-        if (!this.signer) {
-            throw new Error('Invalid signer');
-        }
         return new transaction_1.Transaction(await this.contract.timestamp.populateTransaction(data, overrides ?? {}), this.signer, 
         // eslint-disable-next-line require-await
         async (receipt) => (0, utils_1.getTimestampFromTimestampReceipt)(receipt)[0]);
     }
     // Timestamps the specified multiple bytes32 data
     async multiTimestamp(data, overrides) {
-        if (!this.signer) {
-            throw new Error('Invalid signer');
-        }
         return new transaction_1.Transaction(await this.contract.multiTimestamp.populateTransaction(data, overrides ?? {}), this.signer, 
         // eslint-disable-next-line require-await
         async (receipt) => (0, utils_1.getTimestampFromTimestampReceipt)(receipt));
     }
     // Revokes the specified offchain attestation UID
     async revokeOffchain(uid, overrides) {
-        if (!this.signer) {
-            throw new Error('Invalid signer');
-        }
         return new transaction_1.Transaction(await this.contract.revokeOffchain.populateTransaction(uid, overrides ?? {}), this.signer, 
         // eslint-disable-next-line require-await
         async (receipt) => (0, utils_1.getTimestampFromOffchainRevocationReceipt)(receipt)[0]);
     }
     // Revokes the specified multiple offchain attestation UIDs
     async multiRevokeOffchain(uids, overrides) {
-        if (!this.signer) {
-            throw new Error('Invalid signer');
-        }
         return new transaction_1.Transaction(await this.contract.multiRevokeOffchain.populateTransaction(uids, overrides ?? {}), this.signer, 
         // eslint-disable-next-line require-await
         async (receipt) => (0, utils_1.getTimestampFromOffchainRevocationReceipt)(receipt));
@@ -442,4 +404,104 @@ class EAS extends transaction_1.Base {
     }
 }
 exports.EAS = EAS;
+tslib_1.__decorate([
+    transaction_1.RequireSigner,
+    tslib_1.__metadata("design:type", Function),
+    tslib_1.__metadata("design:paramtypes", [Object, Object]),
+    tslib_1.__metadata("design:returntype", Promise)
+], EAS.prototype, "attest", null);
+tslib_1.__decorate([
+    transaction_1.RequireSigner,
+    tslib_1.__metadata("design:type", Function),
+    tslib_1.__metadata("design:paramtypes", [Object, Object]),
+    tslib_1.__metadata("design:returntype", Promise)
+], EAS.prototype, "attestByDelegation", null);
+tslib_1.__decorate([
+    transaction_1.RequireSigner,
+    tslib_1.__metadata("design:type", Function),
+    tslib_1.__metadata("design:paramtypes", [Array, Object]),
+    tslib_1.__metadata("design:returntype", Promise)
+], EAS.prototype, "multiAttest", null);
+tslib_1.__decorate([
+    transaction_1.RequireSigner,
+    tslib_1.__metadata("design:type", Function),
+    tslib_1.__metadata("design:paramtypes", [Array, Object]),
+    tslib_1.__metadata("design:returntype", Promise)
+], EAS.prototype, "multiAttestByDelegation", null);
+tslib_1.__decorate([
+    transaction_1.RequireSigner,
+    tslib_1.__metadata("design:type", Function),
+    tslib_1.__metadata("design:paramtypes", [Object, Object]),
+    tslib_1.__metadata("design:returntype", Promise)
+], EAS.prototype, "revoke", null);
+tslib_1.__decorate([
+    transaction_1.RequireSigner,
+    tslib_1.__metadata("design:type", Function),
+    tslib_1.__metadata("design:paramtypes", [Object, Object]),
+    tslib_1.__metadata("design:returntype", Promise)
+], EAS.prototype, "revokeByDelegation", null);
+tslib_1.__decorate([
+    transaction_1.RequireSigner,
+    tslib_1.__metadata("design:type", Function),
+    tslib_1.__metadata("design:paramtypes", [Array, Object]),
+    tslib_1.__metadata("design:returntype", Promise)
+], EAS.prototype, "multiRevoke", null);
+tslib_1.__decorate([
+    transaction_1.RequireSigner,
+    tslib_1.__metadata("design:type", Function),
+    tslib_1.__metadata("design:paramtypes", [Array, Object]),
+    tslib_1.__metadata("design:returntype", Promise)
+], EAS.prototype, "multiRevokeByDelegation", null);
+tslib_1.__decorate([
+    transaction_1.RequireSigner,
+    exports.RequireProxy,
+    tslib_1.__metadata("design:type", Function),
+    tslib_1.__metadata("design:paramtypes", [Object, Object]),
+    tslib_1.__metadata("design:returntype", Promise)
+], EAS.prototype, "attestByDelegationProxy", null);
+tslib_1.__decorate([
+    transaction_1.RequireSigner,
+    exports.RequireProxy,
+    tslib_1.__metadata("design:type", Function),
+    tslib_1.__metadata("design:paramtypes", [Array, Object]),
+    tslib_1.__metadata("design:returntype", Promise)
+], EAS.prototype, "multiAttestByDelegationProxy", null);
+tslib_1.__decorate([
+    transaction_1.RequireSigner,
+    exports.RequireProxy,
+    tslib_1.__metadata("design:type", Function),
+    tslib_1.__metadata("design:paramtypes", [Object, Object]),
+    tslib_1.__metadata("design:returntype", Promise)
+], EAS.prototype, "revokeByDelegationProxy", null);
+tslib_1.__decorate([
+    transaction_1.RequireSigner,
+    exports.RequireProxy,
+    tslib_1.__metadata("design:type", Function),
+    tslib_1.__metadata("design:paramtypes", [Array, Object]),
+    tslib_1.__metadata("design:returntype", Promise)
+], EAS.prototype, "multiRevokeByDelegationProxy", null);
+tslib_1.__decorate([
+    transaction_1.RequireSigner,
+    tslib_1.__metadata("design:type", Function),
+    tslib_1.__metadata("design:paramtypes", [String, Object]),
+    tslib_1.__metadata("design:returntype", Promise)
+], EAS.prototype, "timestamp", null);
+tslib_1.__decorate([
+    transaction_1.RequireSigner,
+    tslib_1.__metadata("design:type", Function),
+    tslib_1.__metadata("design:paramtypes", [Array, Object]),
+    tslib_1.__metadata("design:returntype", Promise)
+], EAS.prototype, "multiTimestamp", null);
+tslib_1.__decorate([
+    transaction_1.RequireSigner,
+    tslib_1.__metadata("design:type", Function),
+    tslib_1.__metadata("design:paramtypes", [String, Object]),
+    tslib_1.__metadata("design:returntype", Promise)
+], EAS.prototype, "revokeOffchain", null);
+tslib_1.__decorate([
+    transaction_1.RequireSigner,
+    tslib_1.__metadata("design:type", Function),
+    tslib_1.__metadata("design:paramtypes", [Array, Object]),
+    tslib_1.__metadata("design:returntype", Promise)
+], EAS.prototype, "multiRevokeOffchain", null);
 //# sourceMappingURL=eas.js.map

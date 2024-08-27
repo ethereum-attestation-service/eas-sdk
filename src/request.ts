@@ -43,6 +43,11 @@ export interface RevocationRequest {
   data: RevocationRequestData;
 }
 
+export interface OffchainRevocationRequest {
+  schema: string;
+  data: RevocationRequestData;
+}
+
 export interface DelegatedRevocationRequest extends RevocationRequest {
   signature: Signature;
   revoker: string;
