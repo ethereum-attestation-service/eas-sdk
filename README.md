@@ -13,6 +13,7 @@ This repository contains the Ethereum Attestation Service SDK, used to interact 
 - [Getting an Attestation](#getting-an-attestation)
 - [Creating Onchain Attestations](#creating-onchain-attestations)
   - [Example: Creating Onchain Attestations](#example-creating-onchain-attestations)
+  - [Example: Creating Multi Onchain Attestations](#example-creating-multi-onchain-attestations)
 - [Revoking Onchain Attestations](#revoking-onchain-attestations)
   - [Example: Revoking Onchain Attestations](#example-revoking-onchain-attestations)
 - [Creating Offchain Attestations](#creating-offchain-attestations)
@@ -82,7 +83,7 @@ The `getAttestation` function allows you to retrieve an on-chain attestation for
 #### Usage
 
 ```javascript
-import { EAS } from '@ethereum-attestation-service/eas-sdk';
+import { EAS, NO_EXPIRATION } from '@ethereum-attestation-service/eas-sdk';
 
 const eas = new EAS(EASContractAddress);
 eas.connect(provider);
@@ -117,7 +118,7 @@ Example output:
     schema: '0x27d06e3659317e9a4f8154d1e849eb53d43d91fb4f219884d1684f86d797804a',
     refUID: '0x0000000000000000000000000000000000000000000000000000000000000000',
     time: 1671219600,
-    expirationTime: 0,
+    expirationTime: NO_EXPIRATION,
     revocationTime: 1671219636,
     recipient: '0xFD50b031E778fAb33DfD2Fc3Ca66a1EeF0652165',
     attester: '0x1e3de6aE412cA218FD2ae3379750388D414532dc',
@@ -144,7 +145,7 @@ The function returns a `Promise` that resolves to the UID of the newly created a
 #### Example: Creating Onchain Attestations
 
 ```javascript
-import { EAS, SchemaEncoder } from '@ethereum-attestation-service/eas-sdk';
+import { EAS, NO_EXPIRATION, SchemaEncoder } from '@ethereum-attestation-service/eas-sdk';
 
 const eas = new EAS(EASContractAddress);
 eas.connect(signer);
@@ -162,11 +163,59 @@ const transaction = await eas.attest({
   schema: schemaUID,
   data: {
     recipient: '0xFD50b031E778fAb33DfD2Fc3Ca66a1EeF0652165',
-    expirationTime: 0,
+    expirationTime: NO_EXPIRATION,
     revocable: true, // Be aware that if your schema is not revocable, this MUST be false
     data: encodedData
   }
 });
+
+const newAttestationUID = await transaction.wait();
+
+console.log('New attestation UID:', newAttestationUID);
+
+console.log('Transaction receipt:', transaction.receipt);
+```
+
+#### Example: Creating Multi Onchain Attestations
+
+```javascript
+import { EAS, NO_EXPIRATION, SchemaEncoder } from '@ethereum-attestation-service/eas-sdk';
+
+const eas = new EAS(EASContractAddress);
+eas.connect(signer);
+
+// Initialize SchemaEncoder with the schema string
+const schemaEncoder = new SchemaEncoder('uint256 eventId, uint8 voteIndex');
+const encodedData = schemaEncoder.encodeData([
+  { name: 'eventId', value: 1, type: 'uint256' },
+  { name: 'voteIndex', value: 1, type: 'uint8' }
+]);
+const encodedData2 = schemaEncoder.encodeData([
+  { name: 'eventId', value: 10, type: 'uint256' },
+  { name: 'voteIndex', value: 2, type: 'uint8' }
+]);
+
+const schemaUID = '0xb16fa048b0d597f5a821747eba64efa4762ee5143e9a80600d0005386edfc995';
+
+const transaction = await eas.multiAttest([
+  {
+    schema: schemaId,
+    data: [
+      {
+        recipient: '0xFD50b031E778fAb33DfD2Fc3Ca66a1EeF0652165',
+        expirationTime: NO_EXPIRATION,
+        revocable: true, // Be aware that if your schema is not revocable, this MUST be false
+        data: encodedData
+      },
+      {
+        recipient: '0xA1207F3BBa224E2c9c3c6D5aF63D0eb1582Ce587',
+        expirationTime: NO_EXPIRATION,
+        revocable: false,
+        data: encodedData2
+      }
+    ]
+  }
+]);
 
 const newAttestationUID = await transaction.wait();
 
@@ -203,7 +252,7 @@ To create an offchain attestation, you can use the `signOffchainAttestation` fun
 #### Example: Creating Offchain Attestations
 
 ```javascript
-import { EAS, SchemaEncoder } from '@ethereum-attestation-service/eas-sdk';
+import { EAS, NO_EXPIRATION, SchemaEncoder } from '@ethereum-attestation-service/eas-sdk';
 
 // Initialize EAS with the EAS contract address on whichever chain where your schema is defined
 const eas = new EAS(EASContractAddress);
@@ -225,7 +274,7 @@ const signer = new ethers.Wallet(privateKey, provider);
 const offchainAttestation = await offchain.signOffchainAttestation(
   {
     recipient: '0xFD50b031E778fAb33DfD2Fc3Ca66a1EeF0652165',
-    expirationTime: 0n, // Unix timestamp of when attestation expires (0 for no expiration)
+    expirationTime: NO_EXPIRATION, // Unix timestamp of when attestation expires (0 for no expiration)
     time: BigInt(Math.floor(Date.now() / 1000)), // Unix timestamp of current time
     revocable: true, // Be aware that if your schema is not revocable, this MUST be false
     schema: '0xb16fa048b0d597f5a821747eba64efa4762ee5143e9a80600d0005386edfc995',
@@ -265,7 +314,7 @@ The function returns a `Promise` that resolves to the UID of the newly created a
 #### Example: Creating Delegated Onchain Attestations
 
 ```javascript
-import { EAS, SchemaEncoder } from '@ethereum-attestation-service/eas-sdk';
+import { EAS, NO_EXPIRATION, SchemaEncoder } from '@ethereum-attestation-service/eas-sdk';
 
 const eas = new EAS(EASContractAddress);
 
@@ -290,11 +339,11 @@ const response = await delegated.signDelegatedAttestation(
   {
     schema: '0xb16fa048b0d597f5a821747eba64efa4762ee5143e9a80600d0005386edfc995',
     recipient: '0xFD50b031E778fAb33DfD2Fc3Ca66a1EeF0652165',
-    expirationTime: 0n, // Unix timestamp of when attestation expires (0 for no expiration)
+    expirationTime: NO_EXPIRATION, // Unix timestamp of when attestation expires (0 for no expiration)
     revocable: true,
     refUID: '0x0000000000000000000000000000000000000000000000000000000000000000',
     data: encodedData,
-    deadline: 0n, // Unix timestamp of when signature expires (0 for no expiration)
+    deadline: NO_EXPIRATION, // Unix timestamp of when signature expires (0 for no expiration)
     value: 0n
   },
   signer
@@ -304,7 +353,7 @@ const transaction = await eas.attestByDelegation({
   schema: '0xb16fa048b0d597f5a821747eba64efa4762ee5143e9a80600d0005386edfc995',
   data: {
     recipient: '0xFD50b031E778fAb33DfD2Fc3Ca66a1EeF0652165',
-    expirationTime: 0n, // Unix timestamp of when attestation expires (0 for no expiration),
+    expirationTime: NO_EXPIRATION, // Unix timestamp of when attestation expires (0 for no expiration),
     revocable: true,
     refUID: '0x0000000000000000000000000000000000000000000000000000000000000000',
     data: encodedData
@@ -476,46 +525,43 @@ const attestation = {
   // your offchain attestation
   sig: {
     domain: {
-      name: "EAS Attestation",
-      version: "0.26",
+      name: 'EAS Attestation',
+      version: '0.26',
       chainId: 1,
-      verifyingContract: "0xA1207F3BBa224E2c9c3c6D5aF63D0eb1582Ce587",
+      verifyingContract: '0xA1207F3BBa224E2c9c3c6D5aF63D0eb1582Ce587'
     },
-    primaryType: "Attest",
+    primaryType: 'Attest',
     types: {
-      Attest: [],
+      Attest: []
     },
     signature: {
-      r: "",
-      s: "",
-      v: 28,
+      r: '',
+      s: '',
+      v: 28
     },
-    uid: "0x5134f511e0533f997e569dac711952dde21daf14b316f3cce23835defc82c065",
+    uid: '0x5134f511e0533f997e569dac711952dde21daf14b316f3cce23835defc82c065',
     message: {
       version: OffchainAttestationVersion.Version2,
-      schema: "0x27d06e3659317e9a4f8154d1e849eb53d43d91fb4f219884d1684f86d797804a",
-      refUID: "0x0000000000000000000000000000000000000000000000000000000000000000",
+      schema: '0x27d06e3659317e9a4f8154d1e849eb53d43d91fb4f219884d1684f86d797804a',
+      refUID: '0x0000000000000000000000000000000000000000000000000000000000000000',
       time: 1671219600,
-      expirationTime: 0,
-      recipient: "0xFD50b031E778fAb33DfD2Fc3Ca66a1EeF0652165",
-      attester: "0x1e3de6aE412cA218FD2ae3379750388D414532dc",
+      expirationTime: NO_EXPIRATION,
+      recipient: '0xFD50b031E778fAb33DfD2Fc3Ca66a1EeF0652165',
+      attester: '0x1e3de6aE412cA218FD2ae3379750388D414532dc',
       revocable: true,
-      data: "0x0000000000000000000000000000000000000000000000000000000000000000",
-    },
+      data: '0x0000000000000000000000000000000000000000000000000000000000000000'
+    }
   },
-  signer: "0x1e3de6aE412cA218FD2ae3379750388D414532dc",
+  signer: '0x1e3de6aE412cA218FD2ae3379750388D414532dc'
 };
 
 const EAS_CONFIG: OffchainConfig = {
   address: attestation.sig.domain.verifyingContract,
   version: attestation.sig.domain.version,
-  chainId: attestation.sig.domain.chainId,
+  chainId: attestation.sig.domain.chainId
 };
 const offchain = new Offchain(EAS_CONFIG, OffchainAttestationVersion.Version2);
-const isValidAttestation = offchain.verifyOffchainAttestationSignature(
-  attestation.signer,
-  attestation.sig
-);
+const isValidAttestation = offchain.verifyOffchainAttestationSignature(attestation.signer, attestation.sig);
 ```
 
 ### Registering a Schema
@@ -644,7 +690,7 @@ console.log('Is Full Tree Valid?', calculatedRoot === fullTree.root);
 Here's an example of how you might use the `PrivateData` class in conjunction with the EAS SDK to create an attestation with private data:
 
 ```typescript
-import { EAS, MerkleValue, PrivateData, SchemaEncoder } from '@ethereum-attestation-service/eas-sdk';
+import { EAS, NO_EXPIRATION, MerkleValue, PrivateData, SchemaEncoder } from '@ethereum-attestation-service/eas-sdk';
 import { ethers } from 'ethers';
 
 // Initialize EAS
@@ -674,7 +720,7 @@ const transaction = await eas.attest({
   schema: schemaUID,
   data: {
     recipient: '0xFD50b031E778fAb33DfD2Fc3Ca66a1EeF0652165',
-    expirationTime: 0,
+    expirationTime: NO_EXPIRATION,
     revocable: true,
     data: encodedData
   }
