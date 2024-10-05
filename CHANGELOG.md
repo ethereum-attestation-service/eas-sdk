@@ -2,7 +2,7 @@
 
 ## 2.7.0
 
-- Move getUID and getSchemaUID to EAS and SchemaRegistry respectably
+- Move getUID, getSchemaUID, and getOffchainUID to EAS, SchemaRegistry, and Offchain respectively
 
 ## 2.6.1
 
