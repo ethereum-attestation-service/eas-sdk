@@ -1,13 +1,13 @@
 import {
   EAS as EASContract,
   Indexer as IndexerContract,
-  SchemaRegistry
+  SchemaRegistry as SchemaRegistryContract
 } from '@ethereum-attestation-service/eas-contracts';
 import { Signer } from 'ethers';
 import { ethers } from 'hardhat';
 import { EAS, NO_EXPIRATION } from '../../src/eas';
 import { Indexer } from '../../src/indexer';
-import { getSchemaUID } from '../../src/utils';
+import { SchemaRegistry } from '../../src/schema-registry';
 import Contracts from '../components/Contracts';
 import { ZERO_ADDRESS, ZERO_BYTES, ZERO_BYTES32 } from '../utils/Constants';
 import chai from './helpers/chai';
@@ -15,7 +15,7 @@ import chai from './helpers/chai';
 const { expect } = chai;
 
 describe('Indexer API', () => {
-  let registry: SchemaRegistry;
+  let registry: SchemaRegistryContract;
   let eas: EAS;
   let easContract: EASContract;
   let indexerContract: IndexerContract;
@@ -48,7 +48,7 @@ describe('Indexer API', () => {
   describe('indexing', () => {
     context('with attestations', () => {
       const schema = 'bool liked';
-      const schemaId = getSchemaUID(schema, ZERO_ADDRESS, true);
+      const schemaId = SchemaRegistry.getSchemaUID(schema, ZERO_ADDRESS, true);
       let uids: string[] = [];
 
       beforeEach(async () => {

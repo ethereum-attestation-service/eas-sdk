@@ -1,6 +1,6 @@
-import { AbiCoder, hexlify, keccak256, randomBytes, toUtf8Bytes } from 'ethers';
+import { AbiCoder, hexlify, keccak256, randomBytes, solidityPackedKeccak256, toUtf8Bytes } from 'ethers';
 import { EAS } from '../eas';
-import { getOffchainUID, ZERO_BYTES32 } from '../utils';
+import { ZERO_ADDRESS, ZERO_BYTES32 } from '../utils';
 import {
   DomainTypedData,
   EIP712MessageTypes,
@@ -241,7 +241,13 @@ export class Offchain extends TypedDataHandler {
   }
 
   public verifyOffchainAttestationSignature(attester: string, attestation: SignedOffchainAttestation): boolean {
-    if (attestation.uid !== Offchain.getOffchainUID(this.version, attestation)) {
+    const {
+      message: { schema, recipient, time, expirationTime, revocable, refUID, data, salt }
+    } = attestation;
+    if (
+      attestation.uid !==
+      Offchain.getOffchainUID(this.version, schema, recipient, time, expirationTime, revocable, refUID, data, salt)
+    ) {
       return false;
     }
 
@@ -268,7 +274,7 @@ export class Offchain extends TypedDataHandler {
   }
 
   private getOffchainUID(params: OffchainAttestationParams): string {
-    return getOffchainUID(
+    return Offchain.getOffchainUID(
       this.version,
       params.schema,
       params.recipient,
@@ -281,17 +287,87 @@ export class Offchain extends TypedDataHandler {
     );
   }
 
-  public static getOffchainUID(version: OffchainAttestationVersion, attestation: SignedOffchainAttestation): string {
-    return getOffchainUID(
-      version,
-      attestation.message.schema,
-      attestation.message.recipient,
-      attestation.message.time,
-      attestation.message.expirationTime,
-      attestation.message.revocable,
-      attestation.message.refUID,
-      attestation.message.data,
-      attestation.message.salt
-    );
+  // public static getOffchainAttestationUID(version: OffchainAttestationVersion, attestation: SignedOffchainAttestation): string {
+  //   return Offchain.getOffchainUID(
+  //     version,
+  //     attestation.message.schema,
+  //     attestation.message.recipient,
+  //     attestation.message.time,
+  //     attestation.message.expirationTime,
+  //     attestation.message.revocable,
+  //     attestation.message.refUID,
+  //     attestation.message.data,
+  //     attestation.message.salt
+  //   );
+  // }
+
+  public static getOffchainUID(
+    version: number,
+    schema: string,
+    recipient: string,
+    time: bigint,
+    expirationTime: bigint,
+    revocable: boolean,
+    refUID: string,
+    data: string,
+    salt?: string
+  ) {
+    switch (version) {
+      case OffchainAttestationVersion.Legacy:
+        return solidityPackedKeccak256(
+          ['bytes', 'address', 'address', 'uint64', 'uint64', 'bool', 'bytes32', 'bytes', 'uint32'],
+          [hexlify(toUtf8Bytes(schema)), recipient, ZERO_ADDRESS, time, expirationTime, revocable, refUID, data, 0]
+        );
+
+      case OffchainAttestationVersion.Version1:
+        return solidityPackedKeccak256(
+          ['uint16', 'bytes', 'address', 'address', 'uint64', 'uint64', 'bool', 'bytes32', 'bytes', 'uint32'],
+          [
+            version,
+            hexlify(toUtf8Bytes(schema)),
+            recipient,
+            ZERO_ADDRESS,
+            time,
+            expirationTime,
+            revocable,
+            refUID,
+            data,
+            0
+          ]
+        );
+
+      case OffchainAttestationVersion.Version2:
+        return solidityPackedKeccak256(
+          [
+            'uint16',
+            'bytes',
+            'address',
+            'address',
+            'uint64',
+            'uint64',
+            'bool',
+            'bytes32',
+            'bytes',
+            'bytes32',
+            'uint32'
+          ],
+          [
+            version,
+            hexlify(toUtf8Bytes(schema)),
+            recipient,
+            ZERO_ADDRESS,
+            time,
+            expirationTime,
+            revocable,
+            refUID,
+            data,
+            salt,
+            0
+          ]
+        );
+
+      default:
+        throw new Error('Unsupported version');
+    }
   }
 }

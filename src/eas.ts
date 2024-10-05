@@ -1,5 +1,12 @@
 import { EAS as EASContract, EAS__factory as EASFactory } from '@ethereum-attestation-service/eas-contracts';
-import { ContractTransaction, Overrides, TransactionReceipt } from 'ethers';
+import {
+  ContractTransaction,
+  hexlify,
+  Overrides,
+  solidityPackedKeccak256,
+  toUtf8Bytes,
+  TransactionReceipt
+} from 'ethers';
 import semver from 'semver';
 import { EIP712Proxy } from './eip712-proxy';
 import { EAS as EASLegacyContract, EAS__factory as EASLegacyFactory } from './legacy/typechain';
@@ -597,6 +604,23 @@ export class EAS extends Base<EASContract> {
   public getRevokeTypeHash(): Promise<string> {
     return this.contract.getRevokeTypeHash();
   }
+
+  // Return attestation UID
+  public static getAttestationUID = (
+    schema: string,
+    recipient: string,
+    attester: string,
+    time: bigint,
+    expirationTime: bigint,
+    revocable: boolean,
+    refUID: string,
+    data: string,
+    bump: number
+  ) =>
+    solidityPackedKeccak256(
+      ['bytes', 'address', 'address', 'uint64', 'uint64', 'bool', 'bytes32', 'bytes', 'uint32'],
+      [hexlify(toUtf8Bytes(schema)), recipient, attester, time, expirationTime, revocable, refUID, data, bump]
+    );
 
   // Sets the delegated attestations helper
   private async setDelegated(): Promise<Delegated> {

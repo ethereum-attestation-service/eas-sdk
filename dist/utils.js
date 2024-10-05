@@ -1,9 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getTimestampFromOffchainRevocationReceipt = exports.getTimestampFromTimestampReceipt = exports.getUIDsFromAttestReceipt = exports.getUIDsFromMultiAttestTx = exports.getUIDFromAttestTx = exports.getOffchainUID = exports.getUID = exports.getSchemaUID = exports.ZERO_BYTES32 = exports.ZERO_BYTES = exports.ZERO_ADDRESS = void 0;
+exports.getTimestampFromOffchainRevocationReceipt = exports.getTimestampFromTimestampReceipt = exports.getUIDsFromAttestReceipt = exports.getUIDsFromMultiAttestTx = exports.getUIDFromAttestTx = exports.ZERO_BYTES32 = exports.ZERO_BYTES = exports.ZERO_ADDRESS = void 0;
 const eas_contracts_1 = require("@ethereum-attestation-service/eas-contracts");
 const ethers_1 = require("ethers");
-const offchain_1 = require("./offchain");
 exports.ZERO_ADDRESS = ethers_1.ZeroAddress;
 exports.ZERO_BYTES = '0x';
 exports.ZERO_BYTES32 = '0x0000000000000000000000000000000000000000000000000000000000000000';
@@ -18,46 +17,6 @@ const TOPICS = {
     [Event.Timestamped]: (0, ethers_1.keccak256)((0, ethers_1.toUtf8Bytes)('Timestamped(bytes32,uint64)')),
     [Event.RevokedOffchain]: (0, ethers_1.keccak256)((0, ethers_1.toUtf8Bytes)('RevokedOffchain(address,bytes32,uint64)'))
 };
-const getSchemaUID = (schema, resolverAddress, revocable) => (0, ethers_1.solidityPackedKeccak256)(['string', 'address', 'bool'], [schema, resolverAddress, revocable]);
-exports.getSchemaUID = getSchemaUID;
-const getUID = (schema, recipient, attester, time, expirationTime, revocable, refUID, data, bump) => (0, ethers_1.solidityPackedKeccak256)(['bytes', 'address', 'address', 'uint64', 'uint64', 'bool', 'bytes32', 'bytes', 'uint32'], [(0, ethers_1.hexlify)((0, ethers_1.toUtf8Bytes)(schema)), recipient, attester, time, expirationTime, revocable, refUID, data, bump]);
-exports.getUID = getUID;
-const getOffchainUID = (version, schema, recipient, time, expirationTime, revocable, refUID, data, salt) => {
-    switch (version) {
-        case offchain_1.OffchainAttestationVersion.Legacy:
-            return (0, ethers_1.solidityPackedKeccak256)(['bytes', 'address', 'address', 'uint64', 'uint64', 'bool', 'bytes32', 'bytes', 'uint32'], [(0, ethers_1.hexlify)((0, ethers_1.toUtf8Bytes)(schema)), recipient, exports.ZERO_ADDRESS, time, expirationTime, revocable, refUID, data, 0]);
-        case offchain_1.OffchainAttestationVersion.Version1:
-            return (0, ethers_1.solidityPackedKeccak256)(['uint16', 'bytes', 'address', 'address', 'uint64', 'uint64', 'bool', 'bytes32', 'bytes', 'uint32'], [
-                version,
-                (0, ethers_1.hexlify)((0, ethers_1.toUtf8Bytes)(schema)),
-                recipient,
-                exports.ZERO_ADDRESS,
-                time,
-                expirationTime,
-                revocable,
-                refUID,
-                data,
-                0
-            ]);
-        case offchain_1.OffchainAttestationVersion.Version2:
-            return (0, ethers_1.solidityPackedKeccak256)(['uint16', 'bytes', 'address', 'address', 'uint64', 'uint64', 'bool', 'bytes32', 'bytes', 'bytes32', 'uint32'], [
-                version,
-                (0, ethers_1.hexlify)((0, ethers_1.toUtf8Bytes)(schema)),
-                recipient,
-                exports.ZERO_ADDRESS,
-                time,
-                expirationTime,
-                revocable,
-                refUID,
-                data,
-                salt,
-                0
-            ]);
-        default:
-            throw new Error('Unsupported version');
-    }
-};
-exports.getOffchainUID = getOffchainUID;
 const getDataFromReceipt = (receipt, event, attribute) => {
     // eslint-disable-next-line camelcase
     const eas = new ethers_1.Interface(eas_contracts_1.EAS__factory.abi);

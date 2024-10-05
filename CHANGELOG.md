@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.7.0
+
+- Move getUID and getSchemaUID to EAS and SchemaRegistry respectably
+
 ## 2.6.1
 
 - Fix exports

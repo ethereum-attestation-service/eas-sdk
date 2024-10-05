@@ -1,8 +1,7 @@
 import { SchemaRegistry as SchemaRegistryContract } from '@ethereum-attestation-service/eas-contracts';
-import { Signer } from 'ethers';
+import { Signer, solidityPackedKeccak256 } from 'ethers';
 import { ethers } from 'hardhat';
 import { SchemaRegistry } from '../../src/schema-registry';
-import { getSchemaUID } from '../../src/utils';
 import Contracts from '../components/Contracts';
 import { ZERO_ADDRESS, ZERO_BYTES } from '../utils/Constants';
 import chai from './helpers/chai';
@@ -39,7 +38,7 @@ describe('SchemaRegistry API', () => {
     const testRegister = async (schema: string, resolver: string | Signer, revocable: boolean) => {
       const resolverAddress = typeof resolver === 'string' ? resolver : await resolver.getAddress();
 
-      const uid = getSchemaUID(schema, resolverAddress, revocable);
+      const uid = SchemaRegistry.getSchemaUID(schema, resolverAddress, revocable);
       await expect(schemaRegistry.getSchema({ uid })).to.be.rejectedWith('Schema not found');
 
       const tx = await schemaRegistry.register({ schema, resolverAddress, revocable });
@@ -69,5 +68,29 @@ describe('SchemaRegistry API', () => {
     it('should allow to register a schema without neither a schema or a resolver', async () => {
       await testRegister(ZERO_BYTES, ZERO_ADDRESS, true);
     });
+  });
+
+  describe('schema uid', () => {
+    for (const schema of [
+      'bool like',
+      'address contractAddress,bool trusted',
+      'bytes32 eventId,uint8 ticketType,uint32 ticketNum'
+    ]) {
+      for (const resolver of [
+        '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266',
+        '0x70997970C51812dc3A010C7d01b50e0d17dc79C8',
+        ZERO_ADDRESS
+      ]) {
+        for (const revocable of [true, false]) {
+          context(`schema=${schema},resolver=${resolver}},revocable=${revocable}`, () => {
+            it('should properly derive uid', () => {
+              expect(SchemaRegistry.getSchemaUID(schema, resolver, revocable)).to.equal(
+                solidityPackedKeccak256(['string', 'address', 'bool'], [schema, resolver, revocable])
+              );
+            });
+          });
+        }
+      }
+    }
   });
 });
