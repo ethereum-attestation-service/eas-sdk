@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.6.1
+
+- Fix exports
+
 ## 2.6.0
 
 - Support initializing/connecting SDK objects with/to non-signer providers

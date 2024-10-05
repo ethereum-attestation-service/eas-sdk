@@ -1,5 +1,6 @@
 export * as Contracts from '@ethereum-attestation-service/eas-contracts';
 export * from './eas';
+export * from './eip712-proxy';
 export * from './offchain';
 export * from './request';
 export * from './schema-encoder';
