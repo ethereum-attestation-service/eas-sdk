@@ -48,5 +48,5 @@ export declare class Offchain extends TypedDataHandler {
     signOffchainAttestation(params: OffchainAttestationParams, signer: TypeDataSigner, options?: OffchainAttestationOptions): Promise<SignedOffchainAttestation>;
     verifyOffchainAttestationSignature(attester: string, attestation: SignedOffchainAttestation): boolean;
     private getOffchainUID;
-    static getOffchainUID(version: OffchainAttestationVersion, attestation: SignedOffchainAttestation): string;
+    static getOffchainUID(version: number, schema: string, recipient: string, time: bigint, expirationTime: bigint, revocable: boolean, refUID: string, data: string, salt?: string): string;
 }

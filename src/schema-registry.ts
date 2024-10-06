@@ -2,10 +2,10 @@ import {
   SchemaRegistry__factory,
   SchemaRegistry as SchemaRegistryContract
 } from '@ethereum-attestation-service/eas-contracts';
-import { Overrides, TransactionReceipt } from 'ethers';
+import { Overrides, solidityPackedKeccak256, TransactionReceipt } from 'ethers';
 import { legacyVersion } from './legacy/version';
 import { Base, RequireSigner, Transaction, TransactionProvider, TransactionSigner } from './transaction';
-import { getSchemaUID, ZERO_ADDRESS, ZERO_BYTES32 } from './utils';
+import { ZERO_ADDRESS, ZERO_BYTES32 } from './utils';
 
 export declare type SchemaRecord = {
   uid: string;
@@ -40,6 +40,11 @@ export class SchemaRegistry extends Base<SchemaRegistryContract> {
     return (await legacyVersion(this.contract)) ?? this.contract.version();
   }
 
+  // Returns a schema UID
+  public static getSchemaUID(schema: string, resolverAddress: string, revocable: boolean) {
+    return solidityPackedKeccak256(['string', 'address', 'bool'], [schema, resolverAddress, revocable]);
+  }
+
   // Registers a new schema and returns its UID
   @RequireSigner
   public async register(
@@ -50,7 +55,7 @@ export class SchemaRegistry extends Base<SchemaRegistryContract> {
       await this.contract.register.populateTransaction(schema, resolverAddress, revocable, overrides ?? {}),
       this.signer!,
       // eslint-disable-next-line require-await
-      async (_receipt: TransactionReceipt) => getSchemaUID(schema, resolverAddress, revocable)
+      async (_receipt: TransactionReceipt) => SchemaRegistry.getSchemaUID(schema, resolverAddress, revocable)
     );
   }
 

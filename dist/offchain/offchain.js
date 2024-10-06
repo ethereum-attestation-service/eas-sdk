@@ -166,7 +166,9 @@ class Offchain extends typed_data_handler_1.TypedDataHandler {
         };
     }
     verifyOffchainAttestationSignature(attester, attestation) {
-        if (attestation.uid !== Offchain.getOffchainUID(this.version, attestation)) {
+        const { message: { schema, recipient, time, expirationTime, revocable, refUID, data, salt } } = attestation;
+        if (attestation.uid !==
+            Offchain.getOffchainUID(this.version, schema, recipient, time, expirationTime, revocable, refUID, data, salt)) {
             return false;
         }
         const typeCount = this.verificationTypes.length;
@@ -186,10 +188,67 @@ class Offchain extends typed_data_handler_1.TypedDataHandler {
         });
     }
     getOffchainUID(params) {
-        return (0, utils_1.getOffchainUID)(this.version, params.schema, params.recipient, params.time, params.expirationTime, params.revocable, params.refUID, params.data, params.salt);
+        return Offchain.getOffchainUID(this.version, params.schema, params.recipient, params.time, params.expirationTime, params.revocable, params.refUID, params.data, params.salt);
     }
-    static getOffchainUID(version, attestation) {
-        return (0, utils_1.getOffchainUID)(version, attestation.message.schema, attestation.message.recipient, attestation.message.time, attestation.message.expirationTime, attestation.message.revocable, attestation.message.refUID, attestation.message.data, attestation.message.salt);
+    // public static getOffchainAttestationUID(version: OffchainAttestationVersion, attestation: SignedOffchainAttestation): string {
+    //   return Offchain.getOffchainUID(
+    //     version,
+    //     attestation.message.schema,
+    //     attestation.message.recipient,
+    //     attestation.message.time,
+    //     attestation.message.expirationTime,
+    //     attestation.message.revocable,
+    //     attestation.message.refUID,
+    //     attestation.message.data,
+    //     attestation.message.salt
+    //   );
+    // }
+    static getOffchainUID(version, schema, recipient, time, expirationTime, revocable, refUID, data, salt) {
+        switch (version) {
+            case OffchainAttestationVersion.Legacy:
+                return (0, ethers_1.solidityPackedKeccak256)(['bytes', 'address', 'address', 'uint64', 'uint64', 'bool', 'bytes32', 'bytes', 'uint32'], [(0, ethers_1.hexlify)((0, ethers_1.toUtf8Bytes)(schema)), recipient, utils_1.ZERO_ADDRESS, time, expirationTime, revocable, refUID, data, 0]);
+            case OffchainAttestationVersion.Version1:
+                return (0, ethers_1.solidityPackedKeccak256)(['uint16', 'bytes', 'address', 'address', 'uint64', 'uint64', 'bool', 'bytes32', 'bytes', 'uint32'], [
+                    version,
+                    (0, ethers_1.hexlify)((0, ethers_1.toUtf8Bytes)(schema)),
+                    recipient,
+                    utils_1.ZERO_ADDRESS,
+                    time,
+                    expirationTime,
+                    revocable,
+                    refUID,
+                    data,
+                    0
+                ]);
+            case OffchainAttestationVersion.Version2:
+                return (0, ethers_1.solidityPackedKeccak256)([
+                    'uint16',
+                    'bytes',
+                    'address',
+                    'address',
+                    'uint64',
+                    'uint64',
+                    'bool',
+                    'bytes32',
+                    'bytes',
+                    'bytes32',
+                    'uint32'
+                ], [
+                    version,
+                    (0, ethers_1.hexlify)((0, ethers_1.toUtf8Bytes)(schema)),
+                    recipient,
+                    utils_1.ZERO_ADDRESS,
+                    time,
+                    expirationTime,
+                    revocable,
+                    refUID,
+                    data,
+                    salt,
+                    0
+                ]);
+            default:
+                throw new Error('Unsupported version');
+        }
     }
 }
 exports.Offchain = Offchain;

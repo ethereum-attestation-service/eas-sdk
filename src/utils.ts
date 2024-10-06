@@ -1,15 +1,5 @@
 import { EAS__factory } from '@ethereum-attestation-service/eas-contracts';
-import {
-  hexlify,
-  Interface,
-  keccak256,
-  solidityPackedKeccak256,
-  toUtf8Bytes,
-  TransactionReceipt,
-  TransactionResponse,
-  ZeroAddress
-} from 'ethers';
-import { OffchainAttestationVersion } from './offchain';
+import { Interface, keccak256, toUtf8Bytes, TransactionReceipt, TransactionResponse, ZeroAddress } from 'ethers';
 
 export const ZERO_ADDRESS = ZeroAddress;
 export const ZERO_BYTES = '0x';
@@ -25,83 +15,6 @@ const TOPICS = {
   [Event.Attested]: keccak256(toUtf8Bytes('Attested(address,address,bytes32,bytes32)')),
   [Event.Timestamped]: keccak256(toUtf8Bytes('Timestamped(bytes32,uint64)')),
   [Event.RevokedOffchain]: keccak256(toUtf8Bytes('RevokedOffchain(address,bytes32,uint64)'))
-};
-
-export const getSchemaUID = (schema: string, resolverAddress: string, revocable: boolean) =>
-  solidityPackedKeccak256(['string', 'address', 'bool'], [schema, resolverAddress, revocable]);
-
-export const getUID = (
-  schema: string,
-  recipient: string,
-  attester: string,
-  time: bigint,
-  expirationTime: bigint,
-  revocable: boolean,
-  refUID: string,
-  data: string,
-  bump: number
-) =>
-  solidityPackedKeccak256(
-    ['bytes', 'address', 'address', 'uint64', 'uint64', 'bool', 'bytes32', 'bytes', 'uint32'],
-    [hexlify(toUtf8Bytes(schema)), recipient, attester, time, expirationTime, revocable, refUID, data, bump]
-  );
-
-export const getOffchainUID = (
-  version: number,
-  schema: string,
-  recipient: string,
-  time: bigint,
-  expirationTime: bigint,
-  revocable: boolean,
-  refUID: string,
-  data: string,
-  salt?: string
-) => {
-  switch (version) {
-    case OffchainAttestationVersion.Legacy:
-      return solidityPackedKeccak256(
-        ['bytes', 'address', 'address', 'uint64', 'uint64', 'bool', 'bytes32', 'bytes', 'uint32'],
-        [hexlify(toUtf8Bytes(schema)), recipient, ZERO_ADDRESS, time, expirationTime, revocable, refUID, data, 0]
-      );
-
-    case OffchainAttestationVersion.Version1:
-      return solidityPackedKeccak256(
-        ['uint16', 'bytes', 'address', 'address', 'uint64', 'uint64', 'bool', 'bytes32', 'bytes', 'uint32'],
-        [
-          version,
-          hexlify(toUtf8Bytes(schema)),
-          recipient,
-          ZERO_ADDRESS,
-          time,
-          expirationTime,
-          revocable,
-          refUID,
-          data,
-          0
-        ]
-      );
-
-    case OffchainAttestationVersion.Version2:
-      return solidityPackedKeccak256(
-        ['uint16', 'bytes', 'address', 'address', 'uint64', 'uint64', 'bool', 'bytes32', 'bytes', 'bytes32', 'uint32'],
-        [
-          version,
-          hexlify(toUtf8Bytes(schema)),
-          recipient,
-          ZERO_ADDRESS,
-          time,
-          expirationTime,
-          revocable,
-          refUID,
-          data,
-          salt,
-          0
-        ]
-      );
-
-    default:
-      throw new Error('Unsupported version');
-  }
 };
 
 const getDataFromReceipt = (receipt: TransactionReceipt, event: Event, attribute: string): string[] => {

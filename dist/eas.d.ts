@@ -60,6 +60,7 @@ export declare class EAS extends Base<EASContract> {
     getNonce(address: string): Promise<bigint>;
     getAttestTypeHash(): Promise<string>;
     getRevokeTypeHash(): Promise<string>;
+    static getAttestationUID: (schema: string, recipient: string, attester: string, time: bigint, expirationTime: bigint, revocable: boolean, refUID: string, data: string, bump: number) => string;
     private setDelegated;
     private setOffchain;
     private isLegacyContract;

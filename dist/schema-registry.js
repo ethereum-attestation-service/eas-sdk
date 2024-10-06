@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.SchemaRegistry = void 0;
 const tslib_1 = require("tslib");
 const eas_contracts_1 = require("@ethereum-attestation-service/eas-contracts");
+const ethers_1 = require("ethers");
 const version_1 = require("./legacy/version");
 const transaction_1 = require("./transaction");
 const utils_1 = require("./utils");
@@ -15,11 +16,15 @@ class SchemaRegistry extends transaction_1.Base {
     async getVersion() {
         return (await (0, version_1.legacyVersion)(this.contract)) ?? this.contract.version();
     }
+    // Returns a schema UID
+    static getSchemaUID(schema, resolverAddress, revocable) {
+        return (0, ethers_1.solidityPackedKeccak256)(['string', 'address', 'bool'], [schema, resolverAddress, revocable]);
+    }
     // Registers a new schema and returns its UID
     async register({ schema, resolverAddress = utils_1.ZERO_ADDRESS, revocable = true }, overrides) {
         return new transaction_1.Transaction(await this.contract.register.populateTransaction(schema, resolverAddress, revocable, overrides ?? {}), this.signer, 
         // eslint-disable-next-line require-await
-        async (_receipt) => (0, utils_1.getSchemaUID)(schema, resolverAddress, revocable));
+        async (_receipt) => SchemaRegistry.getSchemaUID(schema, resolverAddress, revocable));
     }
     // Returns an existing schema by a schema UID
     async getSchema({ uid }) {

@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.EAS = exports.RequireProxy = void 0;
 const tslib_1 = require("tslib");
 const eas_contracts_1 = require("@ethereum-attestation-service/eas-contracts");
+const ethers_1 = require("ethers");
 const semver_1 = tslib_1.__importDefault(require("semver"));
 const typechain_1 = require("./legacy/typechain");
 const version_1 = require("./legacy/version");
@@ -376,6 +377,8 @@ class EAS extends transaction_1.Base {
     getRevokeTypeHash() {
         return this.contract.getRevokeTypeHash();
     }
+    // Return attestation UID
+    static getAttestationUID = (schema, recipient, attester, time, expirationTime, revocable, refUID, data, bump) => (0, ethers_1.solidityPackedKeccak256)(['bytes', 'address', 'address', 'uint64', 'uint64', 'bool', 'bytes32', 'bytes', 'uint32'], [(0, ethers_1.hexlify)((0, ethers_1.toUtf8Bytes)(schema)), recipient, attester, time, expirationTime, revocable, refUID, data, bump]);
     // Sets the delegated attestations helper
     async setDelegated() {
         this.delegated = new offchain_1.Delegated({
