@@ -57,7 +57,7 @@ pnpm add @ethereum-attestation-service/eas-sdk
 
 ## Using the EAS SDK
 
-Import and initialize the library
+Import and initialize the library:
 
 ```javascript
 import { EAS, Offchain, SchemaEncoder, SchemaRegistry } from '@ethereum-attestation-service/eas-sdk';
@@ -65,7 +65,7 @@ import { ethers } from 'ethers';
 
 export const EASContractAddress = '0xC2679fBD37d54388Ce493F1DB75320D236e1815e'; // Sepolia v0.26
 
-// Initialize the sdk with the address of the EAS Schema contract address
+// Initialize the SDK with the address of the EAS Schema contract address
 const eas = new EAS(EASContractAddress);
 
 // Gets a default provider (in production use something else like infura/alchemy)
@@ -199,7 +199,7 @@ const schemaUID = '0xb16fa048b0d597f5a821747eba64efa4762ee5143e9a80600d0005386ed
 
 const transaction = await eas.multiAttest([
   {
-    schema: schemaId,
+    schema: schemaUID,
     data: [
       {
         recipient: '0xFD50b031E778fAb33DfD2Fc3Ca66a1EeF0652165',
@@ -228,7 +228,7 @@ console.log('Transaction receipt:', transaction.receipt);
 
 The `revoke` function allows you to revoke an on-chain attestation. This function takes an object with the following properties:
 
-- `schema`: The UID of the schema for which the attestation is being revoke.
+- `schema`: The UID of the schema for which the attestation is being revoked.
 - `data`: An object containing the following properties:
   - `uid`: The UID of the attestation to revoke.
   - `value`: (Optional) The ETH value that is being sent with the revocation.
@@ -289,9 +289,9 @@ This function will return a signed offchain attestation object containing the UI
 
 #### Versioning
 
-Since the offchain attestation protocol is being constantly evolved and improved, we've recently added versioning to help the applications to support both older and newer types of attestation. Starting from version `1`, we have added a `version` field to its typed data, which is seamlessly supported by both `signOffchainAttestation` and `verifyOffchainAttestationSignature` function.
+Since the offchain attestation protocol is constantly evolving and improving, we've recently added versioning to help applications support both older and newer types of attestations. Starting from version `1`, we have added a `version` field to its typed data, which is seamlessly supported by both `signOffchainAttestation` and `verifyOffchainAttestationSignature` functions.
 
-Please note that using the `getOffchainUID` function for the previous legacy version, requires passing `{ version: 0 }` explicitly.
+Please note that using the `getOffchainUID` function for the previous legacy version requires passing `{ version: 0 }` explicitly.
 
 ### Creating Delegated Onchain Attestations
 
@@ -306,8 +306,8 @@ The `attestByDelegation` function allows you to create a delegated on-chain atte
   - `data`: The encoded data for the attestation, which should be generated using the `SchemaEncoder` class.
   - `value`: (Optional) The ETH value that is being sent with the attestation.
 - `attester`: The address of the attester.
-- `signature`: A EIP712 typed-signature (`r`, `s`, and `v`) over the message (using the `signDelegatedAttestation` function).
-- `deadline`: A Unix representing the expiration time of the signature.
+- `signature`: An EIP712 typed-signature (`r`, `s`, and `v`) over the message (using the `signDelegatedAttestation` function).
+- `deadline`: A Unix timestamp representing the expiration time of the signature.
 
 The function returns a `Promise` that resolves to the UID of the newly created attestation.
 
@@ -353,7 +353,7 @@ const transaction = await eas.attestByDelegation({
   schema: '0xb16fa048b0d597f5a821747eba64efa4762ee5143e9a80600d0005386edfc995',
   data: {
     recipient: '0xFD50b031E778fAb33DfD2Fc3Ca66a1EeF0652165',
-    expirationTime: NO_EXPIRATION, // Unix timestamp of when attestation expires (0 for no expiration),
+    expirationTime: NO_EXPIRATION, // Unix timestamp of when attestation expires (0 for no expiration)
     revocable: true,
     refUID: '0x0000000000000000000000000000000000000000000000000000000000000000',
     data: encodedData
@@ -374,13 +374,13 @@ console.log('Transaction receipt:', transaction.receipt);
 
 The `revokeByDelegation` function allows you to create a delegated on-chain revocation for a specific attestation. This function takes an object with the following properties:
 
-- `schema`: The UID of the schema for which the attestation is being revoke.
+- `schema`: The UID of the schema for which the attestation is being revoked.
 - `data`: An object containing the following properties:
   - `uid`: The UID of the attestation to revoke.
   - `value`: (Optional) The ETH value that is being sent with the revocation.
 - `revoker`: The address of the revoker.
-- `signature`: A EIP712 typed-signature (`r`, `s`, and `v`) over the message (using the `signDelegatedRevocation` function).
-- `deadline`: A Unix representing the expiration time of the signature.
+- `signature`: An EIP712 typed-signature (`r`, `s`, and `v`) over the message (using the `signDelegatedRevocation` function).
+- `deadline`: A Unix timestamp representing the expiration time of the signature.
 
 The function returns a `Promise` that resolves to the UID of the newly created attestation.
 
@@ -397,11 +397,6 @@ eas.connect(sender);
 const delegated = await eas.getDelegated();
 
 const signer = new ethers.Wallet(privateKey, provider);
-
-const transaction = await eas.revoke({
-  schema: '0x85500e806cf1e74844d51a20a6d893fe1ed6f6b0738b50e43d774827d08eca61',
-  data: { uid: '0x6776de8122c352b4d671003e58ca112aedb99f34c629a1d1fe3b332504e2943a' }
-});
 
 // Please note that if nonce isn't provided explicitly, we will try retrieving it onchain.
 const response = await delegated.signDelegatedRevocation(
@@ -430,7 +425,7 @@ await transaction.wait();
 
 ### Creating Timestamps
 
-To timestamp an off-chain attestation UID on-chain, you can use the timestamp function provided by the EAS SDK. Here's an example:
+To timestamp an off-chain attestation UID on-chain, you can use the `timestamp` function provided by the EAS SDK. Here's an example:
 
 ```javascript
 import { EAS } from '@ethereum-attestation-service/eas-sdk';
@@ -446,7 +441,7 @@ const transaction = await eas.timestamp(uid);
 await transaction.wait();
 ```
 
-To create a timestamp for a any piece of data, you can use the `timestamp` function provided by the EAS SDK. Here's an example:
+To create a timestamp for any piece of data, you can use the `timestamp` function provided by the EAS SDK. Here's an example:
 
 ```javascript
 import { EAS } from '@ethereum-attestation-service/eas-sdk';
