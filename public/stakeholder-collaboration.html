@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stakeholder Collaboration</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+  <div class="container mx-auto px-4 py-8">
+    <header class="mb-4">
+      <h1 class="text-2xl font-bold">Stakeholder Collaboration</h1>
+    </header>
+    <main>
+      <section aria-labelledby="task-list-heading">
+        <h2 id="task-list-heading" class="text-xl">Tasks</h2>
+        <ul role="list" class="mt-2 space-y-4">
+          <li class="border p-3 rounded shadow">
+            <h3 class="font-medium">Prepare Research Summary</h3>
+            <p>Status: <span class="font-bold">In Progress</span></p>
+            <label>
+              Add comment:
+              <input type="text" aria-label="Add comment to Prepare Research Summary" class="border px-1">
+            </label>
+          </li>
+          <!-- More tasks can be added here -->
+        </ul>
+      </section>
+      <section aria-labelledby="file-upload-heading" class="mt-6">
+        <h2 id="file-upload-heading" class="text-xl">File Upload</h2>
+        <label for="file-upload">Upload Report:</label>
+        <input id="file-upload" type="file" aria-label="Upload report file" class="mt-1 block w-full border rounded">
+      </section>
+    </main>
+  </div>
+  <script>
+    // JavaScript to handle comments and file uploads can be added here
+  </script>
+</body>
+</html>

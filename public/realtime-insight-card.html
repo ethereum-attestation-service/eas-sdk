@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Realtime Insight Card</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+  <div class="container mx-auto px-4 py-8">
+    <header class="mb-4">
+      <h1 class="text-2xl font-bold">Realtime Insight Card</h1>
+    </header>
+    <main>
+      <div class="p-4 bg-white rounded shadow text-center">
+        <h3 class="font-semibold text-lg">Realtime Insight</h3>
+        <div id="insight-content" class="mt-2 text-xl font-bold">Loading...</div>
+      </div>
+    </main>
+  </div>
+  <script>
+    function updateInsight() {
+      const proposals = Math.floor(Math.random() * 50) + 10;
+      const contributors = Math.floor(Math.random() * 20) + 5;
+      document.getElementById('insight-content').innerText =
+        `Proposals: ${proposals} | Contributors: ${contributors}`;
+    }
+    updateInsight(); // initial
+    setInterval(updateInsight, 5000); // update every 5 seconds
+  </script>
+</body>
+</html>

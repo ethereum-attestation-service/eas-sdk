@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Policy Impact Tracker</title>
+  <!-- Tailwind CSS (Play CDN) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js for the chart -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-100">
+  <div class="container mx-auto px-4 py-8">
+    <header class="mb-4">
+      <h1 class="text-2xl font-bold">Policy Impact Tracker</h1>
+    </header>
+    <main>
+      <div class="bg-white p-6 rounded-lg shadow-lg">
+        <canvas id="policyChart" aria-label="Policy impact trends chart" role="img" width="600" height="400"></canvas>
+        <p class="mt-4 text-gray-700">Total Funding: $X</p>
+        <p class="text-gray-700">Projects Tracked: Y</p>
+      </div>
+    </main>
+  </div>
+  <script>
+    const ctx = document.getElementById('policyChart').getContext('2d');
+    const policyChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: ['January', 'February', 'March', 'April', 'May', 'June'],
+        datasets: [{
+          label: 'Number of Policies Passed',
+          data: [12, 19, 3, 5, 2, 3],
+          borderColor: 'rgba(75, 192, 192, 1)',
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        }
+      }
+    });
+  </script>
+</body>
+</html>
