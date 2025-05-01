@@ -287,20 +287,6 @@ export class Offchain extends TypedDataHandler {
     );
   }
 
-  // public static getOffchainAttestationUID(version: OffchainAttestationVersion, attestation: SignedOffchainAttestation): string {
-  //   return Offchain.getOffchainUID(
-  //     version,
-  //     attestation.message.schema,
-  //     attestation.message.recipient,
-  //     attestation.message.time,
-  //     attestation.message.expirationTime,
-  //     attestation.message.revocable,
-  //     attestation.message.refUID,
-  //     attestation.message.data,
-  //     attestation.message.salt
-  //   );
-  // }
-
   public static getOffchainUID(
     version: number,
     schema: string,
