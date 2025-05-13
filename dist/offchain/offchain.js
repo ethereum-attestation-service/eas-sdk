@@ -190,19 +190,6 @@ class Offchain extends typed_data_handler_1.TypedDataHandler {
     getOffchainUID(params) {
         return Offchain.getOffchainUID(this.version, params.schema, params.recipient, params.time, params.expirationTime, params.revocable, params.refUID, params.data, params.salt);
     }
-    // public static getOffchainAttestationUID(version: OffchainAttestationVersion, attestation: SignedOffchainAttestation): string {
-    //   return Offchain.getOffchainUID(
-    //     version,
-    //     attestation.message.schema,
-    //     attestation.message.recipient,
-    //     attestation.message.time,
-    //     attestation.message.expirationTime,
-    //     attestation.message.revocable,
-    //     attestation.message.refUID,
-    //     attestation.message.data,
-    //     attestation.message.salt
-    //   );
-    // }
     static getOffchainUID(version, schema, recipient, time, expirationTime, revocable, refUID, data, salt) {
         switch (version) {
             case OffchainAttestationVersion.Legacy:
