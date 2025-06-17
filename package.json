@@ -1,21 +1,29 @@
 {
   "name": "@ethereum-attestation-service/eas-sdk",
-  "version": "2.7.0",
+  "version": "2.8.0-beta.1",
   "description": "Ethereum Attestation Service - TypeScript/JavaScript SDK",
   "repository": "git@github.com:ethereum-attestation-service/eas-sdk.git",
   "author": "Leonid Beder <leonid@lbeder.com>",
   "license": "MIT",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "./dist/lib.commonjs/index.js",
+  "module": "./dist/lib.esm/index.js",
   "files": [
     "/dist"
   ],
+  "exports": {
+    ".": {
+      "import": "./dist/lib.esm/index.js",
+      "default": "./dist/lib.commonjs/index.js"
+    }
+  },
   "scripts": {
-    "build": "rm -rf dist && tsc --build tsconfig.json",
+    "build": "tsc --project tsconfig.esm.json",
+    "build:all": "pnpm run build && pnpm run build:commonjs",
+    "build:commonjs": "tsc --project tsconfig.commonjs.json",
     "test": "cd test && pnpm test",
     "lint": "eslint src test",
     "format": "prettier --check --write src --config .prettierrc",
-    "prepare:release": "pnpm lint && pnpm format && pnpm test && pnpm build"
+    "prepare:release": "pnpm lint && pnpm format && pnpm test && pnpm build:all"
   },
   "dependencies": {
     "@ethereum-attestation-service/eas-contracts": "1.7.1",
