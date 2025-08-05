@@ -11,6 +11,9 @@ This repository contains the Ethereum Attestation Service SDK, used to interact 
 - [Installing the EAS SDK](#installing-the-eas-sdk)
 - [Using the EAS SDK](#using-the-eas-sdk)
 - [Getting an Attestation](#getting-an-attestation)
+- [Estimating Gas for Transactions](#estimating-gas-for-transactions)
+  - [Example: Estimating Gas for an Attestation](#example-estimating-gas-for-an-attestation)
+  - [Example: Estimating Gas for a Revocation](#example-estimating-gas-for-a-revocation)
 - [Creating Onchain Attestations](#creating-onchain-attestations)
   - [Example: Creating Onchain Attestations](#example-creating-onchain-attestations)
   - [Example: Creating Multi Onchain Attestations](#example-creating-multi-onchain-attestations)
@@ -127,6 +130,62 @@ Example output:
 }
 ```
 
+### Estimating Gas for Transactions
+
+The `estimateGas` method allows you to estimate the gas cost for any transaction before sending it. This is useful for determining the gas requirements and costs before executing transactions. The method is available on all transaction objects returned by EAS SDK methods.
+
+#### Example: Estimating Gas for an Attestation
+
+```javascript
+import { EAS, NO_EXPIRATION, SchemaEncoder } from '@ethereum-attestation-service/eas-sdk';
+
+const eas = new EAS(EASContractAddress);
+eas.connect(signer);
+
+// Initialize SchemaEncoder with the schema string
+const schemaEncoder = new SchemaEncoder('uint256 eventId, uint8 voteIndex');
+const encodedData = schemaEncoder.encodeData([
+  { name: 'eventId', value: 1, type: 'uint256' },
+  { name: 'voteIndex', value: 1, type: 'uint8' }
+]);
+
+const schemaUID = '0xb16fa048b0d597f5a821747eba64efa4762ee5143e9a80600d0005386edfc995';
+
+const transaction = await eas.attest({
+  schema: schemaUID,
+  data: {
+    recipient: '0xFD50b031E778fAb33DfD2Fc3Ca66a1EeF0652165',
+    expirationTime: NO_EXPIRATION,
+    revocable: true,
+    data: encodedData
+  }
+});
+
+// Estimate gas before sending the transaction
+const estimatedGas = await transaction.estimateGas();
+console.log('Estimated gas:', estimatedGas.toString());
+
+// Now send the transaction
+const newAttestationUID = await transaction.wait();
+console.log('New attestation UID:', newAttestationUID);
+```
+
+#### Example: Estimating Gas for a Revocation
+
+```javascript
+const transaction = await eas.revoke({
+  schema: '0x85500e806cf1e74844d51a20a6d893fe1ed6f6b0738b50e43d774827d08eca61',
+  data: { uid: '0x6776de8122c352b4d671003e58ca112aedb99f34c629a1d1fe3b332504e2943a' }
+});
+
+// Estimate gas before sending the transaction
+const estimatedGas = await transaction.estimateGas();
+console.log('Estimated gas for revocation:', estimatedGas.toString());
+
+// Now send the transaction
+await transaction.wait();
+```
+
 ### Creating Onchain Attestations
 
 The `attest` function allows you to create an on-chain attestation for a specific schema. This function takes an object with the following properties:
@@ -168,6 +227,10 @@ const transaction = await eas.attest({
     data: encodedData
   }
 });
+
+// Estimate gas for the transaction before sending it
+const estimatedGas = await transaction.estimateGas();
+console.log('Estimated gas:', estimatedGas.toString());
 
 const newAttestationUID = await transaction.wait();
 
@@ -720,6 +783,10 @@ const transaction = await eas.attest({
     data: encodedData
   }
 });
+
+// Estimate gas for the transaction before sending it
+const estimatedGas = await transaction.estimateGas();
+console.log('Estimated gas:', estimatedGas.toString());
 
 const newAttestationUID = await transaction.wait();
 

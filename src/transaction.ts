@@ -51,6 +51,11 @@ export class Transaction<T> {
     this.waitCallback = waitCallback;
   }
 
+  // Estimate gas for the transaction
+  public estimateGas(): Promise<bigint> {
+    return this.signer.estimateGas(this.data);
+  }
+
   @RequireSigner
   public async wait(confirmations?: number): Promise<T> {
     if (this.receipt) {
