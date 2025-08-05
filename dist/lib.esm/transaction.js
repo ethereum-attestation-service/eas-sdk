@@ -22,6 +22,10 @@ export class Transaction {
         this.signer = signer;
         this.waitCallback = waitCallback;
     }
+    // Estimate gas for the transaction
+    estimateGas() {
+        return this.signer.estimateGas(this.data);
+    }
     async wait(confirmations) {
         if (this.receipt) {
             throw new Error(`Transaction already broadcast: ${this.receipt}`);

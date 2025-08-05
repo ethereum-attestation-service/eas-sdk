@@ -14,6 +14,7 @@ export declare class Transaction<T> {
     private readonly signer;
     private readonly waitCallback;
     constructor(data: ContractTransaction, signer: TransactionSigner | TransactionProvider, waitCallback: (receipt: TransactionReceipt) => Promise<T>);
+    estimateGas(): Promise<bigint>;
     wait(confirmations?: number): Promise<T>;
 }
 export declare class Base<C extends BaseContract> {
