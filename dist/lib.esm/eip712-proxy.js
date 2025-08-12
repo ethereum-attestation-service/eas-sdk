@@ -1,10 +1,10 @@
 import { __decorate, __metadata } from "tslib";
 import { EIP712Proxy__factory } from '@ethereum-attestation-service/eas-contracts';
-import { legacyVersion } from './legacy/version';
-import { DelegatedProxy } from './offchain';
-import { NO_EXPIRATION } from './request';
-import { Base, RequireSigner, Transaction } from './transaction';
-import { getUIDsFromAttestReceipt, ZERO_BYTES32 } from './utils';
+import from './legacy/version.js';
+import from './offchain/index.js';
+import from './request.js';
+import from './transaction.js';
+import from './utils.js';
 export class EIP712Proxy extends Base {
     delegated;
     constructor(address, options) {

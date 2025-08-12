@@ -1,6 +1,6 @@
 {
   "name": "@ethereum-attestation-service/eas-sdk",
-  "version": "2.9.0",
+  "version": "2.9.1-beta.1",
   "description": "Ethereum Attestation Service - TypeScript/JavaScript SDK",
   "repository": "git@github.com:ethereum-attestation-service/eas-sdk.git",
   "author": "Leonid Beder <leonid@lbeder.com>",
@@ -17,7 +17,7 @@
     }
   },
   "scripts": {
-    "build": "tsc --project tsconfig.esm.json",
+    "build": "tsc --project tsconfig.esm.json && node scripts/fix-esm-extensions.cjs",
     "build:all": "pnpm run build && pnpm run build:commonjs",
     "build:commonjs": "tsc --project tsconfig.commonjs.json",
     "test": "cd test && pnpm test",

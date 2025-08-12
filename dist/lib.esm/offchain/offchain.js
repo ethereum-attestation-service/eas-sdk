@@ -1,7 +1,7 @@
 import { AbiCoder, hexlify, keccak256, randomBytes, solidityPackedKeccak256, toUtf8Bytes } from 'ethers';
-import { ZERO_ADDRESS, ZERO_BYTES32 } from '../utils';
-import { InvalidPrimaryType, InvalidTypes, TypedDataHandler } from './typed-data-handler';
-import { EIP712_NAME } from './versions';
+import from '../utils.js';
+import from './typed-data-handler.js';
+import from './versions.js';
 export var OffchainAttestationVersion;
 (function (OffchainAttestationVersion) {
     OffchainAttestationVersion[OffchainAttestationVersion["Legacy"] = 0] = "Legacy";

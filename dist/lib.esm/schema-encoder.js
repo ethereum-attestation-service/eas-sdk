@@ -1,6 +1,6 @@
 import { AbiCoder, encodeBytes32String, FunctionFragment, isBytesLike } from 'ethers';
 import { CID } from 'multiformats';
-import { ZERO_ADDRESS } from './utils';
+import from './utils.js';
 const TUPLE_TYPE = 'tuple';
 const TUPLE_ARRAY_TYPE = 'tuple[]';
 const BYTES32 = 'bytes32';

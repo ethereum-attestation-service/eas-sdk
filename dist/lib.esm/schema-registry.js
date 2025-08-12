@@ -1,9 +1,9 @@
 import { __decorate, __metadata } from "tslib";
 import { SchemaRegistry__factory } from '@ethereum-attestation-service/eas-contracts';
 import { solidityPackedKeccak256 } from 'ethers';
-import { legacyVersion } from './legacy/version';
-import { Base, RequireSigner, Transaction } from './transaction';
-import { ZERO_ADDRESS, ZERO_BYTES32 } from './utils';
+import from './legacy/version.js';
+import from './transaction.js';
+import from './utils.js';
 export class SchemaRegistry extends Base {
     constructor(address, options) {
         const { signer } = options || {};

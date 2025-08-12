@@ -1,5 +1,5 @@
-export * from './delegated';
-export * from './delegated-proxy';
-export * from './offchain';
-export * from './offchain-utils';
+export from './delegated.js';
+export from './delegated-proxy.js';
+export from './offchain.js';
+export from './offchain-utils.js';
 //# sourceMappingURL=index.js.map

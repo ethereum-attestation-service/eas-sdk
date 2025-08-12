@@ -2,14 +2,14 @@ import { __decorate, __metadata } from "tslib";
 import { EAS__factory as EASFactory } from '@ethereum-attestation-service/eas-contracts';
 import { hexlify, solidityPackedKeccak256, toUtf8Bytes } from 'ethers';
 import semver from 'semver';
-import { EAS__factory as EASLegacyFactory } from './legacy/typechain';
-import { legacyVersion } from './legacy/version';
-import { Delegated, Offchain, OffchainAttestationVersion } from './offchain';
-import { NO_EXPIRATION } from './request';
-import { Base, RequireSigner, Transaction } from './transaction';
-import { getTimestampFromOffchainRevocationReceipt, getTimestampFromTimestampReceipt, getUIDsFromAttestReceipt, ZERO_ADDRESS, ZERO_BYTES32 } from './utils';
+import from './legacy/typechain/index.js';
+import from './legacy/version.js';
+import from './offchain/index.js';
+import from './request.js';
+import from './transaction.js';
+import from './utils.js';
 const LEGACY_VERSION = '1.1.0';
-export * from './request';
+export from './request.js';
 export const RequireProxy = (_target, _propertyKey, descriptor) => {
     const originalMethod = descriptor.value;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

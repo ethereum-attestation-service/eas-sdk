@@ -1,7 +1,7 @@
 import { ZeroAddress, ZeroHash } from 'ethers';
 import * as Base64 from 'js-base64';
 import pako from 'pako';
-import { OffchainAttestationVersion } from './offchain';
+import from './offchain.js';
 export const createOffchainURL = (pkg) => {
     const base64 = zipAndEncodeToBase64(pkg);
     return `/offchain/url/#attestation=${encodeURIComponent(base64)}`;

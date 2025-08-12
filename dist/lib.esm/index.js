@@ -1,11 +1,11 @@
 export * as Contracts from '@ethereum-attestation-service/eas-contracts';
-export * from './eas';
-export * from './eip712-proxy';
-export * from './offchain';
-export * from './request';
-export * from './schema-encoder';
-export * from './schema-registry';
-export * from './transaction';
-export * from './utils';
-export * from './private-data';
+export from './eas.js';
+export from './eip712-proxy.js';
+export from './offchain/index.js';
+export from './request.js';
+export from './schema-encoder.js';
+export from './schema-registry.js';
+export from './transaction.js';
+export from './utils.js';
+export from './private-data.js';
 //# sourceMappingURL=index.js.map
