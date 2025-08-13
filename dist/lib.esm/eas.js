@@ -10,18 +10,37 @@ import from './transaction.js';
 import from './utils.js';
 const LEGACY_VERSION = '1.1.0';
 export from './request.js';
-export const RequireProxy = (_target, _propertyKey, descriptor) => {
-    const originalMethod = descriptor.value;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function RequireProxy(...args) {
+    // Standard decorator: (value, context)
+    if (args.length === 2) {
+        const [value] = args;
+        const wrapped = function (
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ...fnArgs) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            if (!this.proxy) {
+                throw new Error('Invalid proxy');
+            }
+            return value.apply(this, fnArgs);
+        };
+        return wrapped;
+    }
+    // Legacy decorator: (target, propertyKey, descriptor)
+    const [_target, _propertyKey, descriptor] = args;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    descriptor.value = function (...args) {
+    const original = descriptor.value;
+    descriptor.value = function (
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ...fnArgs) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if (!this.proxy) {
             throw new Error('Invalid proxy');
         }
-        return originalMethod.apply(this, args);
+        return original.apply(this, fnArgs);
     };
     return descriptor;
-};
+}
 export class EAS extends Base {
     proxy;
     delegated;

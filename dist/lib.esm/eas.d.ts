@@ -22,7 +22,8 @@ export interface EASOptions {
     signer?: TransactionSigner | TransactionProvider;
     proxy?: EIP712Proxy;
 }
-export declare const RequireProxy: (_target: unknown, _propertyKey: string, descriptor: PropertyDescriptor) => PropertyDescriptor;
+export declare function RequireProxy(_target: unknown, _propertyKey: string, descriptor: PropertyDescriptor): PropertyDescriptor;
+export declare function RequireProxy<TFn extends (this: unknown, ...args: any[]) => any>(value: TFn, _context: ClassMethodDecoratorContext): TFn;
 export declare class EAS extends Base<EASContract> {
     private proxy?;
     private delegated?;

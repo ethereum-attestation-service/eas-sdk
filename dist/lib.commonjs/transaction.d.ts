@@ -7,7 +7,8 @@ export interface TransactionProvider {
 export interface TransactionSigner extends TransactionProvider {
     sendTransaction: (tx: TransactionRequest) => Promise<any>;
 }
-export declare const RequireSigner: (_target: unknown, _propertyKey: string, descriptor: PropertyDescriptor) => PropertyDescriptor;
+export declare function RequireSigner(_target: unknown, _propertyKey: string, descriptor: PropertyDescriptor): PropertyDescriptor;
+export declare function RequireSigner<TFn extends (this: unknown, ...args: any[]) => any>(value: TFn, _context: ClassMethodDecoratorContext): TFn;
 export declare class Transaction<T> {
     readonly data: ContractTransaction;
     receipt?: TransactionReceipt;

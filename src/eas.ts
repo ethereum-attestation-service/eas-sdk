@@ -59,20 +59,62 @@ export interface EASOptions {
   proxy?: EIP712Proxy;
 }
 
-export const RequireProxy = (_target: unknown, _propertyKey: string, descriptor: PropertyDescriptor) => {
-  const originalMethod = descriptor.value;
+// Overloads to support both legacy (experimental) and standard (TC39) decorators
+export function RequireProxy(
+  _target: unknown,
+  _propertyKey: string,
+  descriptor: PropertyDescriptor
+): PropertyDescriptor;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function RequireProxy<TFn extends (this: unknown, ...args: any[]) => any>(
+  value: TFn,
+  _context: ClassMethodDecoratorContext
+): TFn;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function RequireProxy(...args: any[]): any {
+  // Standard decorator: (value, context)
+  if (args.length === 2) {
+    const [value] = args as [
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (this: unknown, ...fnArgs: any[]) => any,
+      ClassMethodDecoratorContext
+    ];
+
+    const wrapped = function (
+      this: unknown,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ...fnArgs: any[]
+    ) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      if (!(this as any).proxy) {
+        throw new Error('Invalid proxy');
+      }
+      return value.apply(this as unknown, fnArgs);
+    };
+
+    return wrapped;
+  }
+
+  // Legacy decorator: (target, propertyKey, descriptor)
+  const [_target, _propertyKey, descriptor] = args as [unknown, string, PropertyDescriptor];
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  descriptor.value = function (...args: any[]) {
+  const original = descriptor.value as unknown as (this: unknown, ...fnArgs: any[]) => unknown;
+
+  descriptor.value = function (
+    this: unknown,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ...fnArgs: any[]
+  ) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if (!(this as any).proxy) {
       throw new Error('Invalid proxy');
     }
-    return originalMethod.apply(this, args);
+    return original.apply(this as unknown, fnArgs);
   };
 
   return descriptor;
-};
+}
 
 export class EAS extends Base<EASContract> {
   private proxy?: EIP712Proxy;

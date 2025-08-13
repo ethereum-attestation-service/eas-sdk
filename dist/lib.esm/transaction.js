@@ -1,17 +1,37 @@
 import { __decorate, __metadata } from "tslib";
-export const RequireSigner = (_target, _propertyKey, descriptor) => {
-    const originalMethod = descriptor.value;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function RequireSigner(...args) {
+    // Standard decorator: (value, context)
+    if (args.length === 2) {
+        const [value] = args;
+        const wrapped = function (
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ...fnArgs) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const signer = this.signer;
+            if (!signer || !signer.sendTransaction) {
+                throw new Error('Invalid signer');
+            }
+            return value.apply(this, fnArgs);
+        };
+        return wrapped;
+    }
+    // Legacy decorator: (target, propertyKey, descriptor)
+    const [_target, _propertyKey, descriptor] = args;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    descriptor.value = function (...args) {
+    const original = descriptor.value;
+    descriptor.value = function (
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ...fnArgs) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const signer = this.signer;
         if (!signer || !signer.sendTransaction) {
             throw new Error('Invalid signer');
         }
-        return originalMethod.apply(this, args);
+        return original.apply(this, fnArgs);
     };
     return descriptor;
-};
+}
 export class Transaction {
     data;
     receipt;

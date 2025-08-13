@@ -1,21 +1,41 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Base = exports.Transaction = exports.RequireSigner = void 0;
+exports.Base = exports.Transaction = void 0;
+exports.RequireSigner = RequireSigner;
 const tslib_1 = require("tslib");
-const RequireSigner = (_target, _propertyKey, descriptor) => {
-    const originalMethod = descriptor.value;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function RequireSigner(...args) {
+    // Standard decorator: (value, context)
+    if (args.length === 2) {
+        const [value] = args;
+        const wrapped = function (
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ...fnArgs) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const signer = this.signer;
+            if (!signer || !signer.sendTransaction) {
+                throw new Error('Invalid signer');
+            }
+            return value.apply(this, fnArgs);
+        };
+        return wrapped;
+    }
+    // Legacy decorator: (target, propertyKey, descriptor)
+    const [_target, _propertyKey, descriptor] = args;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    descriptor.value = function (...args) {
+    const original = descriptor.value;
+    descriptor.value = function (
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ...fnArgs) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const signer = this.signer;
         if (!signer || !signer.sendTransaction) {
             throw new Error('Invalid signer');
         }
-        return originalMethod.apply(this, args);
+        return original.apply(this, fnArgs);
     };
     return descriptor;
-};
-exports.RequireSigner = RequireSigner;
+}
 class Transaction {
     data;
     receipt;
@@ -44,7 +64,7 @@ class Transaction {
 }
 exports.Transaction = Transaction;
 tslib_1.__decorate([
-    exports.RequireSigner,
+    RequireSigner,
     tslib_1.__metadata("design:type", Function),
     tslib_1.__metadata("design:paramtypes", [Number]),
     tslib_1.__metadata("design:returntype", Promise)

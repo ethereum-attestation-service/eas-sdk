@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.EAS = exports.RequireProxy = void 0;
+exports.EAS = void 0;
+exports.RequireProxy = RequireProxy;
 const tslib_1 = require("tslib");
 const eas_contracts_1 = require("@ethereum-attestation-service/eas-contracts");
 const ethers_1 = require("ethers");
@@ -13,19 +14,37 @@ const transaction_1 = require("./transaction");
 const utils_1 = require("./utils");
 const LEGACY_VERSION = '1.1.0';
 tslib_1.__exportStar(require("./request"), exports);
-const RequireProxy = (_target, _propertyKey, descriptor) => {
-    const originalMethod = descriptor.value;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function RequireProxy(...args) {
+    // Standard decorator: (value, context)
+    if (args.length === 2) {
+        const [value] = args;
+        const wrapped = function (
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ...fnArgs) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            if (!this.proxy) {
+                throw new Error('Invalid proxy');
+            }
+            return value.apply(this, fnArgs);
+        };
+        return wrapped;
+    }
+    // Legacy decorator: (target, propertyKey, descriptor)
+    const [_target, _propertyKey, descriptor] = args;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    descriptor.value = function (...args) {
+    const original = descriptor.value;
+    descriptor.value = function (
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ...fnArgs) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if (!this.proxy) {
             throw new Error('Invalid proxy');
         }
-        return originalMethod.apply(this, args);
+        return original.apply(this, fnArgs);
     };
     return descriptor;
-};
-exports.RequireProxy = RequireProxy;
+}
 class EAS extends transaction_1.Base {
     proxy;
     delegated;
@@ -457,28 +476,28 @@ tslib_1.__decorate([
 ], EAS.prototype, "multiRevokeByDelegation", null);
 tslib_1.__decorate([
     transaction_1.RequireSigner,
-    exports.RequireProxy,
+    RequireProxy,
     tslib_1.__metadata("design:type", Function),
     tslib_1.__metadata("design:paramtypes", [Object, Object]),
     tslib_1.__metadata("design:returntype", Promise)
 ], EAS.prototype, "attestByDelegationProxy", null);
 tslib_1.__decorate([
     transaction_1.RequireSigner,
-    exports.RequireProxy,
+    RequireProxy,
     tslib_1.__metadata("design:type", Function),
     tslib_1.__metadata("design:paramtypes", [Array, Object]),
     tslib_1.__metadata("design:returntype", Promise)
 ], EAS.prototype, "multiAttestByDelegationProxy", null);
 tslib_1.__decorate([
     transaction_1.RequireSigner,
-    exports.RequireProxy,
+    RequireProxy,
     tslib_1.__metadata("design:type", Function),
     tslib_1.__metadata("design:paramtypes", [Object, Object]),
     tslib_1.__metadata("design:returntype", Promise)
 ], EAS.prototype, "revokeByDelegationProxy", null);
 tslib_1.__decorate([
     transaction_1.RequireSigner,
-    exports.RequireProxy,
+    RequireProxy,
     tslib_1.__metadata("design:type", Function),
     tslib_1.__metadata("design:paramtypes", [Array, Object]),
     tslib_1.__metadata("design:returntype", Promise)
