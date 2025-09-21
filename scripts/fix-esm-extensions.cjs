@@ -30,26 +30,33 @@ function isDir(p) {
 
 /** @param {string} code @param {string} fileDir */
 function rewrite(code, fileDir) {
-  // Matches import/export ... from '...'; capturing the specifier in group 2
-  const re = /(import|export)\s+[^'";]*?from\s+(["'])([^"']+)(\2)/g;
-  return code.replace(re, (m, kw, quote, spec, q2) => {
-    if (!(spec.startsWith('./') || spec.startsWith('../'))) return m; // only relative
+  // Matches: (kw)(pre)(quote)(specifier)(same quote)
+  // Example: import { x } from './y' -> kw=import, pre=" { x } from ", quote='\'', spec='./y'
+  const re = /(import|export)(\s+[^'";]*?from\s+)(["'])([^"']+)(\3)/g;
+  return code.replace(re, (m, kw, pre, quote, spec) => {
+    // Only rewrite relative specifiers
+    if (!(spec.startsWith('./') || spec.startsWith('../'))) return m;
 
-    const withoutQuery = spec.split('?')[0];
-    const full = path.resolve(fileDir, withoutQuery);
+    // Separate any query/hash so we can append .js before them
+    const idx = spec.search(/[?#]/);
+    const base = idx === -1 ? spec : spec.slice(0, idx);
+    const tail = idx === -1 ? '' : spec.slice(idx);
+
+    const full = path.resolve(fileDir, base);
 
     // If it already ends with .js/.mjs/.cjs, leave it
-    if (/\.(js|mjs|cjs)$/.test(withoutQuery)) return m;
+    if (/\.(js|mjs|cjs)$/.test(base)) return m;
 
     // Try file.js
     if (isFile(full + '.js')) {
-      return `${kw} from ${quote}${spec}.js${quote}`;
+      const newSpec = `${base}.js${tail}`;
+      return `${kw}${pre}${quote}${newSpec}${quote}`;
     }
 
     // Try directory index.js
     if (isDir(full) && isFile(path.join(full, 'index.js'))) {
-      const suff = spec.endsWith('/') ? 'index.js' : '/index.js';
-      return `${kw} from ${quote}${spec}${suff}${quote}`;
+      const newSpec = `${base}${base.endsWith('/') ? 'index.js' : '/index.js'}${tail}`;
+      return `${kw}${pre}${quote}${newSpec}${quote}`;
     }
 
     // Otherwise leave as-is

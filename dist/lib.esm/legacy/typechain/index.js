@@ -1,3 +1,3 @@
-export from "./factories/index.js";
-export from "./factories/contracts/EAS__factory.js";
+export * as factories from "./factories/index.js";
+export { EAS__factory } from "./factories/contracts/EAS__factory.js";
 //# sourceMappingURL=index.js.map
