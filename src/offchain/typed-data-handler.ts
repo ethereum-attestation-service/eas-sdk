@@ -10,7 +10,7 @@ import {
   TypedDataField,
   verifyTypedData
 } from 'ethers';
-import isEqual from 'lodash/isEqual';
+import { isEqual } from 'lodash';
 import { ZERO_ADDRESS } from '../utils';
 
 export interface TypeDataSigner extends Addressable {

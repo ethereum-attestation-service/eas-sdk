@@ -1,4 +1,4 @@
-import omit from 'lodash/omit';
+import { omit } from 'lodash';
 import semver from 'semver';
 import { EIP712AttestationParams, EIP712RevocationParams } from './delegated';
 import {

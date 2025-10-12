@@ -1,4 +1,4 @@
-import omit from 'lodash/omit';
+import { omit } from 'lodash';
 import semver from 'semver';
 import { TypedDataHandler } from './typed-data-handler.js';
 import { EIP712_NAME, EIP712_VERSIONS } from './versions.js';

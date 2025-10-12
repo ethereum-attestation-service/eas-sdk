@@ -1,9 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TypedDataHandler = exports.InvalidAddress = exports.InvalidTypes = exports.InvalidPrimaryType = exports.InvalidDomain = exports.EIP712_DOMAIN = void 0;
-const tslib_1 = require("tslib");
 const ethers_1 = require("ethers");
-const isEqual_1 = tslib_1.__importDefault(require("lodash/isEqual"));
+const lodash_1 = require("lodash");
 const utils_1 = require("../utils");
 exports.EIP712_DOMAIN = 'EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)';
 class InvalidDomain extends Error {
@@ -55,13 +54,13 @@ class TypedDataHandler {
         if (!strict) {
             expectedDomain = { ...expectedDomain, version: domain.version };
         }
-        if (!(0, isEqual_1.default)(domain, expectedDomain)) {
+        if (!(0, lodash_1.isEqual)(domain, expectedDomain)) {
             throw new InvalidDomain();
         }
         if (response.primaryType !== types.primaryType) {
             throw new InvalidPrimaryType();
         }
-        if (!(0, isEqual_1.default)(response.types, types.types)) {
+        if (!(0, lodash_1.isEqual)(response.types, types.types)) {
             throw new InvalidTypes();
         }
         if (attester === utils_1.ZERO_ADDRESS) {
