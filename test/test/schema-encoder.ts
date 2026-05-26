@@ -117,6 +117,17 @@ describe('SchemaEncoder', () => {
         ]
       },
       {
+        schema: '((string key,uint8 value) inner,uint256 id) outer',
+        decodedSchema: [
+          {
+            name: 'outer',
+            type: '((string,uint8),uint256)',
+            signature: '((string key,uint8 value) inner,uint256 id) outer',
+            value: ''
+          }
+        ]
+      },
+      {
         schema:
           // eslint-disable-next-line max-len
           'string contractGroupName,string ipfsHash,string readmeIpfsHash,address[] contractAddresses,string[] contractNames,string[] contractNetworks,string[] contractIpfsHashes',
@@ -548,6 +559,38 @@ describe('SchemaEncoder', () => {
                     { name: 'badgeId', type: 'uint256', value: 3n },
                     { name: 'level', type: 'uint256', value: 30n }
                   ]
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        schema: '((string key,uint8 value) inner,uint256 id) outer',
+        types: ['((string key,uint8 value) inner,uint256 id)'],
+        inputs: [
+          {
+            in: [
+              {
+                type: '((string,uint8),uint256)',
+                name: 'outer',
+                value: { inner: { key: 'entry1', value: 7n }, id: 42n }
+              }
+            ],
+            out: [
+              {
+                type: '((string,uint8),uint256)',
+                name: 'outer',
+                value: [
+                  {
+                    name: 'inner',
+                    type: 'tuple(string,uint8)',
+                    value: [
+                      { name: 'key', type: 'string', value: 'entry1' },
+                      { name: 'value', type: 'uint8', value: 7n }
+                    ]
+                  },
+                  { name: 'id', type: 'uint256', value: 42n }
                 ]
               }
             ]
