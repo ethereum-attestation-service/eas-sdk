@@ -25,8 +25,8 @@ export class SchemaEncoder {
             let typeName = type;
             const isArray = arrayChildren;
             const components = paramType.components ?? arrayChildren?.components ?? [];
-            const componentsType = `(${components.map((c) => c.type).join(',')})${isArray ? '[]' : ''}`;
-            const componentsFullType = `(${components.map((c) => (c.name ? `${c.type} ${c.name}` : c.type)).join(',')})${isArray ? '[]' : ''}`;
+            const componentsType = `(${components.map((c) => SchemaEncoder.formatComponent(c)).join(',')})${isArray ? '[]' : ''}`;
+            const componentsFullType = `(${components.map((c) => SchemaEncoder.formatComponent(c, true)).join(',')})${isArray ? '[]' : ''}`;
             if (type.startsWith(TUPLE_TYPE)) {
                 type = componentsType;
                 signature = `${componentsFullType}${signatureSuffix}`;
@@ -82,36 +82,22 @@ export class SchemaEncoder {
             const input = fragment.inputs[0];
             const components = input.components ?? input.arrayChildren?.components ?? [];
             if (value.length > 0 && typeof value !== STRING && components?.length > 0) {
-                if (Array.isArray(value[0])) {
-                    const namedValues = [];
-                    for (const val of value) {
-                        const namedValue = [];
-                        const rawValues = val.toArray().filter((v) => typeof v !== 'object');
-                        for (const [k, v] of rawValues.entries()) {
-                            const component = components[k];
-                            namedValue.push({ name: component.name, type: component.type, value: v });
-                        }
-                        namedValues.push(namedValue);
-                    }
-                    value = {
-                        name: s.name,
-                        type: s.type,
-                        value: namedValues
+                const toNamedValue = (tupleValue, tupleComponents) => tupleValue.map((v, k) => {
+                    const component = tupleComponents[k];
+                    const nestedComponents = component.components ?? component.arrayChildren?.components ?? [];
+                    return {
+                        name: component.name,
+                        type: component.type,
+                        value: Array.isArray(v) && nestedComponents.length > 0 ? toNamedValue(v, nestedComponents) : v
                     };
-                }
-                else {
-                    const namedValue = [];
-                    const rawValues = value.filter((v) => typeof v !== 'object');
-                    for (const [k, v] of rawValues.entries()) {
-                        const component = components[k];
-                        namedValue.push({ name: component.name, type: component.type, value: v });
-                    }
-                    value = {
-                        name: s.name,
-                        type: s.type,
-                        value: namedValue
-                    };
-                }
+                });
+                value = {
+                    name: s.name,
+                    type: s.type,
+                    value: input.baseType === 'array'
+                        ? value.map((val) => toNamedValue(val, components))
+                        : toNamedValue(value, components)
+                };
             }
             else {
                 value = { name: s.name, type: s.type, value };
@@ -168,6 +154,15 @@ export class SchemaEncoder {
     }
     static getDefaultValueForTypeName(typeName) {
         return typeName === BOOL ? false : typeName.includes(UINT) ? '0' : typeName === ADDRESS ? ZERO_ADDRESS : '';
+    }
+    static formatComponent(component, includeName = false) {
+        const components = component.components ?? component.arrayChildren?.components ?? [];
+        const type = components.length > 0
+            ? `(${components.map((c) => SchemaEncoder.formatComponent(c, includeName)).join(',')})`
+            : component.type;
+        const arraySuffix = component.baseType === 'array' ? '[]' : '';
+        const nameSuffix = includeName && component.name ? ` ${component.name}` : '';
+        return `${type}${arraySuffix}${nameSuffix}`;
     }
     static decodeIpfsValue(val) {
         if (isBytesLike(val)) {

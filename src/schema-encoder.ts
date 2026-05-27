@@ -143,7 +143,8 @@ export class SchemaEncoder {
             return {
               name: component.name,
               type: component.type,
-              value: Array.isArray(v) && nestedComponents.length > 0 ? toNamedValue(v, nestedComponents) : (v as SchemaValue)
+              value:
+                Array.isArray(v) && nestedComponents.length > 0 ? toNamedValue(v, nestedComponents) : (v as SchemaValue)
             };
           });
 
@@ -221,7 +222,10 @@ export class SchemaEncoder {
 
   private static formatComponent(component: FunctionFragment['inputs'][number], includeName = false): string {
     const components = component.components ?? component.arrayChildren?.components ?? [];
-    const type = components.length > 0 ? `(${components.map((c) => SchemaEncoder.formatComponent(c, includeName)).join(',')})` : component.type;
+    const type =
+      components.length > 0
+        ? `(${components.map((c) => SchemaEncoder.formatComponent(c, includeName)).join(',')})`
+        : component.type;
     const arraySuffix = component.baseType === 'array' ? '[]' : '';
     const nameSuffix = includeName && component.name ? ` ${component.name}` : '';
 

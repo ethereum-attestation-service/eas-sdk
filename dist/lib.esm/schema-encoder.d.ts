@@ -24,6 +24,7 @@ export declare class SchemaEncoder {
     static encodeQmHash(hash: string): string;
     static decodeQmHash(bytes32: string): string;
     private static getDefaultValueForTypeName;
+    private static formatComponent;
     private static decodeIpfsValue;
     private static encodeBytes32Value;
     private signatures;

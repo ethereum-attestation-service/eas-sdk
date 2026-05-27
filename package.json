@@ -1,6 +1,6 @@
 {
   "name": "@ethereum-attestation-service/eas-sdk",
-  "version": "2.9.1-beta.3",
+  "version": "2.9.1",
   "description": "Ethereum Attestation Service - TypeScript/JavaScript SDK",
   "repository": "git@github.com:ethereum-attestation-service/eas-sdk.git",
   "author": "Leonid Beder <leonid@lbeder.com>",
@@ -54,5 +54,6 @@
     "tslib": "^2.6.3",
     "typescript": "^5.5.4",
     "typescript-eslint": "^8.0.1"
-  }
+  },
+  "packageManager": "pnpm@8.14.0+sha512.5d4bf97b349faf1a51318aa1ba887e99d9c36e203dbcb55938a91fddd2454246cb00723d6642f54d463a0f52a2701dadf8de002a37fc613c9cdc94ed5675ddce"
 }

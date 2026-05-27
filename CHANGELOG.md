@@ -1,5 +1,19 @@
 # Changelog
 
+## 2.9.1
+
+- Fix nested tuple schema decoding
+- Fix ESM module resolution for Node ESM consumers
+- Support new and legacy TypeScript decorators
+
+## 2.9.0
+
+- Add gas estimation API on `Transaction`
+
+## 2.8.0
+
+- Add ESM export alongside CommonJS
+
 ## 2.7.0
 
 - Move getUID, getSchemaUID, and getOffchainUID to EAS, SchemaRegistry, and Offchain respectively
