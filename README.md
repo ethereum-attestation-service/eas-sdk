@@ -1,4 +1,4 @@
-# Ethereum Attestation Service - TypeScript/JavaScript SDK
+# Ethereum Attestation Service - TypeScript/JavaScript SDK by JTCombs
 
 [![Docs](https://img.shields.io/badge/docs-%F0%9F%93%84-blue)](https://eas.eth.link)
 [![NPM Package](https://img.shields.io/npm/v/@ethereum-attestation-service/eas-sdk.svg)](https://www.npmjs.org/package/@ethereum-attestation-service/eas-sdk)
